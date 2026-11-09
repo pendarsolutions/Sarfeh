@@ -1,7 +1,8 @@
 {
   "authored": true,
-  "note": "Development/demo fixture (the build-pack file was not present). Specs reference real seed SKUs; the organisation day rate is a clearly labelled SAMPLE input, not a market price.",
-  "name": "Demo startup — Tehran",
+  "note": "The sample workspace (POST /inventories/demo). Specs reference real seed SKUs; the organisation day rate is a clearly labelled sample input, not a market price. Never shown to users.",
+  "name": "Sample startup, Tehran",
+  "name_fa": "استارتاپ نمونه، تهران",
   "organization_settings": {
     "engineer_day_rate_toman": "4000000",
     "engineer_day_rate_label": "SAMPLE value entered for the demo workspace"

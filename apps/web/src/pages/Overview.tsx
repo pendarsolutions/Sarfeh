@@ -10,12 +10,12 @@ import { useSession } from "../lib/session";
 import { Badge, Button, Card, Date_, Empty, ErrorBox, FreshnessBadge, Loading, Money, Num, Pct, PriceUnavailableBadge, ToneBadge } from "../components/ui";
 
 export function EmptyWorkspace() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const nav = useNavigate();
   const qc = useQueryClient();
   const { setActiveId } = useSession();
   const demo = useMutation({
-    mutationFn: api.createDemo,
+    mutationFn: () => api.createDemo(lang),
     onSuccess: (v) => {
       qc.setQueryData(["inventory", v.id], v);
       qc.invalidateQueries({ queryKey: ["inventories"] });

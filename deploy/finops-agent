@@ -784,6 +784,14 @@ cmd_doctor() {
     fi
   done
   [ "$stopped" -gt 0 ] || ok "all services are running"
+  if [ "$stopped" = 0 ]; then
+    # price updates and server collection run in the worker; a running container can still be unable to take jobs
+    if compose exec -T worker celery -A finops_worker.tasks inspect ping --timeout 10 >/dev/null 2>&1; then
+      ok "the background worker answers"
+    else
+      bad "the background worker doesn't answer, so price updates and server collection don't run: sudo finops-agent logs worker"
+    fi
+  fi
   url="$(env_get FINOPS_PUBLIC_URL)" port="$(env_get FINOPS_HTTPS_PORT)" host="$(env_get FINOPS_ADDRESS)"
   if [ "$(env_get FINOPS_BEHIND_PROXY)" = true ]; then
     code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "http://$(env_get FINOPS_HTTPS_BIND)/health/ready" || true)"

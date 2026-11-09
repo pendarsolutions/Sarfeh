@@ -29,6 +29,7 @@ case "$*" in
   "image inspect "*) [ -z "${FAKE_NO_IMAGES:-}" ] || exit 1 ;;
   "create "*) echo new-container ;;
   "load") cat > /dev/null ;;
+  "compose exec -T worker celery"*) [ -z "${FAKE_WORKER_DOWN:-}" ] || exit 1 ;;
   "compose up"*) echo " Container finops-agent-api-1  Waiting" >&2
                  [ -z "${FAKE_UP_FAILS:-}" ] || { echo "Error: port is already allocated" >&2; exit 1; } ;;
 esac
@@ -327,6 +328,9 @@ def test_status_and_doctor(box):
     assert "newest: finops-agent-20261109-031500.tar.gz\n" in box.ok("status").stdout
     doctor = box.ok("doctor").stdout
     assert "all services are running" in doctor and "the dashboard answers" in doctor
+    assert "the background worker answers" in doctor
+    r = box.run("doctor", extra={"FAKE_WORKER_DOWN": "1"})
+    assert r.returncode == 1 and "the background worker doesn't answer" in r.stdout
     r = box.run("doctor", extra={"FAKE_RUNNING": "postgres redis api beat web caddy", "FAKE_LATEST": "9.9.9"})
     assert r.returncode == 1 and "worker isn't running" in r.stdout and "9.9.9 is out" in r.stdout
 

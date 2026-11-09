@@ -6,7 +6,7 @@ import { useI18n, type TKey } from "../lib/i18n";
 import { environmentColor, providerColor } from "../lib/viz";
 import { ConfidenceRing, Initial, Rec, RecList, ServiceIcon } from "./records";
 import { Loader } from "./Brand";
-import { useInventoryMutation, useProviders } from "../lib/hooks";
+import { useDeleteInventory, useInventoryMutation, useProviders } from "../lib/hooks";
 import { localizeDigits } from "../lib/money";
 import { Badge, Button, Card, Date_, ErrorBox, ReviewBadge } from "./ui";
 import { Icon } from "./Icon";
@@ -499,8 +499,13 @@ export function ReviewTable({ inv }: { inv: InventoryView }) {
   return (
     <div className="stack">
       {inv.source_meta.demo && (
-        <div className="alert alert-info">
-          <Badge>{t("demoNote")}</Badge> {inv.source_meta.note}
+        <div className="alert alert-info stack">
+          <p>
+            <Badge>{t("demoNote")}</Badge> {t("demoNoteBody")}
+          </p>
+          <div>
+            <DeleteInventory inv={inv} label={t("demoDelete")} />
+          </div>
         </div>
       )}
       {questions.length > 0 && (
@@ -645,5 +650,25 @@ export function ReviewTable({ inv }: { inv: InventoryView }) {
         </Button>
       </div>
     </div>
+  );
+}
+
+/** Delete an inventory after asking; the dashboard then moves on to the next one, or the empty workspace. */
+export function DeleteInventory({ inv, label }: { inv: InventoryView; label?: string }) {
+  const { t } = useI18n();
+  const del = useDeleteInventory();
+  return (
+    <>
+      <Button
+        variant="ghost"
+        busy={del.isPending}
+        onClick={() => {
+          if (window.confirm(t("invDeleteConfirm").replace("{name}", inv.name))) del.mutate(inv.id);
+        }}
+      >
+        <Icon name="trash" /> {label ?? t("invDelete")}
+      </Button>
+      <ErrorBox error={del.error} />
+    </>
   );
 }

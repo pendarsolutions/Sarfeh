@@ -373,6 +373,7 @@ const API_MESSAGES: Record<string, TKey> = {
   "session ended; sign in again": "apiSessionEnded",
   "no organization membership": "apiNoMembership",
   "registration is closed; ask an admin to add you": "apiRegistrationClosed",
+  "background jobs aren't running; an admin can check with: finops-agent doctor": "apiNoWorker",
 };
 
 export function ErrorBox({ error, onRetry }: { error: unknown; onRetry?: () => void }) {

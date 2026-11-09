@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+import logging
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -15,6 +17,7 @@ from ..orm import CatalogItemVersion, PriceSyncRun, ProviderRow
 from ..security import Principal, audit, current_principal, require
 from ..services import snapshot
 
+log = logging.getLogger("finops.api")
 router = APIRouter(prefix="/api/v1", tags=["catalog"])
 
 
@@ -124,7 +127,11 @@ def trigger_sync(provider_id: str, db: Session = Depends(get_db), p: Principal =
     if get_settings().sync_mode == "celery":
         from finops_worker.tasks import sync_provider
 
-        task = sync_provider.delay(provider_id, f"user:{p.user.id}")
+        try:
+            task = sync_provider.delay(provider_id, f"user:{p.user.id}")
+        except Exception as exc:  # noqa: BLE001 - the queue or its client library; either way the worker can't be asked
+            log.error(json.dumps({"enqueue_failed": provider_id, "error": type(exc).__name__}))
+            raise HTTPException(503, "background jobs aren't running; an admin can check with: finops-agent doctor") from exc
         audit(db, p, "catalog.sync.enqueue", "provider", provider_id, {"task_id": task.id})
         db.commit()
         return {"queued": True, "task_id": task.id}

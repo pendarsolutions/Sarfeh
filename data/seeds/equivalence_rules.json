@@ -1,7 +1,7 @@
 {
   "version": "2026-10-04.1",
   "authored": true,
-  "note": "Authored deterministic equivalence policy (the build-pack file was not present). No prices. A cheaper machine is not automatically equivalent: candidates must pass every hard constraint, then are scored, then priced by the pricing engine.",
+  "note": "Authored deterministic equivalence policy. No prices. A cheaper machine is not automatically equivalent: candidates must pass every hard constraint, then are scored, then priced by the pricing engine.",
   "default_scope": {
     "region_countries": ["IR"],
     "allow_outside_iran": false,

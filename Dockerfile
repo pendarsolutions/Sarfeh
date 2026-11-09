@@ -4,8 +4,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1 \
     PYTHONPATH=/app/packages:/app/apps/api:/app/apps/worker
 WORKDIR /app
 RUN useradd --create-home --uid 10001 finops
-COPY requirements.txt .
-RUN pip install -r requirements.txt
+COPY requirements.txt constraints.txt ./
+RUN pip install -r requirements.txt -c constraints.txt
 COPY packages ./packages
 COPY apps/api ./apps/api
 COPY apps/worker ./apps/worker

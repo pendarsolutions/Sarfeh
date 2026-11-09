@@ -1,7 +1,7 @@
 {
   "version": "2026-10-04.1",
   "authored": true,
-  "note": "Authored deterministic recommendation rules (the build-pack file was not present). No prices. Every saving is computed by the pricing engine from catalog rows; thresholds below only decide whether a computed saving is worth surfacing.",
+  "note": "Authored deterministic recommendation rules. No prices. Every saving is computed by the pricing engine from catalog rows; thresholds below only decide whether a computed saving is worth surfacing.",
   "global": {
     "min_monthly_saving_toman": "50000",
     "min_saving_percent": "3"

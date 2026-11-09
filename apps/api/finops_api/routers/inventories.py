@@ -79,10 +79,11 @@ def create_from_builder(body: InventoryIn, db: Session = Depends(get_db), p: Pri
 
 
 @router.post("/inventories/demo")
-def create_demo(db: Session = Depends(get_db), p: Principal = Depends(require("analyst"))):
+def create_demo(lang: str = "en", db: Session = Depends(get_db), p: Principal = Depends(require("analyst"))):
     data = load_json(get_settings().seed_dir / "sample_inventory.json")
     drafts = [ResourceDraft(**{k: v for k, v in r.items()}) for r in data["resources"]]
-    inv = create_inventory(db, p, data["name"], "builder", drafts, {"demo": True, "note": data["note"]})
+    name = data["name_fa"] if lang == "fa" else data["name"]
+    inv = create_inventory(db, p, name, "builder", drafts, {"demo": True})
     org_settings = dict(p.org.settings or {})
     if "engineer_day_rate_toman" not in org_settings:
         org_settings["engineer_day_rate_toman"] = data["organization_settings"]["engineer_day_rate_toman"]
@@ -239,6 +240,25 @@ def confirm(inventory_id: str, body: ConfirmIn, db: Session = Depends(get_db),
         raise HTTPException(409, "confirm whether the invoice is in Rial or Toman first")
     confirm_inventory(db, p, inv, body.confirm_all_rows)
     return inventory_view(db, inv, snapshot(db).policy)
+
+
+@router.delete("/inventories/{inventory_id}")
+def delete_inventory(inventory_id: str, db: Session = Depends(get_db), p: Principal = Depends(require("analyst"))):
+    """Removes an inventory from the dashboard. Its quotes and audit trail stay, so past reports can still be checked.
+
+    Deleting the sample workspace also takes back the sample engineer day rate it set, unless someone has entered a
+    real one since, so the organization really starts over.
+    """
+    inv = get_inventory(db, p, inventory_id)
+    inv.status = "archived"
+    settings = dict(p.org.settings or {})
+    if (inv.source_meta or {}).get("demo") and settings.get("engineer_day_rate_label"):
+        settings.pop("engineer_day_rate_toman", None)
+        settings.pop("engineer_day_rate_label", None)
+        p.org.settings = settings
+    audit(db, p, "inventory.delete", "inventory", inv.id, {"name": inv.name})
+    db.commit()
+    return {"id": inv.id, "status": inv.status}
 
 
 @router.post("/inventories/{inventory_id}/archive")

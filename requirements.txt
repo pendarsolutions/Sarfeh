@@ -1,8 +1,11 @@
-# Runtime dependencies (pinned to the versions the test suite was run against)
+# Runtime dependencies (pinned to the versions the test suite was run against).
+# constraints.txt pins everything these pull in, so a new release upstream can't change a build; see its header.
 alembic==1.20.0
 anthropic==1.11.0
 beautifulsoup4==4.15.0
 celery==5.6.3
+# kombu 5.7.0 imports `packaging` without depending on it, which broke every background job in 0.3.0
+kombu==5.6.2
 cryptography==50.0.2
 fastapi==0.142.2
 httpx==0.28.1

@@ -102,7 +102,8 @@ export const api = {
   inventory: (id: string) => get<InventoryView>(`${V}/inventories/${id}`),
   createInventory: (name: string, resources: Partial<ResourceDraft>[]) =>
     post<InventoryView>(`${V}/inventories`, { name, resources }),
-  createDemo: () => post<InventoryView>(`${V}/inventories/demo`),
+  createDemo: (lang: "fa" | "en") => post<InventoryView>(`${V}/inventories/demo?lang=${lang}`),
+  deleteInventory: (id: string) => request<{ id: string; status: string }>("DELETE", `${V}/inventories/${id}`),
   fromChat: (text: string, name: string) => post<InventoryView>(`${V}/inventories/from-chat`, { text, name }),
   fromInvoice: (file: File, name: string) => {
     const fd = new FormData();

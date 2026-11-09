@@ -3,6 +3,24 @@
 All notable changes to FinOps agent. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/). Until 1.0, a minor version can change behaviour.
 
+## [0.3.1] — unreleased
+
+### Fixed
+
+- **Background jobs failed on 0.3.0 installations:** price updates (so "Update now" under Integrations returned an
+  error) and server collection. The 0.3.0 image picked up a new release of Celery's queue library, kombu 5.7.0,
+  which needs a package it doesn't install. Every dependency is now locked in `constraints.txt`, and CI builds the
+  image and has its worker take a job through Redis.
+- **An inventory couldn't be deleted.** It now has a Delete button. Deleting the sample workspace also removes the
+  sample engineer day rate it set, so you really start over.
+- **The sample workspace showed a developer's note** in English. It now explains itself in Persian or English and has
+  a Persian name, and Settings labels its day rate in the reader's language.
+
+### Added
+
+- `finops-agent doctor` checks that the background worker answers, not only that its container runs.
+- Starting a price update while the worker can't be reached says so, instead of failing with error 500.
+
 ## [0.3.0] — 2026-11-09
 
 A team can now run its own installation without touching the database, and the interface follows the Pendar design

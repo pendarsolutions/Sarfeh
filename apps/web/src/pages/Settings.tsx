@@ -82,7 +82,7 @@ export function SettingsPage() {
             )}
             {settings.data?.settings.engineer_day_rate_label && (
               <p className="small">
-                <Badge tone="warn">{settings.data.settings.engineer_day_rate_label}</Badge>
+                <Badge tone="warn">{t("dayRateSample")}</Badge>
               </p>
             )}
             <ErrorBox error={save.error} />

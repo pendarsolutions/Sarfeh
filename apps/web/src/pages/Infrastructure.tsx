@@ -6,7 +6,7 @@ import { useI18n } from "../lib/i18n";
 import { useInventory, useInventoryMutation } from "../lib/hooks";
 import { useSession } from "../lib/session";
 import { Builder } from "../components/Builder";
-import { ReviewTable } from "../components/ReviewTable";
+import { DeleteInventory, ReviewTable } from "../components/ReviewTable";
 import { Badge, Button, Card, ErrorBox, Field, Loading, StatusChip, Tabs } from "../components/ui";
 import { EmptyWorkspace } from "./Overview";
 
@@ -103,6 +103,7 @@ export function InfrastructurePage() {
           <ErrorBox error={inv.error} onRetry={() => inv.refetch()} />
         ) : inv.data ? (
           <Card
+            actions={<DeleteInventory inv={inv.data} />}
             title={
               <>
                 {inv.data.name}{" "}
