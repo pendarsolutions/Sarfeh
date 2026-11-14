@@ -41,10 +41,15 @@ export function ConfidenceRing({ c }: { c: number }) {
   const { t, lang } = useI18n();
   const pct = Math.round(c * 100);
   const tone = c >= 0.8 ? "good" : c >= 0.5 ? "warn" : "bad";
-  const txt = lang === "fa" ? localizeDigits(`${pct}`, lang) + "٪" : `${pct}%`;
+  const digits = lang === "fa" ? localizeDigits(`${pct}`, lang) : `${pct}`;
+  const sign = lang === "fa" ? "٪" : "%";
+  // three digits only just fit inside the ring, and a Persian «۱» is a single stroke that vanishes into it
   return (
-    <span className={`conf-ring conf-${tone}`} style={{ "--p": pct } as CSSProperties} title={`${t("colConfidence")}: ${txt}`}>
-      <span>{txt}</span>
+    <span className={`conf-ring conf-${tone}${pct >= 100 ? " conf-full" : ""}`} style={{ "--p": pct } as CSSProperties} title={`${t("colConfidence")}: ${digits}${sign}`}>
+      <span>
+        {digits}
+        <small>{sign}</small>
+      </span>
     </span>
   );
 }

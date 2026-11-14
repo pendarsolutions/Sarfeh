@@ -308,8 +308,10 @@
   inline-size: calc(var(--spacing-8) + var(--spacing-1) / 2);
   block-size: calc(var(--spacing-8) + var(--spacing-1) / 2);
   border-radius: 50%;
-  display: grid;
-  place-items: center;
+  /* digits and the smaller percent sign on one line */
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: var(--color-surface-raised);
   font-size: var(--type-caption-font-size);
   font-weight: var(--font-weight-bold);
@@ -789,6 +791,14 @@
 }
 .rec-list-compact .rec-body {
   padding-inline-start: calc(var(--spacing-4) + var(--spacing-8) + var(--spacing-3));
+}
+.conf-ring > span small {
+  font-size: 0.72em;
+  font-weight: inherit;
+}
+.conf-full > span {
+  font-size: calc(var(--type-caption-font-size) * 0.9);
+  letter-spacing: -0.04em;
 }
 .rec-list-compact .conf-ring {
   inline-size: 36px;
