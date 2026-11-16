@@ -198,3 +198,101 @@ export function PartMeter({ part, whole, label }: { part: Decimalish; whole: Dec
     </div>
   );
 }
+
+// ------------------------------------------------------------------ month columns
+
+export type ColumnSegment = { key: string; label: string; value: Decimalish; color: string };
+export type ColumnMonth = { key: string; label: string; short: string; total: Decimalish; estimate: Decimalish; segments: ColumnSegment[] };
+
+function largest(values: Decimalish[]): Decimalish {
+  return values.reduce<Decimalish>((m, v) => (v === null || v === undefined ? m : m === null || m === undefined || visualShare(v, m) >= 1 ? v : m), null);
+}
+
+function Seg({ seg, total, month }: { seg: ColumnSegment; total: Decimalish; month: string }) {
+  const { lang } = useI18n();
+  const tip = useMarkTip(formatToman(seg.value, lang) ?? "—", `${seg.label} · ${month}`, seg.color);
+  return <span className="cols-seg" style={{ flexGrow: visualShare(seg.value, total), background: seg.color }} onPointerMove={tip.onPointerMove} onPointerLeave={tip.onPointerLeave} />;
+}
+
+function EstimateTick({ value, max, label }: { value: Decimalish; max: Decimalish; label: string }) {
+  const { lang } = useI18n();
+  const tip = useMarkTip(formatToman(value, lang) ?? "—", label, "var(--color-ink-default)");
+  return <span className="cols-est" style={{ insetBlockEnd: `${visualShare(value, max) * 100}%` }} onPointerMove={tip.onPointerMove} onPointerLeave={tip.onPointerLeave} />;
+}
+
+function Band({ m, max, index, selected, onSelect, estimateLabel }: { m: ColumnMonth; max: Decimalish; index: number; selected: boolean; onSelect: (k: string) => void; estimateLabel: string }) {
+  const { lang } = useI18n();
+  const total = formatToman(m.total, lang) ?? "—";
+  const focusTip = useMarkTip(total, m.label);
+  return (
+    <button
+      type="button"
+      className={selected ? "cols-band is-sel" : "cols-band"}
+      aria-pressed={selected}
+      aria-label={`${m.label}: ${total}${m.estimate ? `${lang === "fa" ? "، " : ", "}${estimateLabel} ${formatToman(m.estimate, lang)}` : ""}`}
+      onClick={() => onSelect(m.key)}
+      onFocus={focusTip.onFocus}
+      onBlur={focusTip.onBlur}
+    >
+      {m.total ? (
+        <span className="cols-stack" style={{ blockSize: `${visualShare(m.total, max) * 100}%`, "--i": index } as CSSProperties}>
+          {m.segments.map((s) => (
+            <Seg key={s.key} seg={s} total={m.total} month={m.label} />
+          ))}
+        </span>
+      ) : null}
+      {m.estimate ? <EstimateTick value={m.estimate} max={max} label={`${estimateLabel} · ${m.label}`} /> : null}
+    </button>
+  );
+}
+
+/**
+ * Change over time: one thin stacked column per month (segments in each payee's own color, 2px gaps, rounded top), with
+ * that month's estimate as a 2px tick across its band on the same scale. Selecting a band selects the month; the month
+ * table beside it is the table view with every exact value.
+ */
+export function MonthColumns({
+  months,
+  selected,
+  onSelect,
+  caption,
+  estimateLabel,
+  legend,
+}: {
+  months: ColumnMonth[];
+  selected: string | null;
+  onSelect: (key: string) => void;
+  caption: string;
+  estimateLabel: string;
+  legend: { key: string; label: string; color: string }[];
+}) {
+  const max = largest(months.flatMap((m) => [m.total, m.estimate]));
+  return (
+    <figure className="cols" aria-label={caption}>
+      <div className="cols-plot">
+        {months.map((m, i) => (
+          <Band key={m.key} m={m} max={max} index={i} selected={m.key === selected} onSelect={onSelect} estimateLabel={estimateLabel} />
+        ))}
+      </div>
+      <div className="cols-axis" aria-hidden>
+        {months.map((m) => (
+          <span key={m.key} className={m.key === selected ? "is-sel" : undefined}>
+            {m.short}
+          </span>
+        ))}
+      </div>
+      <ul className="cols-legend">
+        {legend.map((l) => (
+          <li key={l.key}>
+            <i className="swatch" style={{ background: l.color }} aria-hidden /> {l.label}
+          </li>
+        ))}
+        {months.some((m) => m.estimate) ? (
+          <li>
+            <i className="cols-est-key" aria-hidden /> {estimateLabel}
+          </li>
+        ) : null}
+      </ul>
+    </figure>
+  );
+}

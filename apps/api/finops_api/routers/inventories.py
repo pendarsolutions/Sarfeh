@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 from datetime import UTC, datetime, timedelta
+from decimal import Decimal
 from typing import Any
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
@@ -16,8 +17,9 @@ from pricing_engine.catalog import load_json
 from shared_types import ResourceDraft
 
 from ..config import get_settings
+from ..dates import current_month, shift_month
 from ..db import get_db
-from ..orm import AIRun, Inventory, InventoryResource, Upload
+from ..orm import AIRun, CostSnapshot, Inventory, InventoryResource, SpendEntry, Upload
 from ..platform import limiter, redact, store_private, validate_upload, verify_download
 from ..security import Principal, audit, current_principal, require
 from ..services import (
@@ -31,6 +33,7 @@ from ..services import (
     snapshot,
     unconfirm,
 )
+from ..spend import entry_from_invoice, take_snapshot
 
 router = APIRouter(prefix="/api/v1", tags=["inventory"])
 
@@ -84,6 +87,13 @@ def create_demo(lang: str = "en", db: Session = Depends(get_db), p: Principal = 
     drafts = [ResourceDraft(**{k: v for k, v in r.items()}) for r in data["resources"]]
     name = data["name_fa"] if lang == "fa" else data["name"]
     inv = create_inventory(db, p, name, "builder", drafts, {"demo": True})
+    # a few months of sample payments, so the spend page has a trend and a gap to show
+    month = current_month()
+    for s in data.get("sample_spend", []):
+        db.add(SpendEntry(organization_id=p.org.id, month=shift_month(month, -int(s["months_ago"])),
+                          provider_id=s["provider_id"], amount_toman=Decimal(s["amount_toman"]), source="sample",
+                          status="confirmed", inventory_id=inv.id, created_by=p.user.id))
+    db.commit()
     org_settings = dict(p.org.settings or {})
     if "engineer_day_rate_toman" not in org_settings:
         org_settings["engineer_day_rate_toman"] = data["organization_settings"]["engineer_day_rate_toman"]
@@ -135,6 +145,9 @@ async def create_from_invoice(file: UploadFile = File(...), name: str = Form("In
     upload.inventory_id = inv.id
     if ext.currency_confirmation_required:
         inv.currency = "UNCONFIRMED"
+    # what the invoice says was paid goes to the spend ledger too, to be checked there before it counts
+    entry = entry_from_invoice(db, p.org.id, p.user.id, ext, upload, inventory_id=inv.id)
+    inv.source_meta = {**inv.source_meta, "spend_entry_id": entry.id}
     db.commit()
     return inventory_view(db, inv, snapshot(db).policy)
 
@@ -239,6 +252,12 @@ def confirm(inventory_id: str, body: ConfirmIn, db: Session = Depends(get_db),
     if inv.currency == "UNCONFIRMED":
         raise HTTPException(409, "confirm whether the invoice is in Rial or Toman first")
     confirm_inventory(db, p, inv, body.confirm_all_rows)
+    # this month's estimate for the spend page, unless it already has one (the 1st's is kept all month)
+    month = current_month()
+    if db.scalar(select(CostSnapshot.id).where(CostSnapshot.inventory_id == inv.id,
+                                               CostSnapshot.month == month)) is None:
+        take_snapshot(db, inv, month, "confirm", p.user.id)
+        db.commit()
     return inventory_view(db, inv, snapshot(db).policy)
 
 
@@ -247,15 +266,22 @@ def delete_inventory(inventory_id: str, db: Session = Depends(get_db), p: Princi
     """Removes an inventory from the dashboard. Its quotes and audit trail stay, so past reports can still be checked.
 
     Deleting the sample workspace also takes back the sample engineer day rate it set, unless someone has entered a
-    real one since, so the organization really starts over.
+    real one since, and its sample spend and monthly estimates, so the organization really starts over.
     """
     inv = get_inventory(db, p, inventory_id)
     inv.status = "archived"
     settings = dict(p.org.settings or {})
-    if (inv.source_meta or {}).get("demo") and settings.get("engineer_day_rate_label"):
+    demo = bool((inv.source_meta or {}).get("demo"))
+    if demo and settings.get("engineer_day_rate_label"):
         settings.pop("engineer_day_rate_toman", None)
         settings.pop("engineer_day_rate_label", None)
         p.org.settings = settings
+    if demo:
+        for row in db.scalars(select(SpendEntry).where(SpendEntry.inventory_id == inv.id,
+                                                       SpendEntry.source == "sample")):
+            db.delete(row)
+        for row in db.scalars(select(CostSnapshot).where(CostSnapshot.inventory_id == inv.id)):
+            db.delete(row)
     audit(db, p, "inventory.delete", "inventory", inv.id, {"name": inv.name})
     db.commit()
     return {"id": inv.id, "status": inv.status}

@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 from .dates import fa_number, format_day
 from .orm import Inventory, QuoteRow
 from .security import Principal
-from .services import latest_analysis, latest_quote, rec_view, resources_of, run_recommendations, snapshot
+from .services import analysis_resources, latest_analysis, latest_quote, rec_view, run_recommendations, snapshot
 
 T = {
     "title": ("گزارش FinOps agent", "FinOps agent report"),
@@ -149,7 +149,7 @@ def render_report(db: Session, p: Principal, inv: Inventory, lang: str) -> str:
     exec_lines += [f"<p>• {escape(r['title_fa' if fa else 'title_en'])} — {escape(r['resource_name'] or '')}: "
                    f"{money(r['monthly_saving_toman'], lang)}</p>" for r in actionable[:3]]
     section("s1", "".join(exec_lines))
-    res_rows = resources_of(db, inv)
+    res_rows = analysis_resources(db, inv)
     section("s2", _table(["resource", "provider", "sku", "env", "qty", "vcpu", "ram", "disk", "download", "runtime"],
                          [[r.name, r.provider_id, r.sku or r.resource_class, r.environment, r.quantity, r.cpu_cores,
                            r.ram_gb, r.storage_gb, r.expected_monthly_download_gb, r.active_hours_per_month]

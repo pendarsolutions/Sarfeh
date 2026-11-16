@@ -31,10 +31,10 @@ The AI never sits on the path that produces a number. It can only (a) turn text 
 | `packages/recommendation_engine` | Deterministic rules REC-001..005, `summarize()` (no double counting). | pricing_engine |
 | `packages/provider_adapters` | `ProviderAdapter` protocol, HTML adapters (Liara, Server.ir, IranServer, ArvanCloud-blocked), `plan_sync` guardrails. `InventoryConnector` reserved. | pricing_engine, httpx, bs4 |
 | `packages/shared_types` | `ResourceDraft` / `InventoryDraft` contract and the required-field rules that gate confirmation. | pricing_engine |
-| `packages/invoice_parser` | PDF/CSV text, Rial/Toman detection, ID redaction, SKU mapping with confidence. | pypdf |
+| `packages/invoice_parser` | PDF/CSV text, Rial/Toman detection, ID redaction, SKU mapping with confidence; the amount due and the issue date (Solar Hijri or Gregorian) for the spend ledger. | pypdf |
 | `packages/ai_gateway` | Claude extraction (structured output) + advisor tool loop, offline parser/template, numeric guard. | anthropic |
 | `apps/api` | FastAPI: auth/orgs/roles, versioned catalog store, inventory, analysis, advisor, reports, audit. | all packages, SQLAlchemy |
-| `apps/worker` | Celery: nightly sync (03:15 Tehran), invoice purge (04:00). | apps/api |
+| `apps/worker` | Celery: price sync (03:15 and 15:15 Tehran), server collection (every 5 minutes), the monthly cost snapshot (hourly; takes each inventory's once a month), invoice purge (04:00). | apps/api |
 | `apps/web` | React + TS + Vite SPA, fa (RTL, default) / en. The dashboard only: signed-out visitors get sign-in, or first-account setup on a fresh installation. | API only |
 | `site` | The public website: landing page and install command. Its own Vite project, deployed separately (GitHub Pages or any static host); shares only the generated Pendar design system. | none |
 | `deploy` | What a server runs: `finops-agent` (install, settings, address, upgrade, doctor, backups), `compose.install.yml`, `backup.sh`. `scripts/make-installer.sh` embeds them in the one-file `install.sh`; the app image carries them too, for `finops-agent upgrade`. | Docker |

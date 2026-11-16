@@ -552,3 +552,122 @@
     display: none;
   }
 }
+
+/* month columns: one thin stacked column per month (<= 24px), its estimate a 2px tick across the band */
+.cols {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}
+.cols-plot {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  align-items: end;
+  block-size: calc(var(--spacing-20) * 2);
+  border-block-end: 1px solid var(--color-line-default);
+}
+.cols-band {
+  position: relative;
+  block-size: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  border-start-start-radius: var(--radius-control);
+  border-start-end-radius: var(--radius-control);
+  transition: background var(--duration-base) var(--ease-standard);
+}
+.cols-band:hover,
+.cols-band.is-sel {
+  background: var(--color-surface-sunken);
+}
+.cols-band:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: 2px;
+}
+.cols-stack {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: var(--brick-gap);
+  inline-size: min(24px, 56%);
+  min-block-size: 2px;
+  border-start-start-radius: 4px;
+  border-start-end-radius: 4px;
+  overflow: hidden;
+  animation: rise-col var(--duration-slow) var(--ease-enter) both;
+  animation-delay: calc(var(--duration-stagger) * min(var(--i, 0), 11));
+}
+@keyframes rise-col {
+  from {
+    clip-path: inset(100% 0 0 0);
+  }
+}
+.cols-seg {
+  display: block;
+  flex-basis: 0;
+  min-block-size: 2px;
+}
+.cols-est {
+  position: absolute;
+  inset-inline: 14%;
+  block-size: var(--spacing-3);
+  translate: 0 50%;
+  display: flex;
+  align-items: center;
+}
+.cols-est::before,
+.cols-est-key {
+  content: "";
+  display: inline-block;
+  inline-size: 100%;
+  block-size: 2px;
+  border-radius: 1px;
+  background: var(--color-ink-default);
+}
+.cols-est-key {
+  inline-size: var(--spacing-4);
+  vertical-align: middle;
+}
+.cols-axis {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  text-align: center;
+  font-size: var(--type-caption-font-size);
+  color: var(--color-ink-muted);
+  overflow-wrap: anywhere;
+}
+.cols-axis .is-sel {
+  color: var(--color-ink-default);
+  font-weight: var(--font-weight-bold);
+}
+.cols-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-1) var(--spacing-4);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: var(--type-caption-font-size);
+}
+@media (max-width: 640px) {
+  /* phones: month names would collide, so every other one is left to the tooltip and the table */
+  .cols-axis span:nth-child(even) {
+    visibility: hidden;
+  }
+}
+/* a change: arrow, amount, then the percent */
+.change {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-1);
+  white-space: nowrap;
+}
+.nowrap {
+  white-space: nowrap;
+}

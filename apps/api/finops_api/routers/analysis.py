@@ -22,16 +22,15 @@ from ..platform import limiter, redact
 from ..report import render_report
 from ..security import Principal, audit, current_principal, require
 from ..services import (
+    analysis_resources,
     create_quote,
     get_inventory,
     latest_analysis,
     latest_quote,
     rec_view,
-    require_confirmed,
     resources_of,
     run_recommendations,
     snapshot,
-    to_engine,
 )
 
 router = APIRouter(prefix="/api/v1", tags=["analysis"])
@@ -77,14 +76,14 @@ def get_quote(quote_id: str, db: Session = Depends(get_db), p: Principal = Depen
 
 
 def _compare(db: Session, p: Principal, inv: Inventory, body: CompareIn) -> dict[str, Any]:
-    require_confirmed(inv)
+    resources = analysis_resources(db, inv)
     snap = snapshot(db)
     ctx = BillingContext(allow_outside_iran=body.allow_outside_iran)
     out = []
-    for r in resources_of(db, inv):
+    for r in resources:
         if body.resource_ids and r.id not in body.resource_ids:
             continue
-        res = find_equivalents(to_engine(r), snap, ctx)
+        res = find_equivalents(r, snap, ctx)
         out.append({"resource_id": r.id, "resource_name": r.name, **res.model_dump(mode="json")})
     return {"catalog_version": snap.catalog_version, "allow_outside_iran": body.allow_outside_iran, "results": out}
 
@@ -167,7 +166,7 @@ def overview(inventory_id: str, db: Session = Depends(get_db), p: Principal = De
 def report(inventory_id: str, lang: str = "fa", db: Session = Depends(get_db),
            p: Principal = Depends(current_principal)):
     inv = get_inventory(db, p, inventory_id)
-    require_confirmed(inv)
+    analysis_resources(db, inv)
     html = render_report(db, p, inv, lang if lang in ("fa", "en") else "fa")
     audit(db, p, "report.generate", "inventory", inv.id, {"lang": lang})
     db.commit()
@@ -188,7 +187,7 @@ def advisor_tools(db: Session, p: Principal, inv: Inventory) -> dict[str, Any]:
 
     def get_inventory_tool(_: dict) -> dict:
         return {"inventory_id": inv.id, "status": inv.status,
-                "resources": [to_engine(r).model_dump(mode="json") for r in resources_of(db, inv)]}
+                "resources": [r.model_dump(mode="json") for r in analysis_resources(db, inv)]}
 
     def get_catalog_item(args: dict) -> dict:
         item = next((i for i in snap.items if i.id == args["item_id"]), None)
@@ -251,7 +250,7 @@ def advisor_chat(body: AdvisorIn, db: Session = Depends(get_db), p: Principal = 
     s = get_settings()
     limiter().check(f"ai:{p.user.id}", s.ai_rate_limit_per_minute)
     inv = get_inventory(db, p, body.inventory_id)
-    require_confirmed(inv)
+    analysis_resources(db, inv)
     cfg = LLMConfig(model=s.ai_model, api_key=s.anthropic_api_key) if s.ai_provider == "anthropic" else None
     ans = run_advisor(body.question, body.lang, advisor_tools(db, p, inv), provider=s.ai_provider, cfg=cfg)
     run = AIRun(organization_id=p.org.id, user_id=p.user.id, purpose="advisor", model=ans.meta.get("model", ans.path),

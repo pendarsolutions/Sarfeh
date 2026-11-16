@@ -69,3 +69,106 @@ def format_day(value: object, lang: str) -> str:
         return (moment.astimezone(UTC).date() if moment else day).isoformat()
     y, m, d = to_jalali(moment.astimezone(TEHRAN).date() if moment else day)
     return fa_digits(f"{y}/{m:02d}/{d:02d}")
+
+
+# --------------------------------------------------------------------------- months
+
+# Spend is recorded by Solar Hijri month, because that is how Iranian providers invoice and how the books close.
+# A month is written "1405-08" (Aban 1405): sortable, and the same in every language.
+MONTHS_FA = ("فروردین", "اردیبهشت", "خرداد", "تیر", "مرداد", "شهریور", "مهر", "آبان", "آذر", "دی", "بهمن", "اسفند")
+MONTHS_EN = ("Farvardin", "Ordibehesht", "Khordad", "Tir", "Mordad", "Shahrivar", "Mehr", "Aban", "Azar", "Dey",
+             "Bahman", "Esfand")
+MONTH_PATTERN = r"^1[34]\d\d-(0[1-9]|1[0-2])$"
+
+
+def month_key(year: int, month: int) -> str:
+    return f"{year:04d}-{month:02d}"
+
+
+def parse_month(key: str) -> tuple[int, int]:
+    year, month = key.split("-")
+    y, m = int(year), int(month)
+    if not (1300 <= y <= 1499 and 1 <= m <= 12):
+        raise ValueError(f"not a month: {key}")
+    return y, m
+
+
+def month_of(day: date) -> str:
+    """The Solar Hijri month a Gregorian day falls in."""
+    y, m, _ = to_jalali(day)
+    return month_key(y, m)
+
+
+def today_in_iran(now: datetime | None = None) -> date:
+    return (now or datetime.now(UTC)).astimezone(TEHRAN).date()
+
+
+def current_month(now: datetime | None = None) -> str:
+    return month_of(today_in_iran(now))
+
+
+def shift_month(key: str, months: int) -> str:
+    y, m = parse_month(key)
+    index = y * 12 + (m - 1) + months
+    return month_key(index // 12, index % 12 + 1)
+
+
+def month_start(key: str) -> date:
+    """The Gregorian day a Solar Hijri month begins on.
+
+    Months 1-6 have 31 days and 7-11 have 30, so the first day is within a few days of Nowruz plus that offset; the
+    exact day is the one the (tested) conversion above calls the 1st.
+    """
+    y, m = parse_month(key)
+    guess = date(y + 621, 3, 21) + timedelta(days=(m - 1) * 31 if m <= 7 else 186 + (m - 7) * 30)
+    for delta in (0, -1, 1, -2, 2, -3, 3):
+        day = guess + timedelta(days=delta)
+        if to_jalali(day) == (y, m, 1):
+            return day
+    raise ValueError(f"no first day found for {key}")  # pragma: no cover - the calendar has no such gap
+
+
+def month_days(key: str) -> tuple[date, date]:
+    """The first and last Gregorian day of a Solar Hijri month."""
+    return month_start(key), month_start(shift_month(key, 1)) - timedelta(days=1)
+
+
+def month_label(key: str, lang: str) -> str:
+    """«آبان ۱۴۰۵» in Persian, "Aban 1405" in English."""
+    y, m = parse_month(key)
+    return f"{MONTHS_FA[m - 1]} {fa_digits(y)}" if lang == "fa" else f"{MONTHS_EN[m - 1]} {y}"
+
+
+_LATIN_DIGITS = str.maketrans("۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩", "01234567890123456789")
+
+
+def parse_day(text: str) -> date:
+    """A day typed by a person: Solar Hijri (۱۴۰۵/۰۸/۲۰, 1405-08-20) or Gregorian (2026-11-10), any digits."""
+    import re
+
+    m = re.fullmatch(r"\s*(\d{4})\s*[/.-]\s*(\d{1,2})\s*[/.-]\s*(\d{1,2})\s*", text.translate(_LATIN_DIGITS))
+    if not m:
+        raise ValueError("write a date as 1405/08/20 or 2026-11-10")
+    y, mo, d = (int(g) for g in m.groups())
+    if y >= 1900:
+        return date(y, mo, d)
+    key = month_key(y, mo)
+    first, last = month_days(key)
+    if not 1 <= d <= (last - first).days + 1:
+        raise ValueError(f"{month_label(key, 'en')} has no day {d}")
+    return first + timedelta(days=d - 1)
+
+
+def parse_month_text(text: str) -> str:
+    """A month typed by a person: 1405-08, ۱۴۰۵/۰۸, or a full date in either calendar (its month)."""
+    import re
+
+    t = text.translate(_LATIN_DIGITS).strip()
+    if m := re.fullmatch(r"(\d{4})\s*[/.-]\s*(\d{1,2})", t):
+        y, mo = int(m.group(1)), int(m.group(2))
+        if y >= 1900:
+            raise ValueError("write the Solar Hijri month (1405-08) or a full date: a Gregorian month spans two")
+        key = month_key(y, mo)
+        parse_month(key)
+        return key
+    return month_of(parse_day(t))

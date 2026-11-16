@@ -3,6 +3,32 @@
 All notable changes to FinOps agent. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/). Until 1.0, a minor version can change behaviour.
 
+## [Unreleased]
+
+### Added
+
+- **Spend:** a new page for what you actually paid. Record each payment by provider and month (months are Solar
+  Hijri, as Iranian providers invoice), as a payment or a wallet top-up, in Toman or Rial; or name a vendor the
+  catalog doesn't have. The page shows each month's total and its change from the month before, a month-by-month
+  chart by provider, and the payments behind each month.
+- **Invoices go to the spend ledger.** An uploaded invoice, on the Spend page or to build an inventory, becomes a
+  payment to check: its provider, the amount due (converted from Rial) and the month it was issued are read off it.
+  It counts once someone confirms it, and the same file uploaded twice is one payment.
+- **A monthly estimate.** On the 1st of each month (and when an inventory is first confirmed) its confirmed setup is
+  priced, with the VAT a provider states, and kept as that month's estimate. Past months' estimates never change;
+  this month's can be taken again from the Spend page.
+- **Estimated against paid,** per month and per provider. A gap over 10% is flagged (paid more, paid less, a provider
+  not in the setup, or a provider with nothing paid), with what usually causes it.
+- **Import spend history from CSV** (month, provider, amount; optionally currency, paid on, reference and note), in
+  Persian or English headers and digits. Every row is checked first; if one is wrong, nothing is imported and each
+  problem is listed with its row number.
+- The sample workspace comes with three months of sample payments, and deleting it removes them with its estimates.
+
+### Changed
+
+- **Editing an inventory no longer takes its cost pages away.** Costs, savings, comparison and reports keep using
+  the version confirmed last, with a note, until the changes are confirmed.
+
 ## [0.3.1] — 2026-11-16
 
 ### Fixed

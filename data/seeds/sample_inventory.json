@@ -7,6 +7,21 @@
     "engineer_day_rate_toman": "4000000",
     "engineer_day_rate_label": "SAMPLE value entered for the demo workspace"
   },
+  "sample_spend_note": "Payments for the spend ledger, for this month (months_ago 0) and the two before it. Server.ir's include its 10% VAT; ArvanCloud's run over this month, so the page has a gap to show. Deleted with the sample.",
+  "sample_spend": [
+    {"months_ago": 2, "provider_id": "serverir", "amount_toman": "3850000"},
+    {"months_ago": 2, "provider_id": "liara", "amount_toman": "2875000"},
+    {"months_ago": 2, "provider_id": "iranserver", "amount_toman": "5320000"},
+    {"months_ago": 2, "provider_id": "arvancloud", "amount_toman": "8600000"},
+    {"months_ago": 1, "provider_id": "serverir", "amount_toman": "3850000"},
+    {"months_ago": 1, "provider_id": "liara", "amount_toman": "2875000"},
+    {"months_ago": 1, "provider_id": "iranserver", "amount_toman": "5320000"},
+    {"months_ago": 1, "provider_id": "arvancloud", "amount_toman": "9100000"},
+    {"months_ago": 0, "provider_id": "serverir", "amount_toman": "3850000"},
+    {"months_ago": 0, "provider_id": "liara", "amount_toman": "3120000"},
+    {"months_ago": 0, "provider_id": "iranserver", "amount_toman": "5320000"},
+    {"months_ago": 0, "provider_id": "arvancloud", "amount_toman": "11400000"}
+  ],
   "resources": [
     {
       "external_ref": "web-prod",

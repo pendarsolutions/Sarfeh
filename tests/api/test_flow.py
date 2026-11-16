@@ -113,16 +113,34 @@ def test_confirm_quote_compare_recommend_report(client, auth, demo_inv):
     assert skus and all(s in fa for s in skus)
 
 
-def test_editing_after_confirmation_requires_reconfirmation(client, auth, demo_inv):
+def test_editing_after_confirmation_keeps_the_confirmed_version_until_reconfirmed(client, auth, demo_inv):
     inv_id = demo_inv["id"]
     rid = demo_inv["resources"][0]["id"]
+
+    def priced_download():
+        """The download a new quote priced for the edited resource."""
+        from finops_api.db import SessionLocal
+        from finops_api.orm import QuoteRow
+
+        q = client.post(f"/api/v1/inventories/{inv_id}/quote", headers=auth, json={})
+        assert q.status_code == 200, q.text
+        with SessionLocal() as db:
+            priced = db.get(QuoteRow, q.json()["id"]).inventory_snapshot
+        return next(r["expected_monthly_download_gb"] for r in priced if r["id"] == rid)
+
+    before = priced_download()
     r = client.patch(f"/api/v1/inventories/{inv_id}/resources/{rid}", headers=auth,
                      json={"fields": {"expected_monthly_download_gb": "190"}}).json()
     assert r["status"] == "needs_confirmation"
-    assert client.post(f"/api/v1/inventories/{inv_id}/quote", headers=auth, json={}).status_code == 409
+    # the cost pages keep working on the version confirmed last, not on the unconfirmed edit
+    assert r["can_analyze"] and r["has_confirmed_version"]
+    assert priced_download() == before != "190"
+    assert client.post(f"/api/v1/inventories/{inv_id}/compare", headers=auth, json={}).status_code == 200
+    assert client.post(f"/api/v1/inventories/{inv_id}/recommendations", headers=auth).status_code == 200
     r = client.patch(f"/api/v1/inventories/{inv_id}/resources/{rid}", headers=auth,
                      json={"user_confirmed": True}).json()
     assert client.post(f"/api/v1/inventories/{inv_id}/confirm", headers=auth, json={}).status_code == 200
+    assert priced_download() == "190"
 
 
 def test_unknown_field_can_be_acknowledged_and_shows_price_unavailable(client, auth):

@@ -106,7 +106,8 @@ def inventory_view(db: Session, inv: Inventory, policy: dict[str, Any]) -> dict[
         "upload": upload,
         "resources": rows,
         "can_confirm": bool(rows) and not blocking,
-        "can_analyze": inv.status == "confirmed",
+        "can_analyze": inv.status == "confirmed" or has_confirmed_version(db, inv),
+        "has_confirmed_version": has_confirmed_version(db, inv),
         "blocking": blocking,
     }
 
@@ -157,15 +158,39 @@ def confirm_inventory(db: Session, p: Principal, inv: Inventory, confirm_all_row
     inv.status = "confirmed"
     inv.confirmed_at = datetime.now(UTC)
     inv.confirmed_by = p.user.id
+    inv.confirmed_resources = [to_engine(r).model_dump(mode="json") for r in rows]
     audit(db, p, "inventory.confirm", "inventory", inv.id, {"resources": len(rows)})
     db.commit()
     return inv
 
 
-def require_confirmed(inv: Inventory) -> None:
-    if inv.status != "confirmed":
+def last_confirmed_resources(db: Session, inv: Inventory) -> list[Resource] | None:
+    """The resources as they were last confirmed: the rows themselves while the inventory is confirmed; during an
+    edit, the version saved when it was last confirmed (or, if that was before 0.4.0, the one its last quote priced).
+    None if it has never been confirmed."""
+    if inv.status == "confirmed":
+        return [to_engine(r) for r in resources_of(db, inv)]
+    saved = inv.confirmed_resources
+    if saved is None:
+        q = latest_quote(db, inv)
+        saved = q.inventory_snapshot if q is not None else None
+    return [Resource(**r) for r in saved] if saved else None
+
+
+def has_confirmed_version(db: Session, inv: Inventory) -> bool:
+    if inv.status == "confirmed" or inv.confirmed_resources:
+        return True
+    return inv.status != "draft" and latest_quote(db, inv) is not None
+
+
+def analysis_resources(db: Session, inv: Inventory) -> list[Resource]:
+    """What costs, comparisons and savings are worked out from: the last confirmed version, so editing an inventory
+    doesn't take its cost pages away before the new version is confirmed."""
+    resources = last_confirmed_resources(db, inv)
+    if not resources:
         raise HTTPException(status.HTTP_409_CONFLICT, "inventory must be confirmed before analysis "
                                                       "(review the table and confirm every row)")
+    return resources
 
 
 # --------------------------------------------------------------------------- analysis
@@ -177,10 +202,8 @@ def org_settings(p: Principal) -> OrgSettings:
 
 def create_quote(db: Session, p: Principal, inv: Inventory, include_tax: bool,
                  snap: CatalogSnapshot | None = None) -> tuple[QuoteRow, Quote]:
-    require_confirmed(inv)
+    resources = analysis_resources(db, inv)
     snap = snap or snapshot(db)
-    rows = resources_of(db, inv)
-    resources = [to_engine(r) for r in rows]
     quote = price_inventory(resources, snap, BillingContext(include_tax=include_tax))
     row = QuoteRow(inventory_id=inv.id, organization_id=p.org.id,
                    inventory_snapshot=[r.model_dump(mode="json") for r in resources],
@@ -198,10 +221,9 @@ def create_quote(db: Session, p: Principal, inv: Inventory, include_tax: bool,
 
 
 def run_recommendations(db: Session, p: Principal, inv: Inventory) -> dict[str, Any]:
-    require_confirmed(inv)
+    resources = analysis_resources(db, inv)
     snap = snapshot(db)
     quote_row, quote = create_quote(db, p, inv, include_tax=False, snap=snap)
-    resources = [to_engine(r) for r in resources_of(db, inv)]
     recs = recommend(resources, snap, BillingContext(), org_settings(p))
     analysis_id = uid()
     stored = []

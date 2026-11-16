@@ -1,4 +1,5 @@
-"""Celery worker: twice-daily provider price sync (with guardrails) and invoice retention purge.
+"""Celery worker: twice-daily provider price sync (with guardrails), server collection, the monthly cost
+snapshot, and invoice retention purge.
 
 Run:  celery -A finops_worker.tasks worker -B --loglevel=INFO
 """
@@ -20,6 +21,7 @@ from finops_api.db import SessionLocal
 from finops_api.fleet_service import collect_all, purge_samples
 from finops_api.orm import ProviderRow
 from finops_api.platform import configure_logging
+from finops_api.spend import take_monthly_snapshots
 
 configure_logging()
 log = logging.getLogger("finops.worker")
@@ -36,6 +38,10 @@ app.conf.update(
                             "options": {"expires": 240}},
         "server-maintenance": {"task": "finops_worker.tasks.server_maintenance", "schedule": crontab(hour=9, minute=0)},
         "purge-expired-invoices": {"task": "finops_worker.tasks.purge_uploads", "schedule": crontab(hour=4, minute=0)},
+        # hourly, so a month's estimate is taken in the first hour of the 1st (Solar Hijri) and a newly confirmed
+        # inventory gets one within the hour; an inventory that already has this month's is left alone
+        "monthly-snapshots": {"task": "finops_worker.tasks.monthly_snapshots", "schedule": crontab(minute=20),
+                              "options": {"expires": 3000}},
     },
 )
 
@@ -82,3 +88,9 @@ def server_maintenance() -> None:
     with SessionLocal() as db:
         purge_samples(db)
         renewal_alerts(db)
+
+
+@app.task(name="finops_worker.tasks.monthly_snapshots")
+def monthly_snapshots() -> dict:
+    with SessionLocal() as db:
+        return take_monthly_snapshots(db)

@@ -222,6 +222,9 @@ class Inventory(Base):
     source_meta: Mapped[dict[str, Any]] = mapped_column(JSONType, default=dict)
     confirmed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     confirmed_by: Mapped[str | None] = mapped_column(String(36))
+    #: the resources as they were last confirmed (engine Resources as JSON). Costs and savings keep using them while
+    #: someone edits the inventory, until the new version is confirmed.
+    confirmed_resources: Mapped[list[dict[str, Any]] | None] = mapped_column(JSONType, nullable=True)
     created_by: Mapped[str | None] = mapped_column(String(36))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now, onupdate=now)
@@ -321,6 +324,63 @@ class RecommendationRow(Base):
     missing_inputs: Mapped[list[str]] = mapped_column(JSONType, default=list)
     evidence: Mapped[dict[str, Any]] = mapped_column(JSONType)
     status: Mapped[str] = mapped_column(String(20), default="proposed")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+
+
+# --------------------------------------------------------------------------- spend
+
+
+class SpendEntry(Base):
+    """Money actually paid to a provider for one month: from an invoice, a wallet top-up, or typed in.
+
+    `month` is the Solar Hijri month the payment is for, written "1405-08". An entry read from an invoice waits in
+    `needs_review` (and out of every total) until someone checks its amount and month.
+    """
+
+    __tablename__ = "spend_entries"
+    __table_args__ = (Index("ix_spend_entries_org_month", "organization_id", "month"),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    organization_id: Mapped[str] = mapped_column(ForeignKey("organizations.id"))
+    month: Mapped[str] = mapped_column(String(7))
+    #: a catalog provider, or None with `vendor` naming one the catalog doesn't have
+    provider_id: Mapped[str | None] = mapped_column(String(50))
+    vendor: Mapped[str | None] = mapped_column(String(200))
+    amount_toman: Mapped[Decimal | None] = mapped_column(Money())
+    source: Mapped[str] = mapped_column(String(20))  # manual | invoice | wallet_topup | csv | sample
+    status: Mapped[str] = mapped_column(String(20), default="confirmed")  # confirmed | needs_review
+    paid_on: Mapped[date | None] = mapped_column(Date)
+    reference: Mapped[str | None] = mapped_column(String(200))
+    note: Mapped[str | None] = mapped_column(Text)
+    upload_id: Mapped[str | None] = mapped_column(String(36))
+    inventory_id: Mapped[str | None] = mapped_column(String(36))
+    #: what an invoice said (its total, currency, date and lines), kept as evidence for the reviewed amount
+    evidence: Mapped[dict[str, Any]] = mapped_column(JSONType, default=dict)
+    created_by: Mapped[str | None] = mapped_column(String(36))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now, onupdate=now)
+
+
+class CostSnapshot(Base):
+    """What an inventory's confirmed setup cost to run in one month, priced at the start of that month.
+
+    Taken automatically on the 1st (Solar Hijri) and kept, so the estimate for a past month never changes; the
+    current month's can be taken again by hand. The prices behind it are in its immutable quote.
+    """
+
+    __tablename__ = "cost_snapshots"
+    __table_args__ = (UniqueConstraint("inventory_id", "month", name="uq_cost_snapshot_month"),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    organization_id: Mapped[str] = mapped_column(ForeignKey("organizations.id"), index=True)
+    inventory_id: Mapped[str] = mapped_column(ForeignKey("inventories.id"))
+    month: Mapped[str] = mapped_column(String(7))
+    quote_id: Mapped[str] = mapped_column(ForeignKey("price_quotes.id"))
+    complete: Mapped[bool] = mapped_column(Boolean)
+    total_toman: Mapped[Decimal | None] = mapped_column(Money())
+    priced_subtotal_toman: Mapped[Decimal] = mapped_column(Money())
+    #: [{provider_id, monthly_toman, complete}]; monthly_toman is the priced part when a price is missing
+    provider_totals: Mapped[list[dict[str, Any]]] = mapped_column(JSONType, default=list)
+    trigger: Mapped[str] = mapped_column(String(20))  # schedule | confirm | manual
+    created_by: Mapped[str | None] = mapped_column(String(36))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
 
 

@@ -16,6 +16,7 @@ const NAV: { to: string; key: TKey; tour: string; icon: IconName }[] = [
   { to: "/servers", key: "navServers", tour: "nav-servers", icon: "database" },
   { to: "/infrastructure", key: "navInfrastructure", tour: "nav-infrastructure", icon: "building" },
   { to: "/costs", key: "navCosts", tour: "nav-costs", icon: "money" },
+  { to: "/spend", key: "navSpend", tour: "nav-spend", icon: "card" },
   { to: "/opportunities", key: "navOpportunities", tour: "nav-opportunities", icon: "target" },
   { to: "/compare", key: "navCompare", tour: "nav-compare", icon: "rank" },
   { to: "/reports", key: "navReports", tour: "nav-reports", icon: "file" },

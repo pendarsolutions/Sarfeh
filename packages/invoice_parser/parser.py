@@ -42,6 +42,17 @@ class InvoiceLine:
 
 
 @dataclass
+class InvoiceDate:
+    """A date as the invoice wrote it: Solar Hijri (1405/08/25) or Gregorian (2026-11-16)."""
+
+    calendar: Literal["jalali", "gregorian"]
+    year: int
+    month: int
+    day: int
+    text: str
+
+
+@dataclass
 class InvoiceExtraction:
     draft: InventoryDraft
     detected_currency: Literal["TOMAN", "RIAL", "UNKNOWN"]
@@ -52,6 +63,10 @@ class InvoiceExtraction:
     redaction_counts: dict[str, int] = field(default_factory=dict)
     unmatched_lines: list[str] = field(default_factory=list)
     text_chars: int = 0
+    #: what the invoice says is due, in `detected_currency`, and the line it came from (or how it was added up)
+    total: Decimal | None = None
+    total_evidence: str | None = None
+    issued: InvoiceDate | None = None
 
     def meta(self) -> dict[str, Any]:
         return {
@@ -62,6 +77,10 @@ class InvoiceExtraction:
                        "quantity": str(l.quantity) if l.quantity is not None else None,
                        "invoice_amount": str(l.amount) if l.amount is not None else None,
                        "invoice_amount_currency": l.amount_currency, "confidence": l.confidence} for l in self.lines],
+            "total": str(self.total) if self.total is not None else None, "total_evidence": self.total_evidence,
+            "issued": None if self.issued is None else {"calendar": self.issued.calendar, "year": self.issued.year,
+                                                        "month": self.issued.month, "day": self.issued.day,
+                                                        "text": self.issued.text},
             "note": "Invoice amounts are evidence only; costs are recomputed from the versioned catalog.",
         }
 
@@ -107,6 +126,40 @@ def _amount(line: str) -> Decimal | None:
         return Decimal(nums[-1].replace(",", ""))
     except InvalidOperation:
         return None
+
+
+# What an invoice calls the amount due, most specific first: "payable" beats "total", which beats "sum".
+TOTAL_LABELS = [
+    re.compile(r"قابل\s*پرداخت|amount\s*due|total\s*due|balance\s*due|grand\s*total|total\s*payable", re.I),
+    re.compile(r"جمع\s*کل|مبلغ\s*کل|(?<!sub)(?<!sub-)(?<!sub )\btotal\b", re.I),
+    re.compile(r"جمع|مجموع", re.I),
+]
+DATE_RE = re.compile(r"(?<!\d)(1[34]\d\d|20\d\d)\s*[/.-]\s*(\d{1,2})\s*[/.-]\s*(\d{1,2})(?!\d)")
+ISSUE_LABEL = re.compile(r"تاریخ\s*(?:صدور|فاکتور|صورتحساب)|invoice\s*date|issued?|date\s*of\s*issue", re.I)
+DUE_LABEL = re.compile(r"سررسید|مهلت|due|expir|انقضا", re.I)
+
+
+def invoice_total(lines: list[str]) -> tuple[Decimal | None, str | None]:
+    """The amount due and the line it is on. The last labelled line wins within a label, as totals end an invoice."""
+    for label in TOTAL_LABELS:
+        hits = [(line, amount) for line in lines if label.search(line) and (amount := _amount(line)) is not None]
+        if hits:
+            line, amount = hits[-1]
+            return amount, line
+    return None, None
+
+
+def invoice_date(lines: list[str]) -> InvoiceDate | None:
+    """The date the invoice was issued: a labelled one if there is one, else the first that isn't a due date."""
+    found: list[tuple[int, InvoiceDate]] = []
+    for line in lines:
+        for m in DATE_RE.finditer(line):
+            y, mo, d = int(m.group(1)), int(m.group(2)), int(m.group(3))
+            if not (1 <= mo <= 12 and 1 <= d <= 31):
+                continue
+            rank = 0 if ISSUE_LABEL.search(line) else 2 if DUE_LABEL.search(line) else 1
+            found.append((rank, InvoiceDate("jalali" if y < 1500 else "gregorian", y, mo, d, m.group(0))))
+    return min(found, key=lambda f: f[0])[1] if found else None
 
 
 def parse_invoice(text: str, sku_map: dict[str, str], provider_names: dict[str, str] | None = None) -> InvoiceExtraction:
@@ -171,9 +224,19 @@ def parse_invoice(text: str, sku_map: dict[str, str], provider_names: dict[str, 
         questions.append(f"{len(unmatched)} invoice line(s) look like infrastructure but did not match a catalog plan; "
                          "add them manually.")
     questions.append("Invoices do not show environment or monthly traffic - please fill them in for each row.")
+    # Amounts are read from the text before redaction: a ten-digit Rial total would otherwise look like a national ID.
+    # Only the redacted line is kept as evidence.
+    plain_lines = [line.strip() for line in norm.splitlines() if line.strip()]
+    total, total_line = invoice_total(plain_lines)
+    total_evidence = redact(total_line)[0] if total_line else None
+    # with no total line, the lines add up to one only when each is a single item: with a quantity, a line's amount
+    # may be its unit price
+    if total is None and lines and all(line.amount is not None and line.quantity in (None, 1) for line in lines):
+        total = sum((line.amount for line in lines if line.amount is not None), Decimal(0))
+        total_evidence = f"sum of {len(lines)} matched line(s)"
     return InvoiceExtraction(
         draft=InventoryDraft(name="Invoice draft", resources=resources, questions=questions, detected_currency=currency),
         detected_currency=currency, currency_evidence=evidence, currency_confirmation_required=currency == "UNKNOWN",
         provider_id=invoice_provider, lines=lines, redaction_counts=counts, unmatched_lines=unmatched,
-        text_chars=len(text),
+        text_chars=len(text), total=total, total_evidence=total_evidence, issued=invoice_date(plain_lines),
     )

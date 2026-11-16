@@ -118,6 +118,8 @@ export interface InventoryView {
   resources: ResourceView[];
   can_confirm: boolean;
   can_analyze: boolean;
+  /** confirmed once: during an edit, costs and savings keep using that version until the new one is confirmed */
+  has_confirmed_version?: boolean;
   blocking: BlockingRow[];
   upload?: { id: string; filename: string; download_url: string | null; delete_after: string; deleted: boolean } | null;
   invoice_currency?: "TOMAN" | "RIAL" | "UNKNOWN" | null;
@@ -535,4 +537,102 @@ export interface ServersResponse {
     monthly_total_toman: string;
     avoidable_monthly_toman: string;
   };
+}
+
+// ------------------------------------------------------------------ spend
+
+/** A Solar Hijri month, "1405-08" (Aban 1405). */
+export type MonthKey = string;
+
+export interface SpendEntry {
+  id: string;
+  month: MonthKey;
+  provider_id: string | null;
+  vendor: string | null;
+  provider_key: string;
+  amount_toman: string | null;
+  source: "manual" | "invoice" | "wallet_topup" | "csv" | "sample" | string;
+  status: "confirmed" | "needs_review" | string;
+  paid_on: string | null;
+  reference: string | null;
+  note: string | null;
+  inventory_id: string | null;
+  upload: { id: string; filename: string; deleted: boolean; download_url: string | null } | null;
+  evidence: {
+    detected_currency?: "TOMAN" | "RIAL" | "UNKNOWN";
+    total?: string | null;
+    total_evidence?: string | null;
+    issued?: { calendar: string; year: number; month: number; day: number; text: string } | null;
+    filename?: string;
+    entered?: { amount: string; currency: string };
+  };
+  created_at: string;
+  updated_at: string;
+}
+
+export type GapKind = "paid_more" | "paid_less" | "not_paid" | "not_in_setup";
+export interface SpendGap {
+  kind: GapKind;
+  diff_toman: string;
+  percent: string | null;
+}
+
+export interface SpendProviderMonth {
+  key: string;
+  provider_id: string | null;
+  vendor: string | null;
+  paid_toman: string | null;
+  estimated_toman: string | null;
+  gap: SpendGap | null;
+}
+
+export interface CostSnapshot {
+  id: string;
+  inventory_id: string;
+  month: MonthKey;
+  quote_id: string;
+  complete: boolean;
+  total_toman: string | null;
+  priced_subtotal_toman: string;
+  provider_totals: { provider_id: string; monthly_toman: string; tax_toman: string; complete: boolean }[];
+  trigger: "schedule" | "confirm" | "manual" | string;
+  created_at: string;
+}
+
+export interface SpendMonth {
+  month: MonthKey;
+  starts_on: string;
+  ends_on: string;
+  paid_toman: string | null;
+  entries: number;
+  change_toman: string | null;
+  change_percent: string | null;
+  estimated_toman: string | null;
+  estimate_complete: boolean | null;
+  snapshot: CostSnapshot | null;
+  gap: SpendGap | null;
+  by_provider: SpendProviderMonth[];
+}
+
+export interface SpendSummary {
+  current_month: MonthKey;
+  gap_percent: string;
+  inventory: { id: string; name: string } | null;
+  /** paid over all the months returned; null when nothing was recorded */
+  period_paid_toman: string | null;
+  months: SpendMonth[];
+  to_review: SpendEntry[];
+}
+
+export interface SpendEntryInput {
+  month?: MonthKey;
+  provider_id?: string | null;
+  vendor?: string | null;
+  amount?: string | null;
+  currency?: "TOMAN" | "RIAL";
+  source?: "manual" | "wallet_topup";
+  paid_on?: string | null;
+  reference?: string | null;
+  note?: string | null;
+  confirm?: boolean;
 }

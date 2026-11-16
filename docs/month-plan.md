@@ -22,6 +22,8 @@ before optimisation helps, so the month is ordered that way.
 
 ## Week 1 (8–14 Nov): a stranger can install it
 
+**Status, 16 Nov:** done. 0.3.0 was released after the server test; a fresh install on one VPS and an upgrade of a live 0.1.0 install on another both worked, with every row kept. The test found background jobs failing on fresh 0.3.0 installs (a new release of a queue library); 0.3.1 fixes it and locks every dependency, and is ready to publish.
+
 **Status, 9 Nov:** added at the maintainer's request: an installation serves the dashboard only (the landing page moved to a separate website in `site/`, with a brief for the designer), a one-line install (`curl ... | sudo bash`), and the `finops-agent` command for everything after it. 0.3.0 now waits on the VPS test and the push.
 
 **Status, 8 Nov:** the code is done. Also fixed on the way: `./install.sh` wasn't executable in git, so the README's install command failed on a fresh clone. What's left needs the maintainer.
@@ -31,28 +33,30 @@ before optimisation helps, so the month is ordered that way.
 | | Item | Why | Status |
 |---|---|---|---|
 | P0 | Publish **0.2.0**: tag it, so CI publishes the images, the offline bundle and the release page | The README's "latest release" link is dead and `install.sh` falls back to building from Docker Hub, which is often blocked in Iran | Done, 8 Nov |
-| P0 | Merge the Pendar redesign and motion into `main`; delete the stale `finops-agent-iran` branch on GitHub | `main` is the public source; the redesign exists only on one machine | Merged locally; Waiting on maintainer: push `main`, delete the branch |
+| P0 | Merge the Pendar redesign and motion into `main`; delete the stale `finops-agent-iran` branch on GitHub | `main` is the public source; the redesign exists only on one machine | Done |
 | P0 | **Password reset**: an admin CLI command, and an emailed reset link when email is set up | There is no way back in after a forgotten password | Done |
 | P0 | **Members**: change a member's role, remove a member | Members can only be added today | Done |
 | P0 | **Backup and restore**: one command each (database, settings, uploads), plus a daily backup option and docs | Losing the database loses all price history and saved quotes | Done; full round trip on the test VPS |
 | P1 | Jalali dates throughout the Persian interface | The README promises them; the app shows Gregorian dates | Done, and the Persian report |
 | P1 | Translate the remaining English statuses (`OK`, `WARNING`, `FAILED`) | Mixed languages confuse Persian users | Done |
-| P0 | Publish **0.3.0** (redesign, motion, the items above) | | Notes ready; after the VPS test |
-| P0 | Clean install test on a fresh Iranian VPS with Docker Hub blocked, notes fixed in the docs | The real first-time path has never been walked end to end | Waiting on maintainer: a fresh VPS |
+| P0 | Publish **0.3.0** (redesign, motion, the items above) | | Done, 9 Nov; 0.3.1 with the fix found on the VPS is ready |
+| P0 | Clean install test on a fresh Iranian VPS with Docker Hub blocked, notes fixed in the docs | The real first-time path has never been walked end to end | Done on two VPSs: a fresh install and an upgrade from 0.1.0 |
 
 ## Week 2 (15–21 Nov): what you actually paid
 
 **Goal:** the app records real spend over time, not only what a setup *would* cost.
 
+**Status, 16 Nov:** every item is built and tested, the P1s and the CSV import too. Months are Solar Hijri, as Iranian providers invoice. The estimate is taken hourly if missing (so in the first hour of the 1st) and when an inventory is first confirmed, and it includes the VAT a provider states, since that is what invoices charge.
+
 | | Item | Why | Status |
 |---|---|---|---|
-| P0 | **Spend ledger**: what was paid, per provider and month, from an invoice, a wallet top-up, or by hand | Every FinOps step after this needs actual spend over time | |
-| P0 | Invoices create spend entries (they only create an inventory today) | Reuses the invoice parser the app already has | |
-| P0 | **Spend page**: monthly totals per provider, trend chart, month-over-month change | The first reason to come back every month | |
-| P0 | **Monthly snapshot**: on the 1st, the confirmed infrastructure is priced and saved automatically | Turns one-off quotes into a cost trend | |
-| P1 | **Estimated vs paid**: compare the snapshot with the ledger and flag gaps | Catches missing resources and price changes; it's on the README roadmap | |
-| P1 | Edits no longer lock the cost pages: the last confirmed version stays live until the new one is confirmed | One edit currently blocks Costs and Savings | |
-| P2 | Import spend from CSV | For teams with a year of history in a spreadsheet | |
+| P0 | **Spend ledger**: what was paid, per provider and month, from an invoice, a wallet top-up, or by hand | Every FinOps step after this needs actual spend over time | Done |
+| P0 | Invoices create spend entries (they only create an inventory today) | Reuses the invoice parser the app already has | Done: the amount due, its currency and the issue date; checked by a person before it counts |
+| P0 | **Spend page**: monthly totals per provider, trend chart, month-over-month change | The first reason to come back every month | Done |
+| P0 | **Monthly snapshot**: on the 1st, the confirmed infrastructure is priced and saved automatically | Turns one-off quotes into a cost trend | Done |
+| P1 | **Estimated vs paid**: compare the snapshot with the ledger and flag gaps | Catches missing resources and price changes; it's on the README roadmap | Done: gaps over 10%, per month and provider |
+| P1 | Edits no longer lock the cost pages: the last confirmed version stays live until the new one is confirmed | One edit currently blocks Costs and Savings | Done |
+| P2 | Import spend from CSV | For teams with a year of history in a spreadsheet | Done |
 
 ## Week 3 (22–28 Nov): who spent it, and are we on budget
 

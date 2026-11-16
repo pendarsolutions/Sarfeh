@@ -19,6 +19,10 @@ import type {
   ServersResponse,
   ServerView,
   Session,
+  SpendEntry,
+  SpendEntryInput,
+  SpendSummary,
+  CostSnapshot,
   SyncRun,
 } from "./types";
 
@@ -155,6 +159,25 @@ export const api = {
   trustServer: (id: string) => post<ServerView>(`${V}/servers/${id}/trust-new-identity`),
   deleteServer: (id: string) => request<{ removal_command: string }>("DELETE", `${V}/servers/${id}`),
   serversToInventory: () => post<{ id: string }>(`${V}/servers/inventory`),
+
+  spend: (inventoryId: string | null, months = 12) =>
+    get<SpendSummary>(`${V}/spend?months=${months}${inventoryId ? `&inventory_id=${inventoryId}` : ""}`),
+  spendEntries: (month?: string) => get<SpendEntry[]>(`${V}/spend/entries${month ? `?month=${month}` : ""}`),
+  addSpend: (b: SpendEntryInput) => post<SpendEntry>(`${V}/spend/entries`, b),
+  patchSpend: (id: string, b: SpendEntryInput) => request<SpendEntry>("PATCH", `${V}/spend/entries/${id}`, b),
+  deleteSpend: (id: string) => request<{ id: string; deleted: boolean }>("DELETE", `${V}/spend/entries/${id}`),
+  spendFromInvoice: (file: File) => {
+    const fd = new FormData();
+    fd.append("file", file);
+    return post<SpendEntry>(`${V}/spend/from-invoice`, fd);
+  },
+  importSpend: (file: File) => {
+    const fd = new FormData();
+    fd.append("file", file);
+    return post<{ imported: number; months: string[] }>(`${V}/spend/import`, fd);
+  },
+  snapshots: (inventoryId: string) => get<CostSnapshot[]>(`${V}/inventories/${inventoryId}/snapshots`),
+  snapshotNow: (inventoryId: string) => post<CostSnapshot>(`${V}/inventories/${inventoryId}/snapshot`),
 
   integrations: () => get<Integrations>(`${V}/integrations`),
   syncRuns: () => get<SyncRun[]>(`${V}/admin/sync-runs`),

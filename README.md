@@ -31,6 +31,8 @@ comparison and savings you can check yourself. You don't need Terraform, tagging
 
 - 🖥️ **One installation, all your servers.** Real usage is read over SSH with a key that can only run one read-only script.
 - 🔔 **Hear about changes.** Get alerts by email or Bale when prices change or a renewal is close.
+- 📒 **What you actually paid.** Record payments by month from invoices, wallet top-ups or a spreadsheet, and see
+  them against what your setup should cost, with gaps over 10% flagged.
 - 🧮 **Numbers you can trust.** Every price and saving comes from tested code, and the AI never calculates one.
 - 🔍 **Nothing is guessed.** A missing price shows as `PRICE_UNAVAILABLE`, never as an estimate.
 - 📅 **Every price has a source.** Each one links to the provider's page and shows its date, and old prices are kept.
@@ -167,6 +169,10 @@ docs/           Architecture, pricing model, scrapers, AI safety and operations
 - [x] Server dashboard with real usage, wasted spend and renewal dates
 - [x] Price change and renewal alerts by email and Bale
 - [x] Shared, signed price catalog
+- [x] Spend ledger: payments by month, a monthly cost estimate, and the gaps between them
+- [ ] Owners and budgets per team, with alerts before a budget runs out
+- [ ] Suggestions that are tracked to done, with the saving measured
+- [ ] A monthly report by email or Bale
 - [ ] An exact catalog for ArvanCloud through its API
 - [ ] An optional small agent for servers behind NAT
 - [ ] Warn when a provider changes a plan's specs but keeps its name
@@ -207,6 +213,7 @@ Contributions are welcome, especially new provider scrapers and price correction
 - همه قیمت‌ها و صرفه‌جویی‌ها با کد آزموده‌شده محاسبه می‌شوند و هوش مصنوعی هیچ عددی را محاسبه نمی‌کند.
 - اگر قیمتی موجود نباشد، به‌جای حدس زدن، نبود آن را نشان می‌دهیم.
 - دسترسی به سرورها فقط خواندنی است و کلید SSH فقط می‌تواند یک اسکریپت خواندنی را اجرا کند.
+- پرداخت‌های هر ماه را از روی فاکتور، شارژ کیف پول یا یک فایل CSV ثبت می‌کنید و کنار هزینه‌ای می‌بینید که زیرساخت تأییدشده باید داشته باشد؛ اختلاف بیش از ۱۰٪ علامت می‌خورد.
 - برنامه بدون سرویس خارجی هوش مصنوعی هم کار می‌کند.
 
 برای شروع، بخش [Quick start](#quick-start) را دنبال کنید.
