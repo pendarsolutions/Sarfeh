@@ -3,7 +3,7 @@
 All notable changes to FinOps agent. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and versions follow [Semantic Versioning](https://semver.org/). Until 1.0, a minor version can change behaviour.
 
-## [0.3.1] — unreleased
+## [0.3.1] — 2026-11-16
 
 ### Fixed
 
@@ -15,6 +15,7 @@ and versions follow [Semantic Versioning](https://semver.org/). Until 1.0, a min
   sample engineer day rate it set, so you really start over.
 - **The sample workspace showed a developer's note** in English. It now explains itself in Persian or English and has
   a Persian name, and Settings labels its day rate in the reader's language.
+- **A 100% confidence showed as 00%** on the review page: the number now fits inside its ring.
 
 ### Added
 
