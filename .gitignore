@@ -11,3 +11,4 @@ apps/web/dist/
 site/dist/
 *.db
 finops-agent-*.tar.gz
+/video
