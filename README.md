@@ -17,7 +17,7 @@ Install it on one server and see the real cost and usage of all of them.
 
 </div>
 
-<p align="center"><img src="docs/images/overview.png" alt="Overview: monthly spend, possible saving, cost by provider and the top suggestions" width="900"><br><sub>Sample data</sub></p>
+<p align="center"><img src="docs/images/overview.png" alt="Overview: the monthly cost, the possible saving, cost by provider and environment, and the top three suggestions" width="900"><br><sub>The sample workspace. The interface follows the Pendar design system, in Persian (right to left) and English.</sub></p>
 
 ---
 
@@ -33,6 +33,8 @@ comparison and savings you can check yourself. You don't need Terraform, tagging
 - 🔔 **Hear about changes.** Get alerts by email or Bale when prices change or a renewal is close.
 - 📒 **What you actually paid.** Record payments by month from invoices, wallet top-ups or a spreadsheet, and see
   them against what your setup should cost, with gaps over 10% flagged.
+- 👥 **Who spent it, and budgets.** Give resources, servers and payments a team, see each team's cost every month,
+  and get an alert when a budget reaches 80% and 100%.
 - 🧮 **Numbers you can trust.** Every price and saving comes from tested code, and the AI never calculates one.
 - 🔍 **Nothing is guessed.** A missing price shows as `PRICE_UNAVAILABLE`, never as an estimate.
 - 📅 **Every price has a source.** Each one links to the provider's page and shows its date, and old prices are kept.
@@ -103,6 +105,8 @@ flowchart LR
     C --> D["Compare providers<br/>and see the differences"]
     D --> E["Savings with risk,<br/>effort and evidence"]
     E --> F["Downloadable report<br/>in Persian or English"]
+    C --> G["Record what you paid<br/>each month"]
+    G --> H["Cost per team,<br/>budgets and alerts"]
 ```
 
 1. **Add your setup.** Connect your servers, or use the guided builder, a chat message in Persian or English, or a
@@ -114,7 +118,18 @@ flowchart LR
 5. **Act on savings.** Recommendations cover scheduling, downsizing, migration payback and billing period, and
    say clearly when there isn't enough data to decide. Each one shows what changes and what to ask the new provider:
 
-<p align="center"><img src="docs/images/suggestion.png" alt="A suggestion: what changes after the move, what to ask the provider, and when it pays off" width="640"></p>
+<p align="center"><img src="docs/images/suggestion.png" alt="A suggestion: the saving, what changes after the move, what to ask the provider, and when it pays off" width="640"></p>
+
+6. **Track what you paid.** Record each month's payments by hand, from an invoice (its provider, amount and month
+   are read off it, for you to check) or from a CSV of your history. On the 1st of each month the confirmed setup
+   is priced and kept as that month's estimate, so the **Spend** page shows paid against estimated, with gaps over
+   10% flagged.
+7. **Own it and budget it.** Give resources, servers and payments a team. A payment without one is shared out by
+   each team's part of that provider's estimate, and what can't be shared is shown as unallocated. Set a monthly
+   budget for the organization and each team, and get an alert by email or Bale at 80% and 100%, or when a
+   provider's or team's month jumps.
+
+<p align="center"><img src="docs/images/spend.png" alt="The Spend page: an invoice to check, paid this month and last, the estimate, budgets per team, and paid month by month" width="900"></p>
 
 ## Supported providers
 
@@ -214,7 +229,10 @@ Contributions are welcome, especially new provider scrapers and price correction
 - اگر قیمتی موجود نباشد، به‌جای حدس زدن، نبود آن را نشان می‌دهیم.
 - دسترسی به سرورها فقط خواندنی است و کلید SSH فقط می‌تواند یک اسکریپت خواندنی را اجرا کند.
 - پرداخت‌های هر ماه را از روی فاکتور، شارژ کیف پول یا یک فایل CSV ثبت می‌کنید و کنار هزینه‌ای می‌بینید که زیرساخت تأییدشده باید داشته باشد؛ اختلاف بیش از ۱۰٪ علامت می‌خورد.
+- هر منبع، سرور و پرداخت می‌تواند مال یک تیم باشد؛ هزینه هر تیم را هر ماه می‌بینید و برای کل سازمان و هر تیم بودجه می‌گذارید و در ۸۰٪ و ۱۰۰٪ با ایمیل یا بله هشدار می‌گیرید.
 - برنامه بدون سرویس خارجی هوش مصنوعی هم کار می‌کند.
+
+<p align="center"><img src="docs/images/overview-fa.png" alt="نمای کلی به فارسی: هزینه ماهانه، صرفه‌جویی ممکن، هزینه به تفکیک ارائه‌دهنده و محیط، و سه پیشنهاد اول" width="900"></p>
 
 برای شروع، بخش [Quick start](#quick-start) را دنبال کنید.
 
