@@ -1,19 +1,24 @@
 # The shared Bale bot's relay, for the one server Pendar runs it on (see docs/relay.md). Not part of an installation.
-#   cd /opt/finops-relay && docker compose up -d --build
+#   cd /opt/finops-relay && docker compose up -d
 # .env next to this file: FINOPS_RELAY_BOT_TOKEN (the bot's token from @botfather in Bale) and RELAY_DOMAIN.
+#
+# It runs from the app image (on GitHub's registry, so a server that can't reach Docker Hub can still pull it), with
+# the relay's code from the checkout in ./src mounted over the image's copy, so it can be updated with a git pull.
 name: finops-relay
 
 services:
   relay:
-    build:
-      context: ./src
-      dockerfile: apps/relay/Dockerfile
+    image: ghcr.io/pendarsolutions/finops-agent-app:${FINOPS_VERSION:-0.3.1}
+    command: ["uvicorn", "finops_relay.main:app", "--host", "0.0.0.0", "--port", "8090", "--proxy-headers",
+              "--forwarded-allow-ips=*", "--no-access-log"]
     restart: unless-stopped
     environment:
       FINOPS_RELAY_BOT_TOKEN: ${FINOPS_RELAY_BOT_TOKEN:?set the bot token in .env}
-      FINOPS_RELAY_DB: /data/relay.db
+      FINOPS_RELAY_DB: /app/var/relay.db
+      PYTHONPATH: /app/apps/relay
     volumes:
-      - relay-data:/data
+      - ./src/apps/relay:/app/apps/relay:ro
+      - relay-data:/app/var
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8090/health')"]
       interval: 30s
@@ -21,7 +26,7 @@ services:
       retries: 3
 
   caddy:
-    image: caddy:2.10
+    image: caddy:2-alpine
     restart: unless-stopped
     depends_on: [relay]
     environment:

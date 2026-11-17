@@ -32,10 +32,10 @@ sudo git clone https://github.com/pendarsolutions/FinOps.git src
 sudo cp src/deploy/relay/compose.yml src/deploy/relay/Caddyfile .
 printf 'FINOPS_RELAY_BOT_TOKEN=%s\nRELAY_DOMAIN=%s\n' '<token from @botfather>' 'bot.example.ir' | sudo tee .env >/dev/null
 sudo chmod 600 .env
-sudo docker compose up -d --build
+sudo docker compose up -d
 curl https://bot.example.ir/health      # {"status":"ok","bot":true,"bot_username":"..."}
 ```
 
-To update: `cd /opt/finops-relay/src && sudo git pull && cd .. && sudo docker compose up -d --build`. The relay's
+To update: `cd /opt/finops-relay/src && sudo git pull && cd .. && sudo docker compose restart relay`. The relay's
 state is one SQLite file in the `relay-data` volume. If it's lost, installations register again on their next link
 code, and chats need linking again.
