@@ -23,6 +23,19 @@ and versions follow [Semantic Versioning](https://semver.org/). Until 1.0, a min
   Persian or English headers and digits. Every row is checked first; if one is wrong, nothing is imported and each
   problem is listed with its row number.
 - The sample workspace comes with three months of sample payments, and deleting it removes them with its estimates.
+- **Teams as owners.** Admins add teams (or projects) in Settings; each resource, server and payment can name the
+  team that owns it. A resource's team isn't a pricing input, so setting it never asks for the inventory to be
+  confirmed again. Servers pass their team on to the inventory made from them, and a spend CSV can have a team column.
+- **Cost by team (showback),** each month: a payment with a team is that team's; one without is shared out by each
+  team's part of that provider's estimate; what can't be shared stays on its own **Unallocated** line. Every line
+  adds up to exactly what was paid.
+- **Budgets** for the whole organization and for each team: paid so far this month against each, and a projected
+  month-end (the largest of paid so far, this month's estimate and last month's total).
+- **Budget alerts** by email or Bale at 80% and at 100%, each once a month, in the organization's language.
+- **Unusual changes:** a provider or team whose month moves by more than a set percent (30% by default) and amount
+  (1,000,000 Toman) from the month before is shown on the Spend page, and last month's arrive as an alert on the 5th.
+- **The setup estimates come from** is chosen once in Settings (by default the one confirmed last, preferring a
+  real setup to the sample), so the Spend page, budgets and alerts all use the same one.
 
 ### Changed
 

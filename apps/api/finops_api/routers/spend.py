@@ -20,11 +20,12 @@ from invoice_parser import extract_text, parse_invoice
 from ..config import get_settings
 from ..dates import MONTH_PATTERN, current_month, parse_day, parse_month_text
 from ..db import get_db
-from ..orm import CostSnapshot, SpendEntry, Upload
+from ..orm import CostSnapshot, SpendEntry, Team, Upload
 from ..platform import store_private, validate_upload
 from ..security import Principal, audit, current_principal, require
 from ..services import get_inventory, snapshot
 from ..spend import RIAL_PER_TOMAN, entry_from_invoice, entry_view, snapshot_view, summary, take_snapshot
+from .owners import check_team
 
 router = APIRouter(prefix="/api/v1", tags=["spend"])
 
@@ -55,6 +56,8 @@ class EntryFields(BaseModel):
     paid_on: date | None = None
     reference: str | None = Field(default=None, max_length=200)
     note: str | None = Field(default=None, max_length=2000)
+    #: the team that owns it; without one it is shared out by the estimate
+    team_id: str | None = None
 
     _paid_on = field_validator("paid_on", mode="before")(_day)
 
@@ -100,7 +103,8 @@ def _audit_detail(e: SpendEntry) -> dict[str, Any]:
 @router.get("/spend")
 def spend_summary(inventory_id: str | None = None, months: int = Query(12, ge=1, le=60),
                   db: Session = Depends(get_db), p: Principal = Depends(current_principal)):
-    """Paid per month and provider; with `inventory_id`, that inventory's monthly estimates and the gaps."""
+    """Paid per month, provider and team, against the estimates of the organization's estimate inventory (chosen in
+    Settings), or of `inventory_id`."""
     inv = get_inventory(db, p, inventory_id) if inventory_id else None
     return summary(db, p.org.id, inv, months)
 
@@ -122,6 +126,7 @@ def create_entry(body: EntryIn, db: Session = Depends(get_db), p: Principal = De
         raise HTTPException(422, "choose a provider, or name the vendor")
     e = SpendEntry(organization_id=p.org.id, month=body.month, provider_id=provider_id, vendor=vendor,
                    amount_toman=_toman(body.amount, body.currency), source=body.source or "manual",
+                   team_id=check_team(db, p, body.team_id),
                    status="confirmed", paid_on=body.paid_on, reference=body.reference, note=body.note,
                    evidence={"entered": {"amount": str(body.amount), "currency": body.currency}}
                    if body.currency == "RIAL" else {},
@@ -149,6 +154,8 @@ def update_entry(entry_id: str, body: EntryPatch, db: Session = Depends(get_db),
             e.evidence = {**(e.evidence or {}), "entered": {"amount": str(body.amount), "currency": "RIAL"}}
     if "source" in given and body.source and e.source in ("manual", "wallet_topup"):
         e.source = body.source
+    if "team_id" in given:
+        e.team_id = check_team(db, p, body.team_id)
     for f in ("paid_on", "reference", "note"):
         if f in given:
             setattr(e, f, getattr(body, f))
@@ -209,6 +216,7 @@ COLUMNS = {
     "paid_on": r"paid[ _]?on|payment[ _]?date|date|تاریخ(?:[‌ ]?پرداخت)?",
     "reference": r"reference|ref|invoice|شماره|فاکتور",
     "note": r"note|description|comment|توضیح(?:ات)?",
+    "team": r"team|project|owner|تیم|پروژه|مالک",
 }
 _DIGITS = str.maketrans("۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩٬٫", "01234567890123456789,.")
 
@@ -254,6 +262,7 @@ async def import_csv(file: UploadFile = File(...), db: Session = Depends(get_db)
         raise HTTPException(422, {"message": f"missing column(s): {', '.join(missing)}",
                                   "expected": "month, provider, amount[, currency, paid_on, reference, note]"})
     lookup = _provider_lookup(db)
+    team_ids = {t.name.strip().lower(): t.id for t in db.scalars(select(Team).where(Team.organization_id == p.org.id))}
     entries: list[SpendEntry] = []
     errors: list[dict[str, Any]] = []
     if len(rows) > 5001:
@@ -277,6 +286,11 @@ async def import_csv(file: UploadFile = File(...), db: Session = Depends(get_db)
                 raise ValueError("provider is empty")
             provider_id = lookup.get(payee.lower())
             paid_on = parse_day(cell("paid_on")) if cell("paid_on") else None
+            team_id = None
+            if cell("team"):
+                team_id = team_ids.get(cell("team").lower())
+                if team_id is None:
+                    raise ValueError(f"no team named '{cell('team')}': add it in Settings first")
         except (ValueError, InvalidOperation) as exc:
             errors.append({"row": n, "message": str(exc) or "amount is not a number"})
             continue
@@ -287,7 +301,7 @@ async def import_csv(file: UploadFile = File(...), db: Session = Depends(get_db)
             continue
         entries.append(SpendEntry(organization_id=p.org.id, month=month, provider_id=provider_id,
                                   vendor=None if provider_id else payee[:200], amount_toman=amount_toman,
-                                  source="csv", status="confirmed", paid_on=paid_on,
+                                  source="csv", status="confirmed", paid_on=paid_on, team_id=team_id,
                                   reference=cell("reference")[:200] or None, note=cell("note")[:2000] or None,
                                   evidence={"file": file.filename, "row": n}, created_by=p.user.id))
     if errors:

@@ -1,4 +1,5 @@
 import { useTour } from "../components/Tour";
+import { EstimateSettingsCard, TeamsCard } from "../components/Owners";
 import { Fragment, useEffect, useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../api/client";
@@ -103,6 +104,8 @@ export function SettingsPage() {
 
       <AccountCard />
       {isAdmin && <MembersCard />}
+      <TeamsCard />
+      <EstimateSettingsCard />
 
       <Card title={t("auditLog")}>
         {!isAdmin ? (

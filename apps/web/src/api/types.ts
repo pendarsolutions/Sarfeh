@@ -51,6 +51,7 @@ export interface ResourceView extends ResourceDraft {
   id: string;
   position: number;
   user_confirmed: boolean;
+  team_id?: string | null;
   required_fields: string[];
   missing_fields: string[];
   low_confidence_fields: string[];
@@ -440,7 +441,14 @@ export interface Integrations {
 
 export interface OrgSettings {
   organization: { id: string; name: string };
-  settings: { engineer_day_rate_toman?: string; engineer_day_rate_label?: string; default_language?: string } & Record<string, unknown>;
+  settings: {
+    engineer_day_rate_toman?: string;
+    engineer_day_rate_label?: string;
+    default_language?: string;
+    estimate_inventory_id?: string;
+    unusual_change_percent?: number;
+    unusual_change_min_toman?: string;
+  } & Record<string, unknown>;
   role: Role;
 }
 
@@ -508,6 +516,7 @@ export interface ServerView {
   cost_status: string;
   monthly_total_toman: string | null;
   avoidable_monthly_toman: string | null;
+  team_id?: string | null;
 }
 
 export interface PlanSuggestion {
@@ -557,6 +566,7 @@ export interface SpendEntry {
   reference: string | null;
   note: string | null;
   inventory_id: string | null;
+  team_id: string | null;
   upload: { id: string; filename: string; deleted: boolean; download_url: string | null } | null;
   evidence: {
     detected_currency?: "TOMAN" | "RIAL" | "UNKNOWN";
@@ -612,12 +622,68 @@ export interface SpendMonth {
   snapshot: CostSnapshot | null;
   gap: SpendGap | null;
   by_provider: SpendProviderMonth[];
+  /** who the month's payments belong to; team_id null is the unallocated line */
+  by_team: SpendTeamMonth[];
+  /** providers and teams whose month moved more than the organization's threshold from the month before */
+  movers: SpendMover[];
+}
+
+export interface SpendTeamMonth {
+  team_id: string | null;
+  name: string | null;
+  direct_toman: string;
+  shared_toman: string;
+  paid_toman: string;
+  estimated_toman: string | null;
+  gap: SpendGap | null;
+}
+
+export interface SpendMover {
+  kind: "provider" | "team";
+  key: string;
+  provider_id?: string | null;
+  vendor?: string | null;
+  team_id?: string;
+  name?: string | null;
+  previous_toman: string;
+  current_toman: string;
+  change_toman: string;
+  change_percent: string;
+}
+
+export interface Team {
+  id: string;
+  name: string;
+}
+
+export interface BudgetStatus {
+  id: string;
+  scope: string;
+  team_id: string | null;
+  name: string | null;
+  monthly_toman: string;
+  paid_toman: string;
+  estimated_toman: string | null;
+  last_month_toman: string | null;
+  projected_toman: string;
+  used_percent: string;
+  level: 0 | 80 | 100;
+  projected_over: boolean;
+}
+
+export interface Budgets {
+  month: MonthKey;
+  inventory: { id: string; name: string } | null;
+  budgets: BudgetStatus[];
+  teams: Team[];
 }
 
 export interface SpendSummary {
   current_month: MonthKey;
   gap_percent: string;
   inventory: { id: string; name: string } | null;
+  teams: Team[];
+  unusual_change_percent: string;
   /** paid over all the months returned; null when nothing was recorded */
   period_paid_toman: string | null;
   months: SpendMonth[];
@@ -634,5 +700,6 @@ export interface SpendEntryInput {
   paid_on?: string | null;
   reference?: string | null;
   note?: string | null;
+  team_id?: string | null;
   confirm?: boolean;
 }

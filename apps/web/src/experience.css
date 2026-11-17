@@ -671,3 +671,15 @@
 .nowrap {
   white-space: nowrap;
 }
+
+/* budgets: a meter per budget, paid so far against the month's amount */
+.budgets {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+.budget {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+}

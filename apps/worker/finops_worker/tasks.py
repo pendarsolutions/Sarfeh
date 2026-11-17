@@ -21,7 +21,7 @@ from finops_api.db import SessionLocal
 from finops_api.fleet_service import collect_all, purge_samples
 from finops_api.orm import ProviderRow
 from finops_api.platform import configure_logging
-from finops_api.spend import take_monthly_snapshots
+from finops_api.spend import budget_alerts, take_monthly_snapshots, unusual_change_alerts
 
 configure_logging()
 log = logging.getLogger("finops.worker")
@@ -92,5 +92,9 @@ def server_maintenance() -> None:
 
 @app.task(name="finops_worker.tasks.monthly_snapshots")
 def monthly_snapshots() -> dict:
+    """This month's estimates, then the budget alerts (80% and 100%) and last month's unusual changes, which use them."""
     with SessionLocal() as db:
-        return take_monthly_snapshots(db)
+        out = take_monthly_snapshots(db)
+        out["budget_alerts"] = budget_alerts(db)
+        out["unusual_change_alerts"] = unusual_change_alerts(db)
+        return out

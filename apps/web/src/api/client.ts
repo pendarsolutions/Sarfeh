@@ -23,6 +23,8 @@ import type {
   SpendEntryInput,
   SpendSummary,
   CostSnapshot,
+  Budgets,
+  Team,
   SyncRun,
 } from "./types";
 
@@ -160,8 +162,17 @@ export const api = {
   deleteServer: (id: string) => request<{ removal_command: string }>("DELETE", `${V}/servers/${id}`),
   serversToInventory: () => post<{ id: string }>(`${V}/servers/inventory`),
 
-  spend: (inventoryId: string | null, months = 12) =>
+  /** against the organization's estimate inventory (Settings), unless another is given */
+  spend: (inventoryId?: string | null, months = 12) =>
     get<SpendSummary>(`${V}/spend?months=${months}${inventoryId ? `&inventory_id=${inventoryId}` : ""}`),
+  teams: () => get<Team[]>(`${V}/teams`),
+  createTeam: (name: string) => post<Team>(`${V}/teams`, { name }),
+  renameTeam: (id: string, name: string) => request<Team>("PATCH", `${V}/teams/${id}`, { name }),
+  deleteTeam: (id: string) => request<{ deleted: boolean }>("DELETE", `${V}/teams/${id}`),
+  setResourceTeam: (id: string, rid: string, team_id: string | null) =>
+    request<InventoryView>("PUT", `${V}/inventories/${id}/resources/${rid}/team`, { team_id }),
+  budgets: () => get<Budgets>(`${V}/budgets`),
+  putBudget: (team_id: string | null, monthly_toman: string | null) => request<Budgets>("PUT", `${V}/budgets`, { team_id, monthly_toman }),
   spendEntries: (month?: string) => get<SpendEntry[]>(`${V}/spend/entries${month ? `?month=${month}` : ""}`),
   addSpend: (b: SpendEntryInput) => post<SpendEntry>(`${V}/spend/entries`, b),
   patchSpend: (id: string, b: SpendEntryInput) => request<SpendEntry>("PATCH", `${V}/spend/entries/${id}`, b),
@@ -191,7 +202,7 @@ export const api = {
   setMemberPassword: (id: string, password: string) => post<{ status: string }>(`${V}/members/${id}/password`, { password }),
 
   settings: () => get<OrgSettings>(`${V}/settings`),
-  putSettings: (b: { engineer_day_rate_toman?: string | null; default_language?: string | null }) =>
+  putSettings: (b: { engineer_day_rate_toman?: string | null; default_language?: string | null } & Record<string, unknown>) =>
     request<{ settings: OrgSettings["settings"] }>("PUT", `${V}/settings`, b),
   auditLogs: (limit = 100) => get<AuditEntry[]>(`${V}/audit-logs?limit=${limit}`),
 };

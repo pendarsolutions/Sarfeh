@@ -62,13 +62,18 @@ before optimisation helps, so the month is ordered that way.
 
 **Goal:** every toman has an owner, and the team hears about overspend before the month ends.
 
+**Status, 17 Nov:** every item is built and tested except the P2 per-team Overview (the Spend page shows each team's
+cost per month instead). A provider's invoice usually covers several teams, so a payment without a team is shared out
+by each team's part of that provider's estimate; only what can't be shared that way is unallocated. Budgets, showback
+and alerts need one setup to take estimates from, so it is an organization setting (default: the one confirmed last).
+
 | | Item | Why | Status |
 |---|---|---|---|
-| P0 | **Owners**: team or project on resources, servers and spend entries; unallocated spend shown as its own line | Showback (each team sees its cost) is the core of FinOps; unallocated spend is the signal to fix | |
-| P0 | **Budgets**: monthly budget for the organisation and for each team, with month-to-date and a projected month-end | | |
-| P0 | Budget alerts at 80% and 100%, through the existing email and Bale alerts | | |
-| P1 | **Unusual change** alerts: a provider's or team's month jumps by more than a set percentage | Manual, monthly anomaly review is where Crawl teams start | |
-| P2 | Per-team view of the Overview page | | |
+| P0 | **Owners**: team or project on resources, servers and spend entries; unallocated spend shown as its own line | Showback (each team sees its cost) is the core of FinOps; unallocated spend is the signal to fix | Done |
+| P0 | **Budgets**: monthly budget for the organisation and for each team, with month-to-date and a projected month-end | | Done |
+| P0 | Budget alerts at 80% and 100%, through the existing email and Bale alerts | | Done |
+| P1 | **Unusual change** alerts: a provider's or team's month jumps by more than a set percentage | Manual, monthly anomaly review is where Crawl teams start | Done |
+| P2 | Per-team view of the Overview page | | Not done: the Spend page shows each team's month |
 
 ## Week 4 (29 Nov – 5 Dec): savings that get done, and the monthly report
 

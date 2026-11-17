@@ -77,6 +77,32 @@ class Membership(Base):
     role: Mapped[str] = mapped_column(String(20))  # owner | admin | analyst | viewer
 
 
+class Team(Base):
+    """Who a cost belongs to: a team or project. Resources, servers and payments each name at most one."""
+
+    __tablename__ = "teams"
+    __table_args__ = (UniqueConstraint("organization_id", "name", name="uq_team_name"),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    organization_id: Mapped[str] = mapped_column(ForeignKey("organizations.id"), index=True)
+    name: Mapped[str] = mapped_column(String(100))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+
+
+class Budget(Base):
+    """A monthly budget for the whole organization (scope "organization") or for one team (scope = the team id)."""
+
+    __tablename__ = "budgets"
+    __table_args__ = (UniqueConstraint("organization_id", "scope", name="uq_budget_scope"),)
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=uid)
+    organization_id: Mapped[str] = mapped_column(ForeignKey("organizations.id"), index=True)
+    scope: Mapped[str] = mapped_column(String(36))
+    monthly_toman: Mapped[Decimal] = mapped_column(Money())
+    #: the highest alert already sent, so each level alerts once a month: {"month": "1405-08", "level": 80}
+    alerted: Mapped[dict[str, Any]] = mapped_column(JSONType, default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now, onupdate=now)
+
+
 # --------------------------------------------------------------------------- catalog (versioned)
 
 
@@ -264,6 +290,8 @@ class InventoryResource(Base):
     user_confirmed: Mapped[bool] = mapped_column(Boolean, default=False)
     notes: Mapped[str | None] = mapped_column(Text)
     raw_input: Mapped[dict[str, Any]] = mapped_column(JSONType, default=dict)
+    #: the owning team; not a pricing input, so changing it doesn't need the inventory confirmed again
+    team_id: Mapped[str | None] = mapped_column(String(36))
 
 
 class QuoteRow(Base):
@@ -353,6 +381,8 @@ class SpendEntry(Base):
     note: Mapped[str | None] = mapped_column(Text)
     upload_id: Mapped[str | None] = mapped_column(String(36))
     inventory_id: Mapped[str | None] = mapped_column(String(36))
+    #: the team that owns this payment; without one it is shared out by the estimate (see spend.team_breakdown)
+    team_id: Mapped[str | None] = mapped_column(String(36))
     #: what an invoice said (its total, currency, date and lines), kept as evidence for the reviewed amount
     evidence: Mapped[dict[str, Any]] = mapped_column(JSONType, default=dict)
     created_by: Mapped[str | None] = mapped_column(String(36))
@@ -379,6 +409,9 @@ class CostSnapshot(Base):
     priced_subtotal_toman: Mapped[Decimal] = mapped_column(Money())
     #: [{provider_id, monthly_toman, complete}]; monthly_toman is the priced part when a price is missing
     provider_totals: Mapped[list[dict[str, Any]]] = mapped_column(JSONType, default=list)
+    #: [{resource_id, provider_id, monthly_toman}] with tax: what each resource adds, so the estimate can be split by
+    #: team (by the team each resource has when it is read)
+    resource_totals: Mapped[list[dict[str, Any]] | None] = mapped_column(JSONType, nullable=True)
     trigger: Mapped[str] = mapped_column(String(20))  # schedule | confirm | manual
     created_by: Mapped[str | None] = mapped_column(String(36))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
@@ -470,6 +503,7 @@ class Server(Base):
     download_gb_override: Mapped[Decimal | None] = mapped_column(Money(18, 3))
     upload_gb_override: Mapped[Decimal | None] = mapped_column(Money(18, 3))
     renewal_date: Mapped[date | None] = mapped_column(Date)
+    team_id: Mapped[str | None] = mapped_column(String(36))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
 
 

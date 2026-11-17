@@ -170,7 +170,7 @@ docs/           Architecture, pricing model, scrapers, AI safety and operations
 - [x] Price change and renewal alerts by email and Bale
 - [x] Shared, signed price catalog
 - [x] Spend ledger: payments by month, a monthly cost estimate, and the gaps between them
-- [ ] Owners and budgets per team, with alerts before a budget runs out
+- [x] Owners and budgets per team, with alerts before a budget runs out
 - [ ] Suggestions that are tracked to done, with the saving measured
 - [ ] A monthly report by email or Bale
 - [ ] An exact catalog for ArvanCloud through its API

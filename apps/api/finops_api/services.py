@@ -62,7 +62,7 @@ def resource_view(row: InventoryResource, policy: dict[str, Any]) -> dict[str, A
     d = row_to_draft(row)
     data = d.model_dump(mode="json")
     data.update({
-        "id": row.id, "position": row.position, "user_confirmed": row.user_confirmed,
+        "id": row.id, "position": row.position, "user_confirmed": row.user_confirmed, "team_id": row.team_id,
         "required_fields": required_fields(d, policy), "missing_fields": missing_required_fields(d, policy),
         "low_confidence_fields": low_confidence_fields(d),
         "review_status": review_status(d, policy, row.user_confirmed).value,

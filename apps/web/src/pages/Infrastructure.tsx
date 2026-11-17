@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { OwnersCard } from "../components/Owners";
 import { useSearchParams } from "react-router-dom";
 import { api } from "../api/client";
 import type { InventoryView } from "../api/types";
@@ -126,6 +127,7 @@ export function InfrastructurePage() {
             <ReviewTable inv={inv.data} />
           </Card>
         ) : null)}
+      {tab === "review" && inv.data ? <OwnersCard inv={inv.data} /> : null}
     </div>
   );
 }

@@ -3,7 +3,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, ApiError } from "../api/client";
 import type { SpendEntry, SpendEntryInput, SpendGap, SpendMonth, SpendSummary } from "../api/types";
 import { useI18n, type TKey } from "../lib/i18n";
-import { useInventory, useProviderName, useProviders } from "../lib/hooks";
+import { Link } from "react-router-dom";
+import { useProviderName, useProviders } from "../lib/hooks";
+import { BudgetsCard, TeamSelect, useTeamName } from "../components/Owners";
 import { useSession } from "../lib/session";
 import { formatDate, formatDecimal, formatPercent, formatToman, localizeDigits } from "../lib/money";
 import { monthName, monthShort, recentMonths } from "../lib/months";
@@ -106,10 +108,11 @@ type Draft = {
   paid_on: string;
   reference: string;
   note: string;
+  team: string | null;
 };
 
 function draftOf(e: SpendEntry | null, month: string): Draft {
-  if (!e) return { month, payee: "", vendor: "", amount: "", currency: "TOMAN", source: "manual", paid_on: "", reference: "", note: "" };
+  if (!e) return { month, payee: "", vendor: "", amount: "", currency: "TOMAN", source: "manual", paid_on: "", reference: "", note: "", team: null };
   const known = e.amount_toman !== null;
   const detected = e.evidence.detected_currency;
   return {
@@ -123,6 +126,7 @@ function draftOf(e: SpendEntry | null, month: string): Draft {
     paid_on: e.paid_on ?? "",
     reference: e.reference ?? "",
     note: e.note ?? "",
+    team: e.team_id,
   };
 }
 
@@ -156,6 +160,7 @@ function EntryDrawer({ entry, month, current, onClose }: { entry: SpendEntry | n
         paid_on: d.paid_on.trim() || null,
         reference: d.reference.trim() || null,
         note: d.note.trim() || null,
+        team_id: d.team,
       };
       if (!fixedSource) body.source = d.source;
       if (!entry) return api.addSpend(body);
@@ -235,6 +240,9 @@ function EntryDrawer({ entry, month, current, onClose }: { entry: SpendEntry | n
             ))}
             <option value="__other">{t("spendVendorOther")}</option>
           </select>
+        </Field>
+        <Field label={t("team")} htmlFor="sp-team" hint={t("spendTeamHint")}>
+          <TeamSelect id="sp-team" value={d.team} onChange={(v) => set("team", v)} />
         </Field>
         {d.payee === "__other" ? (
           <Field label={t("spendVendorName")} htmlFor="sp-vendor">
@@ -356,16 +364,15 @@ function MonthDetail({ m, summary, canEdit, onEdit }: { m: SpendMonth; summary: 
   const { t, lang } = useI18n();
   const pname = useProviderName();
   const qc = useQueryClient();
-  const { activeId } = useSession();
-  const inv = useInventory(activeId);
+  const teamName = useTeamName();
   const entries = useQuery({ queryKey: ["spendEntries", m.month], queryFn: () => api.spendEntries(m.month) });
   const estimate = useMutation({
-    mutationFn: () => api.snapshotNow(activeId!),
+    mutationFn: () => api.snapshotNow(summary.inventory!.id),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["spend"] }),
   });
   const name = (p: { provider_id: string | null; vendor: string | null }) => (p.provider_id ? pname(p.provider_id, lang) : p.vendor ?? "—");
   const isCurrent = m.month === summary.current_month;
-  const canEstimate = canEdit && isCurrent && !!inv.data?.has_confirmed_version;
+  const canEstimate = canEdit && isCurrent && !!summary.inventory;
 
   return (
     <div className="stack">
@@ -389,6 +396,8 @@ function MonthDetail({ m, summary, canEdit, onEdit }: { m: SpendMonth; summary: 
                   {formatDate(m.snapshot.created_at, lang)}
                 </>
               ) : null}
+              {" · "}
+              <Link to="/settings">{t("spendChangeSetup")}</Link>
             </p>
           ) : (
             <p className="small muted">{t("spendNoInventory")}</p>
@@ -447,6 +456,57 @@ function MonthDetail({ m, summary, canEdit, onEdit }: { m: SpendMonth; summary: 
         </div>
       </Card>
 
+      {m.movers.length ? (
+        <Card title={t("moversTitle")} className="card-warn">
+          <p className="small muted">{t("moversLead").replace("{p}", formatPercent(summary.unusual_change_percent, lang))}</p>
+          <ul className="plain stacked">
+            {m.movers.map((x) => (
+              <li key={x.kind + x.key} className="row gap wrap">
+                <strong>
+                  <bdi>{x.kind === "team" ? x.name ?? "—" : x.provider_id ? pname(x.provider_id, lang) : x.vendor ?? x.key}</bdi>
+                </strong>
+                <Change amount={x.change_toman} percent={x.change_percent} />
+                <span className="muted">
+                  {t("moversFrom")} <Money v={x.previous_toman} />
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      ) : null}
+
+      {m.by_team.length && (summary.teams.length || m.by_team.some((x) => x.team_id)) ? (
+        <Card title={t("byTeamTitle").replace("{month}", monthName(m.month, lang))}>
+          <p className="small muted">{t("byTeamLead")}</p>
+          <div className="table-wrap">
+            <table className="table compact">
+              <thead>
+                <tr>
+                  <th>{t("team")}</th>
+                  <th className="num-col">{t("spendPaid")}</th>
+                  <th className="num-col">{t("byTeamShared")}</th>
+                  <th className="num-col">{t("spendEstimateKey")}</th>
+                  <th>{t("spendDiff")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {m.by_team.map((x) => (
+                  <tr key={x.team_id ?? "none"}>
+                    <td>{x.team_id ? <bdi>{x.name}</bdi> : <span className="muted">{t("teamUnallocated")}</span>}</td>
+                    <td className="num-col">{m.paid_toman !== null ? <Money v={x.paid_toman} /> : <span className="muted">—</span>}</td>
+                    <td className="num-col">{x.shared_toman !== "0" ? <Money v={x.shared_toman} /> : <span className="muted">—</span>}</td>
+                    <td className="num-col">{x.estimated_toman !== null ? <Money v={x.estimated_toman} /> : <span className="muted">—</span>}</td>
+                    <td>
+                      <GapChip gap={x.gap} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      ) : null}
+
       <Card title={t("spendEntriesOf").replace("{month}", monthName(m.month, lang))}>
         {entries.isLoading ? (
           <Loading />
@@ -465,6 +525,11 @@ function MonthDetail({ m, summary, canEdit, onEdit }: { m: SpendMonth; summary: 
                 meta={
                   <>
                     <bdi>{name(e)}</bdi>
+                    {e.team_id ? (
+                      <span>
+                        <bdi>{teamName(e.team_id)}</bdi>
+                      </span>
+                    ) : null}
                     <span>{t(SOURCE_LABEL[e.source] ?? "spendSrcManual")}</span>
                     {e.paid_on ? <span>{formatDate(e.paid_on, lang)}</span> : null}
                     {e.reference ? (
@@ -501,10 +566,10 @@ function MonthDetail({ m, summary, canEdit, onEdit }: { m: SpendMonth; summary: 
 export function SpendPage() {
   const { t, lang } = useI18n();
   const pname = useProviderName();
-  const { activeId, hasRole } = useSession();
+  const { hasRole } = useSession();
   const canEdit = hasRole("analyst");
   const qc = useQueryClient();
-  const summary = useQuery({ queryKey: ["spend", activeId], queryFn: () => api.spend(activeId) });
+  const summary = useQuery({ queryKey: ["spend"], queryFn: () => api.spend() });
   const [selected, setSelected] = useState<string | null>(null);
   const [editing, setEditing] = useState<SpendEntry | null | "new">(null);
   const [importing, setImporting] = useState(false);
@@ -661,6 +726,8 @@ export function SpendPage() {
                   {data.period_paid_toman ? <Money v={data.period_paid_toman} big /> : <span className="money money-big muted">—</span>}
                 </div>
               </div>
+
+              <BudgetsCard />
 
               <Card title={t("spendTrend")}>
                 <MonthColumns months={chart.months} selected={sel?.month ?? null} onSelect={setSelected} caption={t("spendTrendCaption")} estimateLabel={t("spendEstimateKey")} legend={chart.legend} />

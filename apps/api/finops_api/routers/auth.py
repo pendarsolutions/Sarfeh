@@ -312,6 +312,11 @@ def set_member_password(user_id: str, body: MemberPasswordIn, db: Session = Depe
 class SettingsIn(BaseModel):
     engineer_day_rate_toman: str | None = Field(default=None, pattern=r"^\d+(\.\d+)?$")
     default_language: str | None = Field(default=None, pattern=r"^(fa|en)$")
+    #: the inventory monthly estimates, budgets and showback use (default: the one confirmed last)
+    estimate_inventory_id: str | None = Field(default=None, max_length=36)
+    #: a provider's or team's month is flagged when it moves more than this percent, and at least this much money
+    unusual_change_percent: int | None = Field(default=None, ge=1, le=1000)
+    unusual_change_min_toman: str | None = Field(default=None, pattern=r"^\d+$")
 
 
 @router.get("/api/v1/settings")
@@ -324,6 +329,12 @@ def put_org_settings(body: SettingsIn, db: Session = Depends(get_db), p: Princip
     org = db.get(Organization, p.org.id)
     new = dict(org.settings or {})
     updates = body.model_dump(exclude_unset=True)
+    if updates.get("estimate_inventory_id"):
+        from ..orm import Inventory
+
+        inv = db.get(Inventory, updates["estimate_inventory_id"])
+        if inv is None or inv.organization_id != org.id or inv.status == "archived":
+            raise HTTPException(422, "no such inventory")
     if "engineer_day_rate_toman" in updates:
         new.pop("engineer_day_rate_label", None)  # a user-entered rate is no longer the demo SAMPLE value
     for k, v in updates.items():

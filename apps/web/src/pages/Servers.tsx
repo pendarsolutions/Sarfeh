@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { TeamSelect } from "../components/Owners";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api/client";
@@ -196,6 +197,9 @@ function ServerDrawer({ id, onClose, canEdit }: { id: string; onClose: () => voi
                   <option value="development">development</option>
                   <option value="test">test</option>
                 </select>
+              </Field>
+              <Field label={t("team")} htmlFor="s-team">
+                <TeamSelect id="s-team" disabled={!canEdit} value={d.team_id ?? null} onChange={(v) => patch.mutate({ team_id: v })} />
               </Field>
               <Field label={t("srvRenewal")} htmlFor="s-renew">
                 <input id="s-renew" type="date" dir="ltr" disabled={!canEdit} value={d.renewal_date ?? ""} onChange={(e) => patch.mutate({ renewal_date: e.target.value || null })} />

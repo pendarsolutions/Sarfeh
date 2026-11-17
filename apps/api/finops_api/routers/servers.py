@@ -21,7 +21,8 @@ from ..db import get_db
 from ..fleet_service import collect_one, fleet_key, org_settings_of, server_costs, to_resource
 from ..orm import Server
 from ..security import Principal, audit, current_principal, require
-from ..services import create_inventory, snapshot
+from ..services import create_inventory, resources_of, snapshot
+from .owners import check_team
 
 router = APIRouter(prefix="/api/v1/servers", tags=["servers"])
 
@@ -51,6 +52,7 @@ class ServerPatch(BaseModel):
     download_gb_override: Decimal | None = Field(default=None, ge=0)
     upload_gb_override: Decimal | None = Field(default=None, ge=0)
     renewal_date: date | None = None
+    team_id: str | None = None
 
 
 def _get(db: Session, p: Principal, server_id: str) -> Server:
@@ -68,6 +70,7 @@ def _view(server: Server, costs: dict[str, Any]) -> dict[str, Any]:
             "provider_id": server.provider_id, "sku": server.sku, "resource_class": server.resource_class,
             "storage_type": server.storage_type, "download_gb_override": server.download_gb_override,
             "upload_gb_override": server.upload_gb_override, "renewal_date": server.renewal_date,
+            "team_id": server.team_id,
             "priced": costs["priced"], "cost_status": costs["status"], "monthly_total_toman": costs["monthly_total_toman"],
             "avoidable_monthly_toman": costs["avoidable_monthly_toman"]}
 
@@ -125,8 +128,9 @@ def to_inventory(db: Session = Depends(get_db), p: Principal = Depends(require("
     """Start a normal inventory from the servers, for comparison and reports. It still needs confirming."""
     snap = snapshot(db)
     drafts = []
-    for server in db.scalars(select(Server).where(Server.organization_id == p.org.id, Server.provider_id.is_not(None))
-                             .order_by(Server.name)):
+    servers = db.scalars(select(Server).where(Server.organization_id == p.org.id, Server.provider_id.is_not(None))
+                         .order_by(Server.name)).all()
+    for server in servers:
         r = to_resource(server, snap)
         drafts.append(ResourceDraft(
             name=server.name, external_ref=server.host, environment=server.environment, provider_id=server.provider_id,
@@ -138,6 +142,9 @@ def to_inventory(db: Session = Depends(get_db), p: Principal = Depends(require("
     if not drafts:
         raise HTTPException(409, "confirm the provider of at least one server first")
     inv = create_inventory(db, p, "Servers", "servers", drafts, {"origin": "monitored servers"})
+    for row, server in zip(resources_of(db, inv), servers, strict=True):  # each resource keeps its server's team
+        row.team_id = server.team_id
+    db.commit()
     return {"id": inv.id}
 
 
@@ -154,6 +161,8 @@ def get_server(server_id: str, db: Session = Depends(get_db), p: Principal = Dep
 def patch_server(server_id: str, body: ServerPatch, db: Session = Depends(get_db), p: Principal = Depends(require("admin"))):
     server = _get(db, p, server_id)
     updates = body.model_dump(exclude_unset=True)
+    if "team_id" in updates:
+        updates["team_id"] = check_team(db, p, updates["team_id"])
     provider, sku = updates.get("provider_id", server.provider_id), updates.get("sku", server.sku)
     snap = snapshot(db)
     if provider is not None and snap.provider_policy(provider) is None:
