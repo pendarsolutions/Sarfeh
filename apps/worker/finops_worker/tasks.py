@@ -40,6 +40,11 @@ app.conf.update(
         "purge-expired-invoices": {"task": "finops_worker.tasks.purge_uploads", "schedule": crontab(hour=4, minute=0)},
         # hourly, so a month's estimate is taken in the first hour of the 1st (Solar Hijri) and a newly confirmed
         # inventory gets one within the hour; an inventory that already has this month's is left alone
+        # answers the shared Bale bot's commands, if a chat is linked; each run listens for most of a minute
+        "bale-relay": {"task": "finops_worker.tasks.bale_relay", "schedule": crontab(minute="*"),
+                       "options": {"expires": 50}},
+        # the monthly report, on the 1st (Solar Hijri), once
+        "monthly-report": {"task": "finops_worker.tasks.monthly_report", "schedule": crontab(hour=9, minute=5)},
         "monthly-snapshots": {"task": "finops_worker.tasks.monthly_snapshots", "schedule": crontab(minute=20),
                               "options": {"expires": 3000}},
     },
@@ -98,3 +103,18 @@ def monthly_snapshots() -> dict:
         out["budget_alerts"] = budget_alerts(db)
         out["unusual_change_alerts"] = unusual_change_alerts(db)
         return out
+
+
+@app.task(name="finops_worker.tasks.bale_relay")
+def bale_relay() -> int:
+    from finops_api.bot import poll_for
+
+    return poll_for(55)
+
+
+@app.task(name="finops_worker.tasks.monthly_report")
+def monthly_report() -> int:
+    from finops_api.bot import monthly_reports
+
+    with SessionLocal() as db:
+        return monthly_reports(db)

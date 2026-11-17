@@ -1,5 +1,6 @@
 import { useTour } from "../components/Tour";
 import { EstimateSettingsCard, TeamsCard } from "../components/Owners";
+import { BaleCard } from "../components/BaleCard";
 import { Fragment, useEffect, useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../api/client";
@@ -106,6 +107,7 @@ export function SettingsPage() {
       {isAdmin && <MembersCard />}
       <TeamsCard />
       <EstimateSettingsCard />
+      {isAdmin && <BaleCard />}
 
       <Card title={t("auditLog")}>
         {!isAdmin ? (

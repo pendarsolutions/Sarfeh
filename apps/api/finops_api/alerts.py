@@ -58,9 +58,20 @@ def _send_bale(subject: str, body: str) -> None:
     resp.raise_for_status()
 
 
-def notify(subject: str, body: str) -> None:
+def _send_relay(subject: str, body: str, org_id: str | None = None) -> None:
+    """Chats linked through the shared Bale bot: the organization's, or every linked chat for installation news."""
+    from .bot import link_row, send
+    from .db import SessionLocal
+
+    with SessionLocal() as db:
+        if link_row(db) is not None:
+            send(db, f"{subject}\n\n{body}", org_id=org_id)
+
+
+def notify(subject: str, body: str, org_id: str | None = None) -> None:
     log.warning(json.dumps({"alert": subject, "body": body}, ensure_ascii=False))
-    for channel, send in (("email", _send_email), ("bale", _send_bale)):
+    for channel, send in (("email", _send_email), ("bale", _send_bale),
+                          ("relay", lambda s, b: _send_relay(s, b, org_id))):
         try:
             send(subject, body)
         except Exception as exc:  # noqa: BLE001 - never let alerting break a sync; the token must not reach the log

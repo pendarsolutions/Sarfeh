@@ -470,7 +470,7 @@ def budget_alerts(db: Session, now: datetime | None = None) -> int:
                 body = (f"Paid so far in {month_label(month, 'en')}: {_money(st['paid_toman'], 'en')} of a "
                         f"{_money(st['monthly_toman'], 'en')} budget. Projected for the month: "
                         f"{_money(st['projected_toman'], 'en')}.")
-            notify(subject, body)
+            notify(subject, body, org_id=org.id)
             b.alerted = {"month": month, "level": st["level"]}
             db.add(AuditLog(organization_id=org.id, action="budget.alert", entity_type="budget", entity_id=b.id,
                             detail={"month": month, "level": st["level"], "paid_toman": str(st["paid_toman"])}))
@@ -520,7 +520,7 @@ def unusual_change_alerts(db: Session, now: datetime | None = None) -> int:
                                  f"{'up' if up else 'down'} on the month before ({_money(m['previous_toman'], 'en')})")
             label = month_label(previous, lang)
             notify(f"تغییر غیرعادی هزینه در {label}" if lang == "fa" else f"Unusual spend changes in {label}",
-                   "\n".join(lines))
+                   "\n".join(lines), org_id=org.id)
             sent += 1
         settings["unusual_checked_month"] = previous
         org.settings = settings

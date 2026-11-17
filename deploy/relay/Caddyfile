@@ -1,0 +1,10 @@
+{$RELAY_DOMAIN} {
+	encode gzip
+	# installations' long polls wait up to 50 seconds for a command
+	reverse_proxy relay:8090 {
+		transport http {
+			read_timeout 75s
+		}
+	}
+	header -Server
+}

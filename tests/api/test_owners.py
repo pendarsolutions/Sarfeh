@@ -23,7 +23,7 @@ def org(client):
 def sent(monkeypatch):
     """Alerts that would have gone out by email or Bale."""
     out = []
-    monkeypatch.setattr("finops_api.alerts.notify", lambda subject, body: out.append((subject, body)))
+    monkeypatch.setattr("finops_api.alerts.notify", lambda subject, body, org_id=None: out.append((subject, body)))
     return out
 
 

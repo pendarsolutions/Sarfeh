@@ -1,0 +1,40 @@
+# The shared Bale bot's relay, for the one server Pendar runs it on (see docs/relay.md). Not part of an installation.
+#   cd /opt/finops-relay && docker compose up -d --build
+# .env next to this file: FINOPS_RELAY_BOT_TOKEN (the bot's token from @botfather in Bale) and RELAY_DOMAIN.
+name: finops-relay
+
+services:
+  relay:
+    build:
+      context: ./src
+      dockerfile: apps/relay/Dockerfile
+    restart: unless-stopped
+    environment:
+      FINOPS_RELAY_BOT_TOKEN: ${FINOPS_RELAY_BOT_TOKEN:?set the bot token in .env}
+      FINOPS_RELAY_DB: /data/relay.db
+    volumes:
+      - relay-data:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8090/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  caddy:
+    image: caddy:2.10
+    restart: unless-stopped
+    depends_on: [relay]
+    environment:
+      RELAY_DOMAIN: ${RELAY_DOMAIN:?set the relay's domain in .env}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  relay-data:
+  caddy-data:
+  caddy-config:

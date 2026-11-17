@@ -7,7 +7,7 @@ requires-python = ">=3.12"
 # Dependencies: requirements.txt / requirements-dev.txt (pinned; used by Docker and CI).
 
 [tool.pytest.ini_options]
-pythonpath = ["packages", "apps/api", "apps/worker", "."]
+pythonpath = ["packages", "apps/api", "apps/worker", "apps/relay", "."]
 testpaths = ["tests"]
 asyncio_mode = "auto"
 filterwarnings = ["ignore::DeprecationWarning"]

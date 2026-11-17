@@ -718,6 +718,17 @@ const dict = {
   unusualLead: ["اگر هزینه ماه گذشته یک ارائه‌دهنده یا تیم بیش از این درصد و دست‌کم این مبلغ با ماه قبلش فرق کند، روز پنجم ماه هشدار می‌گیرید.", "If last month's cost for a provider or team differs from the month before by more than this percent and at least this amount, you get an alert on the 5th."],
   unusualPercent: ["درصد تغییر", "Change, percent"],
   unusualMin: ["حداقل مبلغ تغییر (تومان)", "Smallest change (Toman)"],
+  baleTitle: ["ربات بله", "Bale bot"],
+  baleLead: ["گفتگوی بله خودتان یا تیمتان را به این سازمان وصل کنید تا هشدارها و گزارش ماهانه آنجا برسد و با فرمان‌هایی مثل /report گزارش بگیرید. فقط متن گزارش از سرور واسط ربات می‌گذرد؛ داده‌های شما روی همین سرور می‌ماند.", "Link your own or your team's Bale chat to this organization to get alerts and the monthly report there, and ask for a report with commands like /report. Only the report text passes through the bot's relay; your data stays on this server."],
+  baleNone: ["هنوز گفتگویی وصل نشده است.", "No chats linked yet."],
+  baleGetCode: ["گرفتن کد اتصال", "Get a link code"],
+  baleSend: ["در بله، این را برای {bot} بفرستید:", "In Bale, send this to {bot}:"],
+  baleTheBot: ["ربات FinOps agent", "the FinOps agent bot"],
+  baleCodeExpires: ["کد ۱۵ دقیقه اعتبار دارد و یک بار کار می‌کند.", "The code works once, for 15 minutes."],
+  baleUnlink: ["جدا کردن", "Unlink"],
+  baleUnlinkConfirm: ["این گفتگو جدا شود؟ دیگر هشدار و گزارشی به آن نمی‌رسد.", "Unlink this chat? It won't get alerts or reports any more."],
+  baleTest: ["فرستادن گزارش این ماه", "Send this month's report"],
+  baleTestSent: ["گزارش فرستاده شد.", "Report sent."],
   editingBanner: ["این زیرساخت در حال ویرایش است. تا تغییرات تأیید نشده‌اند، این صفحه نسخه‌ای را نشان می‌دهد که آخرین بار تأیید شد.", "This setup is being edited. Until the changes are confirmed, this page shows the version confirmed last."],
 } satisfies Record<string, [string, string]>;
 

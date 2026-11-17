@@ -683,3 +683,11 @@
   flex-direction: column;
   gap: var(--spacing-2);
 }
+
+/* the Bale link command, large enough to copy or read aloud */
+.bale-code {
+  font-size: var(--type-body-default-font-size);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.08em;
+  user-select: all;
+}

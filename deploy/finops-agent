@@ -222,6 +222,7 @@ FINOPS_SMTP_STARTTLS|bool|Use STARTTLS (default true)
 FINOPS_ALERT_EMAIL_TO|email|Who gets alerts by email
 FINOPS_BALE_BOT_TOKEN|secret|Bale bot token, for alerts in Bale
 FINOPS_BALE_CHAT_ID|text|Bale chat that gets the alerts
+FINOPS_RELAY_URL|text|The shared Bale bot's relay (link chats under Settings, Bale bot)
 FINOPS_AI_PROVIDER|choice:offline/anthropic|The advisor: offline rules, or Claude (never used for prices)
 FINOPS_AI_MODEL|text|Claude model, when AI_PROVIDER is anthropic
 FINOPS_ANTHROPIC_API_KEY|secret|Anthropic API key, when AI_PROVIDER is anthropic

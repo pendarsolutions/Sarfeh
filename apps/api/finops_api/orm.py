@@ -417,6 +417,20 @@ class CostSnapshot(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
 
 
+# --------------------------------------------------------------------------- the shared Bale bot
+
+
+class RelayLink(Base):
+    """This installation's registration with the Bale relay (one row). Made the first time an admin links a chat."""
+
+    __tablename__ = "relay_link"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    relay_url: Mapped[str] = mapped_column(String(300))
+    install_id: Mapped[str] = mapped_column(String(64))
+    secret: Mapped[str] = mapped_column(String(128))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+
+
 # --------------------------------------------------------------------------- ops / security
 
 

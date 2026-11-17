@@ -5,7 +5,7 @@ SEP := ;
 else
 SEP := :
 endif
-export PYTHONPATH := packages$(SEP)apps/api$(SEP)apps/worker
+export PYTHONPATH := packages$(SEP)apps/api$(SEP)apps/worker$(SEP)apps/relay
 COMPOSE ?= docker compose
 
 .PHONY: dev down install migrate seed-pricing seed-demo sync-prices test lint api web site local-db purge-uploads

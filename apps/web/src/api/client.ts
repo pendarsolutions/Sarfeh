@@ -172,6 +172,13 @@ export const api = {
   setResourceTeam: (id: string, rid: string, team_id: string | null) =>
     request<InventoryView>("PUT", `${V}/inventories/${id}/resources/${rid}/team`, { team_id }),
   budgets: () => get<Budgets>(`${V}/budgets`),
+  bale: () =>
+    get<{ available: boolean; registered: boolean; bot_username: string | null; chats: { chat_id: number; who: string; linked_at: number }[] }>(
+      `${V}/bale`,
+    ),
+  baleCode: () => post<{ code: string; expires_in: number; bot_username: string | null }>(`${V}/bale/code`),
+  baleUnlink: (chatId: number) => request<{ unlinked: number }>("DELETE", `${V}/bale/chats/${chatId}`),
+  baleTest: () => post<{ sent: number }>(`${V}/bale/test`),
   putBudget: (team_id: string | null, monthly_toman: string | null) => request<Budgets>("PUT", `${V}/budgets`, { team_id, monthly_toman }),
   spendEntries: (month?: string) => get<SpendEntry[]>(`${V}/spend/entries${month ? `?month=${month}` : ""}`),
   addSpend: (b: SpendEntryInput) => post<SpendEntry>(`${V}/spend/entries`, b),

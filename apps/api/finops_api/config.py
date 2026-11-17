@@ -50,6 +50,8 @@ class Settings(BaseSettings):
     alert_email_to: str | None = None
     bale_bot_token: str | None = None
     bale_chat_id: str | None = None
+    #: the shared Bale bot's relay. Nothing is sent to it until an admin links a chat in Settings.
+    relay_url: str | None = None
     #: the address people open the app at, such as https://finops.example.ir. Links in emails (password reset) are
     #: built from this, never from the request, so a forged Host header can't redirect them. Without it, people ask
     #: an admin to reset their password instead.
