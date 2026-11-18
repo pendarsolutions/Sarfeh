@@ -1,6 +1,6 @@
 <div align="center">
 
-# FinOps agent
+# Sarfeh (صرفه)
 
 **Know what your Iranian servers really cost, and where you can safely pay less.**
 
@@ -13,7 +13,7 @@ Install it on one server and see the real cost and usage of all of them.
 ![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-3776AB.svg)
 ![Status: early](https://img.shields.io/badge/status-early-orange.svg)
 
-[Quick start](#quick-start) · [How it works](#how-it-works) · [Providers](#supported-providers) · [Roadmap](#roadmap) · [فارسی](#فارسی)
+[Prices page](https://pendarsolutions.ir/sarfeh/prices/) · [Quick start](#quick-start) · [How it works](#how-it-works) · [Providers](#supported-providers) · [Roadmap](#roadmap) · [فارسی](#فارسی)
 
 </div>
 
@@ -21,12 +21,20 @@ Install it on one server and see the real cost and usage of all of them.
 
 ---
 
-## Why FinOps agent?
+## Iranian cloud prices, side by side
+
+Not ready to install anything? The [prices page](https://pendarsolutions.ir/sarfeh/prices/) shows one server size at
+every provider, cheapest first, read from each provider's own page twice a day, with the source and the date beside
+every price. The table behind it is open: [prices.json](https://pendarsolutions.ir/sarfeh/prices.json).
+
+<p align="center"><img src="docs/images/prices.png" alt="The prices page: 2 vCPU, 4 GB and 50 GB at seven providers, cheapest first, each with its plan, traffic terms, source and the date it was read" width="900"></p>
+
+## Why Sarfeh?
 
 Iranian providers price their services in very different ways: per component, per plan, per hour or per
 30 days, each with its own traffic rules. Comparing them by hand is slow, and it's easy to get wrong.
 
-FinOps agent turns your servers, or just a description of your infrastructure, into exact costs, a like-for-like
+Sarfeh turns your servers, or just a description of your infrastructure, into exact costs, a like-for-like
 comparison and savings you can check yourself. You don't need Terraform, tagging or cloud credentials.
 
 - 🖥️ **One installation, all your servers.** Real usage is read over SSH with a key that can only run one read-only script.
@@ -129,7 +137,7 @@ flowchart LR
    budget for the organization and each team, and get an alert by email or Bale at 80% and 100%, or when a
    provider's or team's month jumps.
 
-<p align="center"><img src="docs/images/spend.png" alt="The Spend page: an invoice to check, paid this month and last, the estimate, budgets per team, and paid month by month" width="900"></p>
+<p align="center"><img src="docs/images/spend.png" alt="The Spend page: paid this month and last, this month's estimate, budgets for the organization and each team, and paid month by month" width="900"></p>
 
 ## Supported providers
 
@@ -222,7 +230,7 @@ Contributions are welcome, especially new provider scrapers and price correction
 
 ## فارسی
 
-**FinOps agent** یک ابزار متن‌باز برای مدیریت هزینه زیرساخت است، مخصوص استارتاپ‌ها و تیم‌های کوچکی که از ارائه‌دهندگان ابری و VPS ایرانی استفاده می‌کنند.
+**صرفه** یک ابزار متن‌باز برای مدیریت هزینه زیرساخت است، مخصوص استارتاپ‌ها و تیم‌های کوچکی که از ارائه‌دهندگان ابری و VPS ایرانی استفاده می‌کنند.
 
 آن را روی یک سرور نصب می‌کنید و سرورهای دیگر را از داشبورد اضافه می‌کنید، یا زیرساخت خود را با فرم، چت یا فاکتور وارد می‌کنید. پس از تأیید، هزینه دقیق، مقایسه ارائه‌دهندگان و پیشنهادهای صرفه‌جویی را همراه با منبع و تاریخ قیمت می‌بینید.
 
@@ -232,6 +240,10 @@ Contributions are welcome, especially new provider scrapers and price correction
 - پرداخت‌های هر ماه را از روی فاکتور، شارژ کیف پول یا یک فایل CSV ثبت می‌کنید و کنار هزینه‌ای می‌بینید که زیرساخت تأییدشده باید داشته باشد؛ اختلاف بیش از ۱۰٪ علامت می‌خورد.
 - هر منبع، سرور و پرداخت می‌تواند مال یک تیم باشد؛ هزینه هر تیم را هر ماه می‌بینید و برای کل سازمان و هر تیم بودجه می‌گذارید و در ۸۰٪ و ۱۰۰٪ با ایمیل یا بله هشدار می‌گیرید.
 - برنامه بدون سرویس خارجی هوش مصنوعی هم کار می‌کند.
+
+قیمت سرورهای ابری ارائه‌دهندگان ایرانی را بدون نصب هم می‌توانید ببینید: [صفحه قیمت‌ها](https://pendarsolutions.ir/sarfeh/prices/) یک اندازه سرور را نزد همه ارائه‌دهندگان کنار هم می‌گذارد، روزی دو بار از صفحه رسمی هر کدام خوانده می‌شود و کنار هر قیمت منبع و تاریخ آن آمده است.
+
+<p align="center"><img src="docs/images/prices-fa.png" alt="صفحه قیمت‌ها: ۲ هسته، ۴ گیگابایت حافظه و ۵۰ گیگابایت دیسک نزد هفت ارائه‌دهنده، از ارزان به گران، با منبع و تاریخ هر قیمت" width="900"></p>
 
 <p align="center"><img src="docs/images/overview-fa.png" alt="نمای کلی به فارسی: هزینه ماهانه، صرفه‌جویی ممکن، هزینه به تفکیک ارائه‌دهنده و محیط، و سه پیشنهاد اول" width="900"></p>
 

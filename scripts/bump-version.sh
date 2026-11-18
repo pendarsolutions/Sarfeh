@@ -12,7 +12,7 @@ cd "$ROOT"
 
 sed -i -E "s/^VERSION=\"[^\"]*\"/VERSION=\"$NEW\"/" deploy/finops-agent
 sed -i -E "0,/^version = \"[^\"]*\"/s//version = \"$NEW\"/" pyproject.toml
-sed -i -E "s/(FastAPI\(title=\"FinOps agent API\", version=)\"[^\"]*\"/\1\"$NEW\"/" apps/api/finops_api/main.py
+sed -i -E "s/(FastAPI\(title=\"Sarfeh API\", version=)\"[^\"]*\"/\1\"$NEW\"/" apps/api/finops_api/main.py
 # package.json and the first two "version" entries of the lock file (the root package)
 sed -i -E "0,/\"version\": \"[^\"]*\"/s//\"version\": \"$NEW\"/" apps/web/package.json
 sed -i -E "1,12s/\"version\": \"[^\"]*\"/\"version\": \"$NEW\"/" apps/web/package-lock.json

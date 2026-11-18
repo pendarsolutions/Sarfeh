@@ -4,11 +4,11 @@ export type Lang = "fa" | "en";
 
 /** [fa, en]. Technical terms (FinOps, SKU, IPv4, API...) stay in English inside Persian text. */
 const dict = {
-  appName: ["FinOps agent", "FinOps agent"],
+  appName: ["صرفه", "Sarfeh"],
   // nav
   navOverview: ["نمای کلی", "Overview"],
   navHowItWorks: ["چطور کار می‌کند", "How it works"],
-  hwTitle: ["FinOps agent چطور کار می‌کند", "How FinOps agent works"],
+  hwTitle: ["«صرفه» چطور کار می‌کند", "How Sarfeh works"],
   hwLead: ["هر عددی که می‌بینید با کد مشخص و از قیمت رسمی ارائه‌دهنده محاسبه شده است. این صفحه نشان می‌دهد هر عدد از کجا آمده تا بتوانید خودتان آن را بررسی کنید.", "Every number you see is calculated by fixed rules from the provider's official prices. This page shows where each one comes from, so you can check it yourself."],
   hwStepsTitle: ["از زیرساخت تا صرفه‌جویی", "From your setup to your savings"],
   hwStep1T: ["زیرساخت را وارد کنید", "Add your setup"],
@@ -195,7 +195,7 @@ const dict = {
   apiRegistrationClosed: ["ثبت‌نام در این نصب بسته است؛ از مدیر بخواهید شما را اضافه کند.", "Registration is closed on this installation. Ask an admin to add you."],
   noAccount: ["حساب ندارید؟ ثبت‌نام کنید", "No account? Register"],
   haveAccount: ["حساب دارید؟ وارد شوید", "Have an account? Sign in"],
-  setupTitle: ["راه‌اندازی FinOps agent", "Set up FinOps agent"],
+  setupTitle: ["راه‌اندازی «صرفه»", "Set up Sarfeh"],
   setupLead: ["اولین حساب را بسازید. این حساب مالک این نصب است و بعد از آن ثبت‌نام بسته می‌شود؛ بقیه را از تنظیمات اضافه می‌کنید.", "Create the first account. It owns this installation, and sign-up closes after it: you add everyone else from Settings."],
   setupSubmit: ["ساخت حساب و ورود", "Create the account and sign in"],
   demoHint: ["کاربر آزمایشی توسعه: demo@finops-agent.local / demo-password-1", "Dev demo user: demo@finops-agent.local / demo-password-1"],
@@ -250,7 +250,7 @@ const dict = {
   topOpps: ["۳ فرصت برتر", "Top 3 opportunities"],
   viewAll: ["مشاهده همه", "View all"],
   emptyTitle: ["با معرفی زیرساخت شروع کنید", "Start by describing your infrastructure"],
-  emptyBody: ["FinOps agent پیش از هر محاسبه‌ای، جدول زیرساخت شما را برای تأیید نشان می‌دهد.", "FinOps agent always shows your infrastructure table for confirmation before any pricing."],
+  emptyBody: ["«صرفه» پیش از هر محاسبه‌ای، جدول زیرساخت شما را برای تأیید نشان می‌دهد.", "Sarfeh always shows your infrastructure table for confirmation before any pricing."],
   loadDemo: ["بارگذاری فضای نمونه", "Load demo workspace"],
   describeChat: ["توصیف در چت", "Describe in chat"],
   uploadInvoice: ["بارگذاری صورتحساب", "Upload invoice"],
@@ -527,7 +527,7 @@ const dict = {
   noRuns: ["هنوز همگام‌سازی‌ای اجرا نشده است.", "No sync runs yet."],
   // settings
   dayRate: ["نرخ روزانه مهندس (تومان)", "Engineer day rate (Toman)"],
-  dayRateHelp: ["برای محاسبه هزینه یک‌باره مهاجرت و دوره بازگشت سرمایه لازم است. فقط رقم وارد کنید؛ FinOps agent هیچ نرخ بازاری را فرض نمی‌کند.", "Needed to compute one-time migration cost and payback. Digits only; FinOps agent never assumes a market rate."],
+  dayRateHelp: ["برای محاسبه هزینه یک‌باره مهاجرت و دوره بازگشت سرمایه لازم است. فقط رقم وارد کنید؛ «صرفه» هیچ نرخ بازاری را فرض نمی‌کند.", "Needed to compute one-time migration cost and payback. Digits only; Sarfeh never assumes a market rate."],
   digitsOnly: ["فقط رقم (مثلاً 4000000)", "Digits only (e.g. 4000000)"],
   saved: ["ذخیره شد", "Saved"],
   auditLog: ["گزارش ممیزی (Audit log)", "Audit log"],
@@ -572,7 +572,7 @@ const dict = {
   tourSkip: ["رد کردن", "Skip"],
   tourDone: ["شروع کنیم", "Let's start"],
   tourStepOf: ["گام", "Step"],
-  tourWelcomeT: ["به FinOps agent خوش آمدید", "Welcome to FinOps agent"],
+  tourWelcomeT: ["به «صرفه» خوش آمدید", "Welcome to Sarfeh"],
   tourWelcomeB: [
     "در یک دقیقه بخش‌های اصلی را معرفی می‌کنیم. اصل اول: همه اعداد مالی از موتور قطعی می‌آیند، نه از هوش مصنوعی.",
     "A one-minute tour of the main parts. Rule one: every financial number comes from the deterministic engine, never from AI.",
@@ -723,7 +723,7 @@ const dict = {
   baleNone: ["هنوز گفتگویی وصل نشده است.", "No chats linked yet."],
   baleGetCode: ["گرفتن کد اتصال", "Get a link code"],
   baleSend: ["در بله، این را برای {bot} بفرستید:", "In Bale, send this to {bot}:"],
-  baleTheBot: ["ربات FinOps agent", "the FinOps agent bot"],
+  baleTheBot: ["ربات «صرفه»", "the Sarfeh bot"],
   baleCodeExpires: ["کد ۱۵ دقیقه اعتبار دارد و یک بار کار می‌کند.", "The code works once, for 15 minutes."],
   baleUnlink: ["جدا کردن", "Unlink"],
   baleUnlinkConfirm: ["این گفتگو جدا شود؟ دیگر هشدار و گزارشی به آن نمی‌رسد.", "Unlink this chat? It won't get alerts or reports any more."],
@@ -778,6 +778,16 @@ const Ctx = createContext<I18n | null>(null);
 const LANG_KEY = "finops.lang";
 
 function initialLang(): Lang {
+  // ?lang=en or ?lang=fa in the address wins, and is remembered: a link can open the dashboard in a given language
+  const asked = new URLSearchParams(window.location.search).get("lang");
+  if (asked === "en" || asked === "fa") {
+    try {
+      localStorage.setItem(LANG_KEY, asked);
+    } catch {
+      /* ignore */
+    }
+    return asked;
+  }
   try {
     const v = localStorage.getItem(LANG_KEY);
     if (v === "en" || v === "fa") return v;

@@ -143,10 +143,10 @@ class ChangePasswordIn(BaseModel):
 
 
 RESET_EMAIL = {
-    "fa": ("بازنشانی رمز عبور FinOps agent",
+    "fa": ("بازنشانی رمز عبور «صرفه»",
            "برای انتخاب رمز تازه، این پیوند را باز کنید. پیوند فقط یک بار و تا {minutes} دقیقه کار می‌کند.\n\n{link}\n\n"
            "اگر شما این را نخواسته‌اید، این پیام را نادیده بگیرید؛ رمز فعلی‌تان تغییری نمی‌کند."),
-    "en": ("Reset your FinOps agent password",
+    "en": ("Reset your Sarfeh password",
            "Open this link to choose a new password. It works once, for {minutes} minutes.\n\n{link}\n\n"
            "If you didn't ask for this, ignore this email; your password stays the same."),
 }

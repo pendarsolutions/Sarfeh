@@ -70,6 +70,7 @@ export function TourProvider({ children, onNeedNav }: { children: ReactNode; onN
       // Dev-only: ?tourStep=N opens the tour at step N (used for visual review screenshots).
       // Only when the parameter is there: Number(null) is 0, which used to open the tour on every dev page load.
       const devParam = import.meta.env.DEV ? new URLSearchParams(window.location.search).get("tourStep") : null;
+      if (devParam === "off") return; // ?tourStep=off: no tour, for screenshots of the pages themselves
       const devStep = devParam === null ? NaN : Number(devParam);
       if (Number.isInteger(devStep) && devStep >= 0 && devStep < STEPS.length) {
         window.setTimeout(() => setI(devStep), 700);

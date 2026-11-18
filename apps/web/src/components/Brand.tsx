@@ -6,9 +6,6 @@ import type { CSSProperties } from "react";
 import { LAYING, MARKS } from "../pendar/logo";
 import { useI18n } from "../lib/i18n";
 
-/** The product's own name, set beside Pendar's wordmark (products guideline). */
-export const PRODUCT_NAME = "FinOps agent";
-
 type Mark = { viewBox: string; brick: string; glaze: readonly string[] };
 
 function MarkSvg({ mark, className, label }: { mark: Mark; className: string; label?: string }) {
@@ -59,13 +56,14 @@ export function Wordmark({ label, laid }: { label?: string; laid?: boolean }) {
  * `laid` lays the wordmark when it first appears; the rule and the name follow once the last brick has settled.
  */
 export function Lockup({ large, laid }: { large?: boolean; laid?: boolean }) {
-  const { lang } = useI18n();
+  const { lang, t } = useI18n();
   const bricks = LAYING[lang === "en" ? "en" : "fa"].bricks.length;
   return (
     <span className={`lockup${large ? " lockup-lg" : ""}${laid ? " is-laying" : ""}`} style={laid ? ({ "--n": bricks } as CSSProperties) : undefined}>
       <Wordmark label={lang === "en" ? "Pendar" : "پندار"} laid={laid} />
       <span className="lockup-rule" aria-hidden />
-      <span className="lockup-name">{PRODUCT_NAME}</span>
+      {/* the product's own name, set beside Pendar's wordmark (products guideline) */}
+      <span className="lockup-name">{t("appName")}</span>
     </span>
   );
 }

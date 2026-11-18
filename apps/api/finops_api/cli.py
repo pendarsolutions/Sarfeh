@@ -87,8 +87,8 @@ def cmd_test_alerts(args: argparse.Namespace) -> None:
     from .alerts import _send_bale, _send_email
 
     s = get_settings()
-    subject = "FinOps agent: test alert"
-    body = "This is a test from FinOps agent. Alerts about prices and renewals will arrive here."
+    subject = "Sarfeh: test alert"
+    body = "This is a test from Sarfeh. Alerts about prices and renewals will arrive here."
     tried = failed = 0
     if s.smtp_host:
         tried += 1

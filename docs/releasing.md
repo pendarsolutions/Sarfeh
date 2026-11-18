@@ -21,7 +21,7 @@ release is live for new installs the moment it's published. Existing installatio
 
    ```bash
    git commit -am "Release 0.3.0"
-   git tag -a v0.3.0 -m "FinOps agent 0.3.0"
+   git tag -a v0.3.0 -m "Sarfeh 0.3.0"
    git push origin main v0.3.0
    ```
 

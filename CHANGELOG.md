@@ -5,6 +5,11 @@ and versions follow [Semantic Versioning](https://semver.org/). Until 1.0, a min
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-11-18
+
+The product is called Sarfeh (صرفه), with a public price page that stays current, a spend ledger, owners and
+budgets, and a public demo mode.
+
 ### Added
 
 - **A public demo mode** (`DEMO_MODE=true`, for an installation of its own): anyone who opens the dashboard lands
@@ -50,7 +55,9 @@ and versions follow [Semantic Versioning](https://semver.org/). Until 1.0, a min
   and guardrails as an installation, keeps each provider's last good prices when a page can't be read, and writes
   `prices.json`; on pendarsolutions.ir/sarfeh/ it runs twice a day (`deploy/sarfeh-site`). A price read more than 14
   days ago is marked on the page.
-- The website is called **Sarfeh** (صرفه), and can be built for a folder (`SITE_BASE=/sarfeh/`).
+- **The product is called Sarfeh** (صرفه): the dashboard, its emails and reports, the website and the README. The
+  website can be built for a folder (`SITE_BASE=/sarfeh/`).
+- The dashboard opens in a given language with `?lang=en` or `?lang=fa` in its address.
 - **The command is `sarfeh`:** `sudo sarfeh status`, `sudo sarfeh upgrade` and so on. `finops-agent` still works as
   another name for it, and an installation that upgrades gets the new name without running the installer again. The
   install folder (`/opt/finops-agent`), the Docker project and the image names are unchanged, so existing data stays
