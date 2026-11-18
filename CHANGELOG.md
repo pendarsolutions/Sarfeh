@@ -7,6 +7,13 @@ and versions follow [Semantic Versioning](https://semver.org/). Until 1.0, a min
 
 ### Added
 
+- **A public demo mode** (`DEMO_MODE=true`, for an installation of its own): anyone who opens the dashboard lands
+  in a sample workspace without signing in and can look at every page, and every change is refused in one place
+  in the API. See [docs/demo.md](docs/demo.md).
+- **A public price page** on the website (`site/`, at `/prices/`): pick a server size and see what each provider
+  charges for it, cheapest first, with the plan you get, its traffic terms, the page the price was read from and
+  the date. `scripts/build_price_table.py` writes the table (`site/public/prices.json`, also offered as a download)
+  from the price catalog, and a test fails when that file is out of date.
 - **Spend:** a new page for what you actually paid. Record each payment by provider and month (months are Solar
   Hijri, as Iranian providers invoice), as a payment or a wallet top-up, in Toman or Rial; or name a vendor the
   catalog doesn't have. The page shows each month's total and its change from the month before, a month-by-month

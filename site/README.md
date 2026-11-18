@@ -21,7 +21,9 @@ Add `?lang=en` to the address for English. The language toggle remembers the cho
 
 | File | What it holds |
 | --- | --- |
-| `src/Landing.tsx` | The page |
+| `src/Landing.tsx` | The home page |
+| `src/Prices.tsx`, `prices/index.html` | The price page at `/prices/`: one server size at every provider, cheapest first |
+| `public/prices.json` | The table the price page shows. `python scripts/build_price_table.py` writes it from the price catalog, and a test fails when it is out of date |
 | `src/strings.ts` | Every word on it, in Persian and English |
 | `src/links.ts` | GitHub, the docs, and the install command |
 | `src/site.css` | The styles, forked from the app on 9 Nov 2026; free to diverge |

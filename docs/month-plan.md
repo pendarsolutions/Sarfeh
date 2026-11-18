@@ -79,6 +79,12 @@ and alerts need one setup to take estimates from, so it is an organization setti
 
 **Goal:** suggestions turn into decisions, and the month's story arrives by itself.
 
+**Status, 17 Nov:** the direction changed after a review of the project: twelve days public, one star, and no
+installation by anyone else. What the project is for is reputation, so what comes first is what people can see
+and share without installing: a public price page (`site/`, at `/prices/`) and a hosted demo. Suggestion
+outcomes and realised savings are paused. The product will be renamed **Sarfeh** (صرفه) before anything is
+announced.
+
 | | Item | Why | Status |
 |---|---|---|---|
 | P0 | **Suggestion outcomes**: accepted, dismissed with a reason, done; an owner and a target date | Every suggestion stays "proposed" forever today | |
@@ -86,7 +92,7 @@ and alerts need one setup to take estimates from, so it is an organization setti
 | P0 | **Monthly report** on the 1st, by email or Bale: spend, change, budget, biggest movers, open and realised savings | The habit that brings people back | |
 | P0 | **Browser smoke test in CI** (no new dependencies) | The web app has no automated tests | |
 | P0 | Publish **0.4.0**; update the README and roadmap | | |
-| P2 | A public, read-only demo instance | Lets people try it before installing | |
+| P0 | A public, read-only demo instance | Lets people try it before installing | Demo mode is built (`docs/demo.md`); hosting it waits on a release, a domain and an open port |
 
 ## Not this month
 

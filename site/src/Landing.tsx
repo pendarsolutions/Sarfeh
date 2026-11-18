@@ -2,7 +2,7 @@ import { Fragment, useRef, useState, type CSSProperties } from "react";
 import { Lockup, PoweredBy } from "./Brand";
 import { Icon, type IconName } from "./Icon";
 import { formatWhole, localizeDigits } from "./format";
-import { GUIDE, INSTALL_COMMAND, LICENSE, RELEASES, REPO } from "./links";
+import { GUIDE, INSTALL_COMMAND, LICENSE, PRICES, RELEASES, REPO } from "./links";
 import { useReveal } from "./motion";
 import { useT, type Key } from "./strings";
 
@@ -181,6 +181,7 @@ export function Landing() {
           <Lockup large laid />
         </a>
         <nav className="lp-links" aria-label={lang === "fa" ? "بخش‌ها" : "Sections"}>
+          <a href={PRICES}>{t("prNav")}</a>
           <a href="#how">{t("lpNavHow")}</a>
           <a href="#features">{t("lpNavFeatures")}</a>
           <a href="#install">{t("lpNavInstall")}</a>

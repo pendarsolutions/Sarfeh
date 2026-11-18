@@ -18,14 +18,17 @@ function initialLang(): Lang {
 
 const Ctx = createContext<{ lang: Lang; setLang: (l: Lang) => void }>({ lang: "fa", setLang: () => {} });
 
-export function LangProvider({ children }: { children: ReactNode }) {
+const HOME_TITLES = ["FinOps agent: هزینه دقیق زیرساخت ابری", "FinOps agent: exact cloud costs for Iranian providers"] as const;
+
+/** `titles` is the page's own tab title, [fa, en]. */
+export function LangProvider({ children, titles = HOME_TITLES }: { children: ReactNode; titles?: readonly [string, string] }) {
   const [lang, setLangState] = useState<Lang>(initialLang);
   useEffect(() => {
     const el = document.documentElement;
     el.lang = lang;
     el.dir = lang === "fa" ? "rtl" : "ltr";
-    document.title = lang === "fa" ? "FinOps agent: هزینه دقیق زیرساخت ابری" : "FinOps agent: exact cloud costs for Iranian providers";
-  }, [lang]);
+    document.title = titles[lang === "fa" ? 0 : 1];
+  }, [lang, titles]);
   const setLang = useCallback((l: Lang) => {
     setLangState(l);
     try {
