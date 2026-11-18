@@ -1,0 +1,23 @@
+# The public Sarfeh website at pendarsolutions.ir/sarfeh/: static files, served by nginx.
+# Lives in ~/sarfeh on Pendar's company server; deploy/sarfeh-site/deploy.sh puts the files in ./www.
+# The edge nginx (mn2-nginx) reaches it as sarfeh-site:80 on infrastructure_default (edge.conf).
+name: sarfeh-site
+services:
+  web:
+    image: nginx:alpine
+    container_name: sarfeh-site
+    restart: unless-stopped
+    volumes:
+      # the site lives under /sarfeh/ inside the container too, so the edge passes paths through unchanged
+      - ./www:/usr/share/nginx/html/sarfeh:ro
+      - ./site.conf:/etc/nginx/conf.d/default.conf:ro
+    networks: [infrastructure_default]
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/sarfeh/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    mem_limit: 64m
+networks:
+  infrastructure_default:
+    external: true

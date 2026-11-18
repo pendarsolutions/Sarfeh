@@ -3,7 +3,6 @@ import type { CSSProperties } from "react";
 import { LAYING, MARKS } from "@pendar/logo";
 import { useT } from "./strings";
 
-export const PRODUCT_NAME = "FinOps agent";
 
 /** The wordmark as Pendar's animated logo lays it: brick by brick, then the tiles of «پ» glaze one by one. */
 function LaidWordmark({ lang, label }: { lang: "fa" | "en"; label?: string }) {
@@ -42,12 +41,12 @@ function Wordmark({ label, laid }: { label?: string; laid?: boolean }) {
 
 /** Pendar's wordmark, a thin rule and the product name. `laid` lays the wordmark when it first appears. */
 export function Lockup({ large, laid }: { large?: boolean; laid?: boolean }) {
-  const { lang } = useT();
+  const { t, lang } = useT();
   return (
     <span className={`lockup${large ? " lockup-lg" : ""}${laid ? " is-laying" : ""}`} style={laid ? ({ "--n": LAYING[lang].bricks.length } as CSSProperties) : undefined}>
       <Wordmark label={lang === "en" ? "Pendar" : "پندار"} laid={laid} />
       <span className="lockup-rule" aria-hidden />
-      <span className="lockup-name">{PRODUCT_NAME}</span>
+      <span className="lockup-name">{t("appName")}</span>
     </span>
   );
 }

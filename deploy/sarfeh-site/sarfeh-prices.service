@@ -1,0 +1,12 @@
+[Unit]
+Description=Sarfeh: read the providers' price pages and rewrite pendarsolutions.ir/sarfeh/prices.json
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=ubuntu
+WorkingDirectory=/home/ubuntu/sarfeh
+ExecStart=/home/ubuntu/sarfeh/venv/bin/python /home/ubuntu/sarfeh/src/scripts/refresh_prices.py --state /home/ubuntu/sarfeh/state/prices-state.json --out /home/ubuntu/sarfeh/www/prices.json
+TimeoutStartSec=15min
+Nice=10

@@ -13,10 +13,12 @@ from pricing_engine.models import CatalogItem
 
 from .base import HttpAdapterMixin, ParseError, RawCatalog, base_item
 
-PLAN_RE = re.compile(r'\{\\"id\\":\\"\d+\\",\\"name\\".*?\\"source_hub\\":\\"[a-z]+\\"\}')
+#: one plan object; it may not run on into the next object, or a plan without a hub (a hosting package) would
+#: swallow the plan after it and both would be lost
+PLAN_RE = re.compile(r'\{\\"id\\":\\"\d+\\",\\"name\\"(?:(?!\{\\"id\\":).)*?\\"source_hub\\":\\"[a-z]+\\"\}')
 FAMILIES = {"زیرساخت ایران": "Iran Infrastructure", "چابکان": "Chabokan"}
 #: stable identities for plans already in the catalog under an English SKU
-KNOWN_SKUS = {"اقتصادی": "economic-tehran"}
+KNOWN_SKUS = {"اقتصادی": "economic-tehran", "ارزان": "cheap-tehran"}
 
 
 def _plans(content: str) -> list[dict]:
@@ -33,7 +35,7 @@ class ChabokanAdapter(HttpAdapterMixin):
     provider_id = "chabokan"
     source_url = "https://chabokan.net/products/cloudserver/"
     scope = {("compute_vm", "Iran Infrastructure"), ("compute_vm", "Chabokan")}
-    key_skus = {"NCO-small40-MHD", "NGP-small40-THR"}
+    key_skus = {"economic-tehran", "NGP-small40-THR"}  # Mashhad (NCO-*-MHD) closed in November 2026
 
     def normalize_catalog(self, raw: RawCatalog) -> list[CatalogItem]:
         items: list[CatalogItem] = []

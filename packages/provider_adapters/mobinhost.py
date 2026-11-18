@@ -78,7 +78,10 @@ class MobinHostAdapter(HttpAdapterMixin):
             unit = card.select_one(".regular-price .unit")
             if price is None or unit is None or not ("هزار" in unit.get_text() or "میلیون" in unit.get_text()):
                 raise ParseError(f"{sku}: price or its unit not recognised")
-            availability = "sold_out" if "ناموجود" in card.get_text() else "available"
+            # "out of stock", "capacity used up", or a card the page greys out
+            sold_out = ("ناموجود" in card.get_text() or "ظرفیت به پایان" in card.get_text()
+                        or "mh-vps-disabled" in (card.get("class") or []))
+            availability = "sold_out" if sold_out else "available"
             out.setdefault(sku, base_item(
                 self.provider_id, raw, service_type="compute_vm", pricing_model="fixed_sku", product_family=family,
                 sku=sku, name=title.get_text(strip=True), billing_period="month", source_url=url,

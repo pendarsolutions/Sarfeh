@@ -46,8 +46,22 @@ and versions follow [Semantic Versioning](https://semver.org/). Until 1.0, a min
 
 ### Changed
 
+- **The public price table is live.** `scripts/refresh_prices.py` reads every provider's page with the same adapters
+  and guardrails as an installation, keeps each provider's last good prices when a page can't be read, and writes
+  `prices.json`; on pendarsolutions.ir/sarfeh/ it runs twice a day (`deploy/sarfeh-site`). A price read more than 14
+  days ago is marked on the page.
+- The website is called **Sarfeh** (صرفه), and can be built for a folder (`SITE_BASE=/sarfeh/`).
 - **Editing an inventory no longer takes its cost pages away.** Costs, savings, comparison and reports keep using
   the version confirmed last, with a note, until the changes are confirmed.
+
+### Fixed
+
+- **IranServer prices were read with CPU and memory swapped** after its page moved the memory column ahead of the
+  CPU column: NGP-large80 came out as 32 vCPU and 4 GB. Columns are now found by their headers.
+- **Chabokan's cheapest plan («ارزان», 1 vCPU, 2 GB) was missing:** a hosting package just before it on the page made
+  both unreadable. Chabokan's Mashhad plans are gone from its page, so they no longer count as expected.
+- **MobinHost plans whose capacity is used up** («ظرفیت به پایان رسید») counted as available. They are sold out, and
+  the price page leaves out plans that aren't available.
 
 ## [0.3.1] — 2026-11-16
 

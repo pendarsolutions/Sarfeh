@@ -18,7 +18,7 @@ function initialLang(): Lang {
 
 const Ctx = createContext<{ lang: Lang; setLang: (l: Lang) => void }>({ lang: "fa", setLang: () => {} });
 
-const HOME_TITLES = ["FinOps agent: هزینه دقیق زیرساخت ابری", "FinOps agent: exact cloud costs for Iranian providers"] as const;
+const HOME_TITLES = ["صرفه: هزینه دقیق زیرساخت ابری", "Sarfeh: exact cloud costs for Iranian providers"] as const;
 
 /** `titles` is the page's own tab title, [fa, en]. */
 export function LangProvider({ children, titles = HOME_TITLES }: { children: ReactNode; titles?: readonly [string, string] }) {

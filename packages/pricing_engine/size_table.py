@@ -90,7 +90,7 @@ def offers_for(snapshot: CatalogSnapshot, cpu: int, ram: int,
                 found.append(_offer(pid, "by_size", priced, size, strategy))
         else:
             for row in snapshot.provider_items(pid):
-                if row.service_type != "compute_vm" or not row.sku:
+                if row.service_type != "compute_vm" or not row.sku or row.availability != "available":
                     continue
                 cand = _workload(src, provider_id=pid, sku=row.sku, storage_type=row.storage_type)
                 c = compare_resource(src, cand, snapshot, ctx, candidate_row=row)

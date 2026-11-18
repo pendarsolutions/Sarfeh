@@ -2,7 +2,7 @@ import { useLang, type Lang } from "./lang";
 
 /** [fa, en]. Technical terms (FinOps, SKU, Docker...) stay in English inside Persian text. */
 const S = {
-  appName: ["FinOps agent", "FinOps agent"],
+  appName: ["صرفه", "Sarfeh"],
   poweredBy: ["قدرت‌گرفته از پندار", "Powered by Pendar"],
   providerDist: ["توزیع بر اساس ارائه‌دهنده", "By provider"],
   copy: ["کپی", "Copy"],
@@ -54,7 +54,7 @@ const S = {
   lpT4: ["تفاوت‌ها را برای ارزان‌تر نشان دادن پنهان نمی‌کنیم", "Hide differences to make a cheaper plan look better"],
   lpFinalTitle: ["اولین تحلیل را در چند دقیقه ببینید", "See your first analysis in minutes"],
   lpFinalBody: ["نصبش کنید، سرورهایتان را اضافه کنید و ببینید هر کدام واقعاً چقدر هزینه دارد.", "Install it, add your servers, and see what each one really costs."],
-  lpFooter: ["FinOps agent — شفافیت هزینه زیرساخت در ایران", "FinOps agent — infrastructure cost transparency for Iran"],
+  lpFooter: ["صرفه — شفافیت هزینه زیرساخت در ایران", "Sarfeh — infrastructure cost transparency for Iran"],
   // ---- the site's own
   lpNavInstall: ["نصب", "Install"],
   lpCtaInstall: ["روی سرور خودتان نصب کنید", "Install on your server"],
@@ -117,6 +117,7 @@ const S = {
   prDatacenter: ["مرکز داده", "Datacenter"],
   prSource: ["منبع قیمت", "Price source"],
   prReadOn: ["خوانده‌شده در {date}", "read on {date}"],
+  prOld: ["بیش از {n} روز پیش خوانده شده؛ ممکن است عوض شده باشد", "Read over {n} days ago; it may have changed"],
   prMissingTitle: ["در این مقایسه نیستند", "Not in this comparison"],
   prMissingStart: ["فقط «شروع قیمت» را منتشر می‌کند، پس قیمت دقیقی برای مقایسه نیست.", "It publishes starting prices only, so there is no exact price to compare."],
   prMissingSize: ["پلنی که این اندازه را پوشش دهد ندارد، یا قیمتش دقیق به دست نمی‌آید.", "It sells no plan that covers this size, or the plan can't be priced exactly."],
@@ -145,8 +146,8 @@ const S = {
   prError: ["قیمت‌ها بارگیری نشد. صفحه را دوباره باز کنید.", "The prices didn't load. Reload the page to try again."],
   prCtaTitle: ["همین حساب را برای سرورهای خودتان می‌خواهید؟", "Want this for your own servers?"],
   prCtaBody: [
-    "FinOps agent را روی سرور خودتان نصب کنید تا هزینه دقیق زیرساختتان و جاهایی که می‌شود کمتر پرداخت را ببینید.",
-    "Install FinOps agent on your own server to see the exact cost of your setup and where you could pay less.",
+    "صرفه را روی سرور خودتان نصب کنید تا هزینه دقیق زیرساختتان و جاهایی که می‌شود کمتر پرداخت را ببینید.",
+    "Install Sarfeh on your own server to see the exact cost of your setup and where you could pay less.",
   ],
   prCtaButton: ["معرفی و نصب", "See the tool"],
 } as const satisfies Record<string, readonly [string, string]>;

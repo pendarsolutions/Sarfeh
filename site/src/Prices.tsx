@@ -31,6 +31,8 @@ interface Offer {
   datacenter: string | null;
   source_url: string | null;
   read_on: string | null;
+  /** set by the table when the row was read too long ago: how many days counts as old */
+  old_after_days?: number;
 }
 interface Missing {
   provider_id: string;
@@ -172,6 +174,12 @@ function OfferRow({ offer, rank, size, table }: { offer: Offer; rank: number; si
             {host(offer.source_url)}
           </a>
           {offer.read_on && <> · {fill(t("prReadOn"), { date: day(offer.read_on, lang) })}</>}
+          {offer.old_after_days !== undefined && (
+            <>
+              {" "}
+              <span className="badge badge-warn">{fill(t("prOld"), { n: localizeDigits(String(offer.old_after_days), lang) })}</span>
+            </>
+          )}
         </p>
       )}
     </li>

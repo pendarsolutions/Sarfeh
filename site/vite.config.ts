@@ -23,6 +23,8 @@ const pricesSlash: Plugin = {
 };
 
 export default defineConfig({
+  // where the site is served: "/" by default, or a folder such as SITE_BASE=/sarfeh/ for pendarsolutions.ir/sarfeh/
+  base: process.env.SITE_BASE ?? "/",
   plugins: [react(), pricesSlash],
   // two pages: the home page, and the price comparison at /prices/
   build: { rollupOptions: { input: { home: page("index.html"), prices: page("prices/index.html") } } },

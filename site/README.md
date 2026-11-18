@@ -57,5 +57,7 @@ GitHub Pages once that's switched on:
 The workflow also puts the latest release's `install.sh` at `/install.sh`. To advertise the shorter
 `curl -fsSL https://your-domain/install.sh | sudo bash`, change `INSTALL_URL` in `src/links.ts`.
 
+**pendarsolutions.ir/sarfeh/** is where it runs today, with live prices: see [deploy/sarfeh-site](../deploy/sarfeh-site/README.md). To build for a folder like that one, set `SITE_BASE=/sarfeh/`.
+
 Any static host works as well: copy `site/dist` to nginx, Caddy, or object storage behind a CDN. Hosting inside Iran
 makes the site faster there.

@@ -1,0 +1,11 @@
+[Unit]
+Description=Sarfeh price refresh, twice a day (as installations sync)
+
+[Timer]
+OnCalendar=*-*-* 03:15:00 Asia/Tehran
+OnCalendar=*-*-* 15:15:00 Asia/Tehran
+RandomizedDelaySec=5min
+Persistent=true
+
+[Install]
+WantedBy=timers.target
