@@ -9,7 +9,7 @@ set -euo pipefail
 
 VERSION="0.3.1"                         # the version `setup` installs; scripts/bump-version.sh sets it
 IMAGE_PREFIX="ghcr.io/pendarsolutions"  # where the release workflow publishes the images
-REPO="pendarsolutions/FinOps"
+REPO="pendarsolutions/Sarfeh"
 
 # The FINOPS_* overrides are for tests and unusual layouts.
 SELF="$(readlink -f "${BASH_SOURCE[0]:-$0}" 2>/dev/null || true)"  # empty when read from a pipe (install.sh --help)

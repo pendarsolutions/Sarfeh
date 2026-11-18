@@ -7,8 +7,8 @@
 Open-source cost management for startups and small teams using Iranian cloud and VPS providers.
 Install it on one server and see the real cost and usage of all of them.
 
-[![CI](https://github.com/pendarsolutions/FinOps/actions/workflows/ci.yml/badge.svg)](https://github.com/pendarsolutions/FinOps/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/pendarsolutions/FinOps)](https://github.com/pendarsolutions/FinOps/releases/latest)
+[![CI](https://github.com/pendarsolutions/Sarfeh/actions/workflows/ci.yml/badge.svg)](https://github.com/pendarsolutions/Sarfeh/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/pendarsolutions/Sarfeh)](https://github.com/pendarsolutions/Sarfeh/releases/latest)
 [![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 ![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-3776AB.svg)
 ![Status: early](https://img.shields.io/badge/status-early-orange.svg)
@@ -48,7 +48,7 @@ comparison and savings you can check yourself. You don't need Terraform, tagging
 **Install on a server:**
 
 ```bash
-curl -fsSL https://github.com/pendarsolutions/FinOps/releases/latest/download/install.sh | sudo bash
+curl -fsSL https://github.com/pendarsolutions/Sarfeh/releases/latest/download/install.sh | sudo bash
 ```
 
 It asks a few questions (or takes them as options, such as `--domain finops.example.ir`), then prints the address of
@@ -64,7 +64,7 @@ sudo finops-agent doctor                                   # check everything, w
 ```
 
 If Docker Hub isn't reachable from your server, use the offline bundle from the
-[latest release](https://github.com/pendarsolutions/FinOps/releases/latest), or
+[latest release](https://github.com/pendarsolutions/Sarfeh/releases/latest), or
 [a mirror](docs/installation.md#if-foreign-registries-are-blocked). The [installation guide](docs/installation.md) has
 the rest, including running behind your own reverse proxy.
 

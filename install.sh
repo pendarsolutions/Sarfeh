@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # FinOps agent installer. Run it on one server; the others are added from the dashboard.
 #
-#   curl -fsSL https://github.com/pendarsolutions/FinOps/releases/latest/download/install.sh | sudo bash
+#   curl -fsSL https://github.com/pendarsolutions/Sarfeh/releases/latest/download/install.sh | sudo bash
 #   curl -fsSL .../install.sh | sudo bash -s -- --domain finops.example.ir --yes
 #   sudo ./install.sh [options]                  from a clone, or from an extracted offline bundle
 #

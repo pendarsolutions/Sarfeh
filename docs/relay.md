@@ -28,7 +28,7 @@ On the relay server, with Docker, a domain pointing at it, and ports 80 and 443 
 
 ```bash
 sudo mkdir -p /opt/finops-relay && cd /opt/finops-relay
-sudo git clone https://github.com/pendarsolutions/FinOps.git src
+sudo git clone https://github.com/pendarsolutions/Sarfeh.git src
 sudo cp src/deploy/relay/compose.yml src/deploy/relay/Caddyfile .
 printf 'FINOPS_RELAY_BOT_TOKEN=%s\nRELAY_DOMAIN=%s\n' '<token from @botfather>' 'bot.example.ir' | sudo tee .env >/dev/null
 sudo chmod 600 .env

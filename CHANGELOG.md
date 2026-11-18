@@ -89,7 +89,7 @@ system.
 
 ### Added
 
-- **One-line install:** `curl -fsSL https://github.com/pendarsolutions/FinOps/releases/latest/download/install.sh | sudo bash`.
+- **One-line install:** `curl -fsSL https://github.com/pendarsolutions/Sarfeh/releases/latest/download/install.sh | sudo bash`.
   Each release attaches a one-file, readable `install.sh` that needs nothing else. In a terminal it asks for the
   domain, port, nightly backups, email and Bale; with options (`--domain`, `--set KEY=VALUE`, `--yes`...) it asks
   nothing, for scripts and Ansible.

@@ -5,7 +5,7 @@ be empty: if ports 80 and 443 are taken, for example by nginx, the installer pic
 the existing service alone. You can also put it [behind your own reverse proxy](#behind-your-own-reverse-proxy).
 
 ```bash
-curl -fsSL https://github.com/pendarsolutions/FinOps/releases/latest/download/install.sh | sudo bash
+curl -fsSL https://github.com/pendarsolutions/Sarfeh/releases/latest/download/install.sh | sudo bash
 ```
 
 In a terminal, it asks for a domain (or uses the server's IP address), a port, nightly backups, and optionally email
@@ -15,7 +15,7 @@ closes after that, and admins add everyone else from **Settings**.
 The installer is one readable file. To look before running it, download it first:
 
 ```bash
-curl -fsSLO https://github.com/pendarsolutions/FinOps/releases/latest/download/install.sh
+curl -fsSLO https://github.com/pendarsolutions/Sarfeh/releases/latest/download/install.sh
 less install.sh
 sudo bash install.sh
 ```
@@ -28,7 +28,7 @@ then on, you run the installation with that command.
 Give options and it asks nothing, which suits scripts, cloud-init and Ansible:
 
 ```bash
-curl -fsSL https://github.com/pendarsolutions/FinOps/releases/latest/download/install.sh | sudo bash -s -- \
+curl -fsSL https://github.com/pendarsolutions/Sarfeh/releases/latest/download/install.sh | sudo bash -s -- \
   --domain finops.example.ir \
   --set SMTP_HOST=mail.example.ir --set SMTP_USER=alerts@example.ir --set ALERT_EMAIL_TO=ops@example.ir
 echo "$SMTP_PASSWORD" | sudo finops-agent config set SMTP_PASSWORD
@@ -148,7 +148,7 @@ curl -fsSL .../install.sh | sudo bash -s -- --registry-mirror https://mirror.exa
 ```
 
 **Use an offline bundle.** It holds every image the app needs, so nothing else is downloaded except Docker itself
-if it's missing. Each [release](https://github.com/pendarsolutions/FinOps/releases) has one attached, with a checksum file.
+if it's missing. Each [release](https://github.com/pendarsolutions/Sarfeh/releases) has one attached, with a checksum file.
 Download both on a machine with good internet access and copy them over:
 
 ```bash
@@ -280,6 +280,6 @@ To install a branch or a change of your own, clone the repository and run the in
 next to it, and builds the images on the server if no registry has them:
 
 ```bash
-git clone https://github.com/pendarsolutions/FinOps.git && cd FinOps
+git clone https://github.com/pendarsolutions/Sarfeh.git && cd Sarfeh
 sudo ./install.sh --domain finops.example.ir          # add --build to always build here
 ```

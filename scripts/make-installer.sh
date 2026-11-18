@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Build the one-file installer: install.sh with the files it puts on the server (deploy/) inside it, so that
-#   curl -fsSL https://github.com/pendarsolutions/FinOps/releases/latest/download/install.sh | sudo bash
+#   curl -fsSL https://github.com/pendarsolutions/Sarfeh/releases/latest/download/install.sh | sudo bash
 # needs nothing else. Every release attaches it, and the offline bundle carries it.
 #
 #   scripts/make-installer.sh [OUT]        default OUT: dist/install.sh

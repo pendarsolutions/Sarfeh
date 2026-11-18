@@ -125,7 +125,7 @@ function Shell({ navOpen, setNavOpen }: { navOpen: boolean; setNavOpen: (f: (o: 
 }
 
 /** Where the demo's banner sends people who want it for their own servers. */
-const INSTALL_GUIDE = "https://github.com/pendarsolutions/FinOps#quick-start";
+const INSTALL_GUIDE = "https://github.com/pendarsolutions/Sarfeh#quick-start";
 
 /**
  * In a public demo: says what this is, and stays in view. When a visitor presses something that would change the
