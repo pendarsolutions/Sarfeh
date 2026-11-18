@@ -69,4 +69,4 @@ jobs:
           (cd upload && sha256sum install.sh "finops-agent-$VERSION.tar.gz" > SHA256SUMS)
           sed -e "s|{{REPO}}|$GITHUB_REPOSITORY|g" -e "s|{{VERSION}}|$VERSION|g" "docs/releases/$GITHUB_REF_NAME.md" > notes.md
           gh release create "$GITHUB_REF_NAME" upload/install.sh "upload/finops-agent-$VERSION.tar.gz" upload/SHA256SUMS \
-            --title "FinOps agent $VERSION" --notes-file notes.md --verify-tag
+            --title "Sarfeh $VERSION" --notes-file notes.md --verify-tag
