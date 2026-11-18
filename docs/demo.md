@@ -7,7 +7,7 @@ it, and it needs an installation of its own.
 ## Turning it on
 
 ```bash
-sudo finops-agent config set DEMO_MODE=true     # and DEMO_MODE=false to turn it off again
+sudo sarfeh config set DEMO_MODE=true     # and DEMO_MODE=false to turn it off again
 ```
 
 The sample workspace is made the first time someone opens the dashboard.

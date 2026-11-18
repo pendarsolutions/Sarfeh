@@ -51,6 +51,11 @@ and versions follow [Semantic Versioning](https://semver.org/). Until 1.0, a min
   `prices.json`; on pendarsolutions.ir/sarfeh/ it runs twice a day (`deploy/sarfeh-site`). A price read more than 14
   days ago is marked on the page.
 - The website is called **Sarfeh** (صرفه), and can be built for a folder (`SITE_BASE=/sarfeh/`).
+- **The command is `sarfeh`:** `sudo sarfeh status`, `sudo sarfeh upgrade` and so on. `finops-agent` still works as
+  another name for it, and an installation that upgrades gets the new name without running the installer again. The
+  install folder (`/opt/finops-agent`), the Docker project and the image names are unchanged, so existing data stays
+  where it is.
+- The repository is now **pendarsolutions/Sarfeh**; links to the old name redirect.
 - **Editing an inventory no longer takes its cost pages away.** Costs, savings, comparison and reports keep using
   the version confirmed last, with a note, until the changes are confirmed.
 

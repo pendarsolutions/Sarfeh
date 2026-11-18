@@ -6,7 +6,7 @@ Registry, and publishes a GitHub release with `install.sh`, the bundle, their ch
 
 `install.sh` on the release is what `curl -fsSL .../releases/latest/download/install.sh | sudo bash` downloads, so a
 release is live for new installs the moment it's published. Existing installations get it with
-`sudo finops-agent upgrade`.
+`sudo sarfeh upgrade`.
 
 1. Set the version everywhere it appears:
 

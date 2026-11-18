@@ -335,6 +335,17 @@ def test_status_and_doctor(box):
     assert r.returncode == 1 and "worker isn't running" in r.stdout and "9.9.9 is out" in r.stdout
 
 
+def test_setup_links_sarfeh_and_the_old_name(box):
+    # an installation that upgrades itself never runs install.sh again, so setup is what gives it the new name
+    shutil.copy(box.cli, box.dir / "finops-agent")
+    (box.dir / "finops-agent").chmod(0o755)
+    box.bin.mkdir()
+    box.ok("setup", "--yes")
+    for name in ("sarfeh", "finops-agent"):
+        r = box.run("version", script=box.bin / name)
+        assert r.returncode == 0 and r.stdout.startswith("sarfeh "), (name, r.stdout, r.stderr)
+
+
 def test_uninstall_keeps_the_data_unless_asked(box):
     box.ok("setup", "--yes")
     box.bin.mkdir()
@@ -350,7 +361,7 @@ def test_commands_need_root(box):
     box.ok("setup", "--yes")
     (box.fakes / "id").write_text("#!/usr/bin/env bash\necho 1000\n", newline="\n")
     r = box.run("config", "set", "SMTP_HOST=x.example.ir")
-    assert r.returncode != 0 and "sudo finops-agent config" in r.stderr
+    assert r.returncode != 0 and "sudo sarfeh config" in r.stderr
     assert box.ok("config", "keys").stdout.count("SMTP_") >= 5  # reading the list needs nothing
 
 

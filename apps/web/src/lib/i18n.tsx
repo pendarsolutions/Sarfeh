@@ -362,7 +362,7 @@ const dict = {
   invDelete: ["حذف", "Delete"],
   invDeleteConfirm: ["«{name}» حذف شود؟ از داشبورد همه اعضای سازمان برداشته می‌شود.", "Delete «{name}»? It's removed from the dashboard for everyone in your organization."],
   dayRateSample: ["عدد نمونه، از زیرساخت نمونه", "Sample figure, from the sample workspace"],
-  apiNoWorker: ["کارهای پس‌زمینه اجرا نمی‌شوند؛ مدیر سرور می‌تواند با finops-agent doctor بررسی کند.", "Background jobs aren't running. A server admin can check with: finops-agent doctor"],
+  apiNoWorker: ["کارهای پس‌زمینه اجرا نمی‌شوند؛ مدیر سرور می‌تواند با sarfeh doctor بررسی کند.", "Background jobs aren't running. A server admin can check with: sarfeh doctor"],
   // builder
   cart: ["سبد زیرساخت", "Infrastructure cart"],
   cartEmpty: ["هنوز چیزی اضافه نکرده‌اید.", "Nothing added yet."],

@@ -83,7 +83,7 @@ def cmd_reset_password(args: argparse.Namespace) -> None:
 
 
 def cmd_test_alerts(args: argparse.Namespace) -> None:
-    """Send one test message through each alert channel that's set up, and say which worked (`finops-agent test-alerts`)."""
+    """Send one test message through each alert channel that's set up, and say which worked (`sarfeh test-alerts`)."""
     from .alerts import _send_bale, _send_email
 
     s = get_settings()
@@ -114,8 +114,8 @@ def cmd_test_alerts(args: argparse.Namespace) -> None:
             print(f"bale: failed: {type(exc).__name__}" + (f" (HTTP {status})" if status else ""))
             failed += 1
     if not tried:
-        sys.exit("no alert channel is set up. Email: finops-agent config set SMTP_HOST=... ALERT_EMAIL_TO=...; "
-                 "Bale: finops-agent config set BALE_CHAT_ID=... and BALE_BOT_TOKEN")
+        sys.exit("no alert channel is set up. Email: sarfeh config set SMTP_HOST=... ALERT_EMAIL_TO=...; "
+                 "Bale: sarfeh config set BALE_CHAT_ID=... and BALE_BOT_TOKEN")
     if failed:
         sys.exit(1)
 

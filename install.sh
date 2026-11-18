@@ -5,8 +5,8 @@
 #   curl -fsSL .../install.sh | sudo bash -s -- --domain finops.example.ir --yes
 #   sudo ./install.sh [options]                  from a clone, or from an extracted offline bundle
 #
-# It installs Docker if it's missing, puts the app in /opt/finops-agent and the `finops-agent` command in
-# /usr/local/bin, then runs `finops-agent setup`: in a terminal that asks a few questions, and with options it asks
+# It installs Docker if it's missing, puts the app in /opt/finops-agent and the `sarfeh` command in
+# /usr/local/bin, then runs `sarfeh setup`: in a terminal that asks a few questions, and with options it asks
 # nothing. Running it again upgrades and keeps your settings, secrets and data. All options: --help.
 #
 # The released install.sh is this file with deploy/ inside it (scripts/make-installer.sh), so it needs nothing else.
@@ -42,7 +42,7 @@ Installer options
   --registry-mirror URL   Docker registry mirror, for when Docker Hub or ghcr.io isn't reachable
 
 EOF
-  # then everything `finops-agent setup` takes
+  # then everything `sarfeh setup` takes
   deploy_file finops-agent | bash -s -- setup --help | sed 1,2d
 }
 
@@ -105,6 +105,8 @@ main() {
   put compose.install.yml "$dir/compose.yml" 644
   put backup.sh "$dir/backup.sh" 700
   put finops-agent "$dir/finops-agent" 755
+  # `sarfeh` is the command; `finops-agent`, its name before 0.4, still works
+  ln -sfn "$dir/finops-agent" "$bin_dir/sarfeh"
   ln -sfn "$dir/finops-agent" "$bin_dir/finops-agent"
 
   # setup asks its questions on the terminal; when this script came through a pipe, stdin is that pipe

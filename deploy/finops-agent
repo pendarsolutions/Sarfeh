@@ -2,7 +2,7 @@
 # finops-agent: install, configure and run FinOps agent on this server.
 # install.sh puts it at /opt/finops-agent/finops-agent and links it as /usr/local/bin/finops-agent.
 #
-#   sudo finops-agent help
+#   sudo sarfeh help
 #
 # Everything it changes lives in /opt/finops-agent: .env (settings and secrets), compose.yml, Caddyfile, backup.sh.
 set -euo pipefail
@@ -30,9 +30,9 @@ die()  { printf '%sError:%s %s\n' "$R" "$N" "$*" >&2; exit 1; }
 
 usage() {
   cat <<EOF
-finops-agent $VERSION: run FinOps agent on this server.
+sarfeh $VERSION: run Sarfeh on this server.
 
-Usage: sudo finops-agent COMMAND [options]
+Usage: sudo sarfeh COMMAND [options]
 
 Set up
   setup [options]            Install, or apply a new version's settings (the installer runs this; see setup --help)
@@ -72,7 +72,7 @@ EOF
 
 setup_usage() {
   cat <<EOF
-Usage: sudo finops-agent setup [options]
+Usage: sudo sarfeh setup [options]
 
 In a terminal with no options it asks a few questions. With options, or without a terminal, it asks nothing.
 Run again, it keeps the settings, secrets and data, and applies any new version's settings.
@@ -92,7 +92,7 @@ Images
   --image-prefix PREFIX   Registry and owner of the images (default: $IMAGE_PREFIX)
 
 Other
-  --set KEY=VALUE         Any setting from \`finops-agent config keys\`; repeat it for more
+  --set KEY=VALUE         Any setting from \`sarfeh config keys\`; repeat it for more
   --daily-backup          Back up every night at 03:30, keeping 14 (the default)
   --no-daily-backup       Don't
   --yes                   Ask nothing; take the defaults
@@ -101,7 +101,7 @@ EOF
 
 # ------------------------------------------------------------------ helpers
 
-need_root() { [ "$(id -u)" = 0 ] || die "run this as root: sudo finops-agent ${CMD:-}"; }
+need_root() { [ "$(id -u)" = 0 ] || die "run this as root: sudo sarfeh ${CMD:-}"; }
 need_installed() {
   [ -f "$ENV_FILE" ] && [ -f "$DIR/compose.yml" ] ||
     die "FinOps agent isn't installed in $DIR. Install it with: curl -fsSL https://github.com/$REPO/releases/latest/download/install.sh | sudo bash"
@@ -206,7 +206,7 @@ wait_healthy() {
     sleep "${FINOPS_HEALTH_WAIT:-5}"
   done
   compose logs --tail 30 api >&2 || true
-  die "the app didn't become healthy. The logs are above; more with: sudo finops-agent logs"
+  die "the app didn't become healthy. The logs are above; more with: sudo sarfeh logs"
 }
 
 # ------------------------------------------------------------------ settings people may change
@@ -271,9 +271,9 @@ check_setting() {
   local key="$1" val="$2" kind
   kind="$(setting_kind "$key")"
   case "$kind" in
-    "") [ -n "${FORCE:-}" ] || die "$key isn't a setting this knows (see: finops-agent config keys); add --force to set it anyway"
+    "") [ -n "${FORCE:-}" ] || die "$key isn't a setting this knows (see: sarfeh config keys); add --force to set it anyway"
         printf '%s' "$val"; return ;;
-    managed:*) die "$key is set by: sudo finops-agent ${kind#managed:}" ;;
+    managed:*) die "$key is set by: sudo sarfeh ${kind#managed:}" ;;
     fixed) die "$key can't be changed here. $(printf '%s\n' "$SETTINGS" | awk -F'|' -v k="$key" '$1 == k { print $3 }')." ;;
   esac
   [ -n "$val" ] || { printf ''; return; }
@@ -293,14 +293,21 @@ check_setting() {
 
 show_value() { if is_secret "$1" && [ -n "$2" ]; then printf '(hidden)'; else printf '%s' "$2"; fi; }
 
+# `sarfeh` is the command; `finops-agent`, its name before 0.4, still works. Linked on every setup, so an
+# installation that upgrades itself (and never runs install.sh again) gets the new name too.
+link_commands() {
+  [ -d "$BIN_DIR" ] && [ -w "$BIN_DIR" ] && [ -x "$DIR/finops-agent" ] || return 0
+  ln -sfn "$DIR/finops-agent" "$BIN_DIR/sarfeh" && ln -sfn "$DIR/finops-agent" "$BIN_DIR/finops-agent" || true
+}
+
 install_cron() {
   local cron="$CRON_DIR/finops-agent-backup"
   if [ "$(env_get FINOPS_DAILY_BACKUP)" = false ]; then rm -f "$cron"; return 0; fi
   if [ ! -d "$CRON_DIR" ]; then
-    warn "no $CRON_DIR here, so there's no daily backup. Run 'finops-agent backup --keep 14' from your own scheduler."
+    warn "no $CRON_DIR here, so there's no daily backup. Run 'sarfeh backup --keep 14' from your own scheduler."
     return 0
   fi
-  printf '%s\n' "# FinOps agent: back up every night at 03:30 and keep the newest 14 (sudo finops-agent backup)" \
+  printf '%s\n' "# FinOps agent: back up every night at 03:30 and keep the newest 14 (sudo sarfeh backup)" \
     "30 3 * * * root $DIR/backup.sh --keep 14 >> /var/log/finops-agent-backup.log 2>&1" > "$cron"
   chmod 644 "$cron"
 }
@@ -308,7 +315,7 @@ install_cron() {
 # Start whatever changed (Compose recreates only the services whose settings differ) and wait until it's healthy.
 apply() {
   say "Applying"
-  quietly compose up -d --quiet-pull || die "couldn't start; see: sudo finops-agent logs"
+  quietly compose up -d --quiet-pull || die "couldn't start; see: sudo sarfeh logs"
   wait_healthy
 }
 
@@ -461,7 +468,7 @@ EOF
 
 restart_caddy() {
   # compose doesn't notice a changed Caddyfile
-  quietly compose restart caddy || warn "couldn't restart Caddy; run: sudo finops-agent restart caddy"
+  quietly compose restart caddy || warn "couldn't restart Caddy; run: sudo sarfeh restart caddy"
 }
 
 # ------------------------------------------------------------------ setup
@@ -557,7 +564,7 @@ cmd_setup() {
   target="${local_version:-$VERSION}"
   current="$(image_version)"
   if [ -n "$current" ] && [ -z "$local_version" ] && version_lt "$target" "$current"; then
-    die "$current is installed, and this installs $target. Use the installer of $current or newer, or: sudo finops-agent upgrade"
+    die "$current is installed, and this installs $target. Use the installer of $current or newer, or: sudo sarfeh upgrade"
   fi
   mem_kb="$(awk '/^MemTotal:/{print $2}' /proc/meminfo 2>/dev/null || echo 0)"
   [ "$mem_kb" -ge 1500000 ] || warn "less than 1.5 GB of memory; the app may run slowly"
@@ -599,6 +606,7 @@ cmd_setup() {
     if [ -n "${pair#*=}" ]; then env_set "${pair%%=*}" "${pair#*=}"; else env_unset "${pair%%=*}"; fi
   done
   install_cron
+  link_commands
   write_caddyfile
   prepare_images
 
@@ -613,7 +621,7 @@ cmd_setup() {
 summary() {
   local url backups
   url="$(env_get FINOPS_PUBLIC_URL)"
-  if [ "$(env_get FINOPS_DAILY_BACKUP)" = false ]; then backups="off; back up with: sudo finops-agent backup"
+  if [ "$(env_get FINOPS_DAILY_BACKUP)" = false ]; then backups="off; back up with: sudo sarfeh backup"
   else backups="every night to $BACKUP_DIR, keeping 14"; fi
   echo
   if [ -n "$1" ]; then echo "${G}FinOps agent $(image_version) is running.${N}"; else echo "${G}FinOps agent $(image_version) is running, with your settings and data.${N}"; fi
@@ -625,10 +633,10 @@ EOF
   cat <<EOF
   Backups:   $backups
              copy them off this server too
-  Manage:    sudo finops-agent status | config | logs | upgrade | doctor | help
+  Manage:    sudo sarfeh status | config | logs | upgrade | doctor | help
 EOF
   [ -n "$(env_get FINOPS_SMTP_HOST)" ] ||
-    echo "  Email:     not set up, so password resets need an admin: sudo finops-agent config set SMTP_HOST=... ALERT_EMAIL_TO=..."
+    echo "  Email:     not set up, so password resets need an admin: sudo sarfeh config set SMTP_HOST=... ALERT_EMAIL_TO=..."
   if [ "$MODE" = proxy ]; then
     echo
     echo "Point your reverse proxy at http://$HTTPS_BIND and have it pass the Host and X-Forwarded-* headers."
@@ -636,7 +644,7 @@ EOF
     if ! is_domain "$ADDRESS" || [ "$HTTPS_PORT" != 443 ]; then
       echo
       echo "Your browser will warn about the certificate. With a domain and port 443 free, it gets a real one:"
-      echo "  sudo finops-agent address --domain finops.example.ir"
+      echo "  sudo sarfeh address --domain finops.example.ir"
     fi
     if [ "$HTTPS_PORT" != 443 ]; then
       echo "If a firewall keeps port $HTTPS_PORT closed, open it, or use another address of this server:"
@@ -658,7 +666,7 @@ cmd_address() {
       --port) OPT_PORT="${2:?--port needs a number}"; shift 2 ;;
       --proxy) OPT_PROXY="${2:?--proxy needs a URL}"; shift 2 ;;
       --listen) OPT_LISTEN="${2:?--listen needs [IP:]PORT}"; shift 2 ;;
-      *) die "unknown option: $1 (see: finops-agent help)" ;;
+      *) die "unknown option: $1 (see: sarfeh help)" ;;
     esac
   done
   need_root
@@ -685,7 +693,7 @@ cmd_config() {
     keys)
       printf '%s\n' "$SETTINGS" | awk -F'|' '$2 !~ /^(managed|fixed)/ { printf "  %-36s %s\n", substr($1, index($1, "_") + 1), $3 }'
       echo
-      echo "Set with: sudo finops-agent config set KEY=VALUE (the address with 'address', versions with 'upgrade')"
+      echo "Set with: sudo sarfeh config set KEY=VALUE (the address with 'address', versions with 'upgrade')"
       return ;;
   esac
   need_root
@@ -699,7 +707,7 @@ cmd_config() {
         printf '%s=%s\n' "$key" "$(show_value "$key" "$(env_get "$key")")"
       done < "$ENV_FILE" ;;
     get)
-      [ $# -eq 1 ] || die "usage: finops-agent config get KEY"
+      [ $# -eq 1 ] || die "usage: sarfeh config get KEY"
       local key
       key="$(norm_key "$1")"
       grep -q "^$key=" "$ENV_FILE" || die "$key isn't set"
@@ -711,7 +719,7 @@ cmd_config() {
         case "$arg" in --no-restart) restart="" ;; --force) FORCE=1 ;; *) pairs+=("$arg") ;; esac
       done
       if [ ${#pairs[@]} -eq 0 ]; then
-        if [ "$sub" = set ]; then die "usage: finops-agent config set KEY=VALUE..."; else die "usage: finops-agent config unset KEY..."; fi
+        if [ "$sub" = set ]; then die "usage: sarfeh config set KEY=VALUE..."; else die "usage: sarfeh config unset KEY..."; fi
       fi
       local checked=() ok_val
       for arg in "${pairs[@]}"; do
@@ -740,8 +748,8 @@ cmd_config() {
       if [ ${#changed[@]} -eq 0 ]; then say "Nothing changed"; return; fi
       [ -z "$backup_changed" ] || install_cron
       if [ -n "$restart" ]; then apply; say "Done: the services that use these settings were restarted"
-      else say "Saved. They take effect with: sudo finops-agent restart"; fi ;;
-    *) die "unknown: config $sub (see: finops-agent help)" ;;
+      else say "Saved. They take effect with: sudo sarfeh restart"; fi ;;
+    *) die "unknown: config $sub (see: sarfeh help)" ;;
   esac
 }
 
@@ -753,14 +761,14 @@ cmd_status() {
   echo
   compose ps -a --format 'table {{.Service}}\t{{.Status}}' || true
   echo
-  if [ "$(env_get FINOPS_DAILY_BACKUP)" = false ]; then echo "Backups:  not nightly (sudo finops-agent backup)"
+  if [ "$(env_get FINOPS_DAILY_BACKUP)" = false ]; then echo "Backups:  not nightly (sudo sarfeh backup)"
   else
     newest="$(ls -1t "$BACKUP_DIR"/finops-agent-*.tar.gz 2>/dev/null | head -1 || true)"
     if [ -n "$newest" ]; then newest="$(basename "$newest")"; else newest="none yet"; fi
     echo "Backups:  nightly to $BACKUP_DIR; newest: $newest"
   fi
   if [ -n "$(env_get FINOPS_SMTP_HOST)" ]; then echo "Email:    $(env_get FINOPS_SMTP_HOST), alerts to $(env_get FINOPS_ALERT_EMAIL_TO)"
-  else echo "Email:    not set up (sudo finops-agent config set SMTP_HOST=... ALERT_EMAIL_TO=...)"; fi
+  else echo "Email:    not set up (sudo sarfeh config set SMTP_HOST=... ALERT_EMAIL_TO=...)"; fi
   if [ -n "$(env_get FINOPS_BALE_BOT_TOKEN)" ]; then echo "Bale:     chat $(env_get FINOPS_BALE_CHAT_ID)"; else echo "Bale:     not set up"; fi
 }
 
@@ -781,7 +789,7 @@ cmd_doctor() {
   local stopped=0
   for svc in $SERVICES; do
     if [[ "$running" != *" $svc "* ]]; then
-      bad "$svc isn't running: sudo finops-agent logs $svc, then sudo finops-agent start"
+      bad "$svc isn't running: sudo sarfeh logs $svc, then sudo sarfeh start"
       stopped=$((stopped + 1))
     fi
   done
@@ -791,7 +799,7 @@ cmd_doctor() {
     if compose exec -T worker celery -A finops_worker.tasks inspect ping --timeout 10 >/dev/null 2>&1; then
       ok "the background worker answers"
     else
-      bad "the background worker doesn't answer, so price updates and server collection don't run: sudo finops-agent logs worker"
+      bad "the background worker doesn't answer, so price updates and server collection don't run: sudo sarfeh logs worker"
     fi
   fi
   url="$(env_get FINOPS_PUBLIC_URL)" port="$(env_get FINOPS_HTTPS_PORT)" host="$(env_get FINOPS_ADDRESS)"
@@ -800,7 +808,7 @@ cmd_doctor() {
   else
     code="$(curl -sk -o /dev/null -w '%{http_code}' --max-time 10 --resolve "$host:$port:127.0.0.1" "https://$host:$port/health/ready" || true)"
   fi
-  if [ "$code" = 200 ]; then ok "the dashboard answers at $url"; else bad "the dashboard doesn't answer on this machine (HTTP ${code:-none}): sudo finops-agent logs caddy web api"; fi
+  if [ "$code" = 200 ]; then ok "the dashboard answers at $url"; else bad "the dashboard doesn't answer on this machine (HTTP ${code:-none}): sudo sarfeh logs caddy web api"; fi
   if [ "$(env_get FINOPS_BEHIND_PROXY)" != true ] && is_domain "$host"; then
     local resolved mine
     resolved="$(getent ahostsv4 "$host" 2>/dev/null | awk '{print $1; exit}' || true)"
@@ -822,17 +830,17 @@ cmd_doctor() {
   else ok "$((free_kb / 1048576)) GB of disk free"; fi
   mem_kb="$(awk '/^MemTotal:/{print $2}' /proc/meminfo 2>/dev/null || echo 0)"
   if [ "$mem_kb" -ge 1500000 ]; then ok "$((mem_kb / 1024)) MB of memory"; else meh "less than 1.5 GB of memory; the app may be slow"; fi
-  if [ "$(env_get FINOPS_DAILY_BACKUP)" = false ]; then meh "nightly backups are off: sudo finops-agent config set DAILY_BACKUP=true"
+  if [ "$(env_get FINOPS_DAILY_BACKUP)" = false ]; then meh "nightly backups are off: sudo sarfeh config set DAILY_BACKUP=true"
   else
-    [ -f "$CRON_DIR/finops-agent-backup" ] || bad "nightly backups are on but not scheduled: sudo finops-agent setup --yes"
+    [ -f "$CRON_DIR/finops-agent-backup" ] || bad "nightly backups are on but not scheduled: sudo sarfeh setup --yes"
     newest="$(find "$BACKUP_DIR" -maxdepth 1 -name 'finops-agent-*.tar.gz' -mtime -2 2>/dev/null | head -1 || true)"
     if [ -n "$newest" ]; then ok "a backup from the last two days: $(basename "$newest")"
-    else meh "no backup in the last two days: see /var/log/finops-agent-backup.log, or run sudo finops-agent backup"; fi
+    else meh "no backup in the last two days: see /var/log/finops-agent-backup.log, or run sudo sarfeh backup"; fi
   fi
-  if [ -n "$(env_get FINOPS_SMTP_HOST)" ]; then ok "email is set up (test it: sudo finops-agent test-alerts)"
-  else meh "email isn't set up, so password resets need an admin: sudo finops-agent config set SMTP_HOST=... ALERT_EMAIL_TO=..."; fi
+  if [ -n "$(env_get FINOPS_SMTP_HOST)" ]; then ok "email is set up (test it: sudo sarfeh test-alerts)"
+  else meh "email isn't set up, so password resets need an admin: sudo sarfeh config set SMTP_HOST=... ALERT_EMAIL_TO=..."; fi
   latest="$(latest_release)"
-  if [ -n "$latest" ] && version_lt "$(image_version)" "$latest"; then meh "$latest is out: sudo finops-agent upgrade"
+  if [ -n "$latest" ] && version_lt "$(image_version)" "$latest"; then meh "$latest is out: sudo sarfeh upgrade"
   elif [ -n "$latest" ]; then ok "$(image_version) is the latest version"; fi
   echo
   if [ "$fails" -gt 0 ]; then echo "$fails problem(s) to fix, $warns warning(s)."; return 1; fi
@@ -864,12 +872,12 @@ cmd_upgrade() {
   fi
   if [ -z "$target" ]; then
     target="$(latest_release)"
-    [ -n "$target" ] || die "couldn't ask GitHub for the latest version. Give it: sudo finops-agent upgrade 0.3.0 (or use --bundle)"
+    [ -n "$target" ] || die "couldn't ask GitHub for the latest version. Give it: sudo sarfeh upgrade 0.3.0 (or use --bundle)"
   fi
   target="${target#v}"
   if [ "$target" = "$current" ] && [ -z "$force" ]; then say "$current is installed already"; return 0; fi
   if version_lt "$target" "$current"; then
-    die "$target is older than $current. Going back means restoring the backup taken before the upgrade (finops-agent restore)"
+    die "$target is older than $current. Going back means restoring the backup taken before the upgrade (sarfeh restore)"
   fi
   if interactive; then
     exec 3<"$TTY"
@@ -925,7 +933,7 @@ cmd_lifecycle() {
   need_installed
   case "$action" in
     start) quietly compose up -d "$@"; wait_healthy; say "Started" ;;
-    stop) quietly compose stop "$@"; say "Stopped. Start again with: sudo finops-agent start" ;;
+    stop) quietly compose stop "$@"; say "Stopped. Start again with: sudo sarfeh start" ;;
     restart) quietly compose restart "$@"; wait_healthy; say "Restarted" ;;
   esac
 }
@@ -938,7 +946,7 @@ cmd_exec_api() {
 }
 
 cmd_version() {
-  echo "finops-agent $VERSION"
+  echo "sarfeh $VERSION"
   if [ -r "$ENV_FILE" ]; then echo "running: $(image_version)"; fi
 }
 
@@ -962,7 +970,7 @@ cmd_uninstall() {
       ask reply "Type delete to go on" ""
       [ "$reply" = delete ] || die "nothing was changed"
     else
-      echo "This stops FinOps agent and removes its containers and the finops-agent command."
+      echo "This stops FinOps agent and removes its containers and the sarfeh command."
       echo "The data and settings stay in Docker volumes and $DIR, so installing again brings everything back."
       ask_yes "Uninstall" n || die "nothing was changed"
     fi
@@ -970,7 +978,7 @@ cmd_uninstall() {
   fi
   if [ -n "$delete" ]; then compose down --volumes --remove-orphans; else compose down --remove-orphans; fi
   rm -f "$CRON_DIR/finops-agent-backup"
-  if [ -L "$BIN_DIR/finops-agent" ]; then rm -f "$BIN_DIR/finops-agent"; fi
+  for name in sarfeh finops-agent; do if [ -L "$BIN_DIR/$name" ]; then rm -f "$BIN_DIR/$name"; fi; done
   if [ -n "$delete" ]; then
     rm -rf "$DIR"
     say "Uninstalled, and the data is deleted. Backups are still in $BACKUP_DIR."
@@ -991,7 +999,7 @@ case "$CMD" in
   logs) cmd_logs "$@" ;;
   start | stop | restart) cmd_lifecycle "$CMD" "$@" ;;
   backup) need_root; need_installed; exec "$DIR/backup.sh" "$@" ;;
-  restore) need_root; need_installed; [ $# -ge 1 ] || die "usage: finops-agent restore FILE [--yes]"; exec "$DIR/backup.sh" --restore "$@" ;;
+  restore) need_root; need_installed; [ $# -ge 1 ] || die "usage: sarfeh restore FILE [--yes]"; exec "$DIR/backup.sh" --restore "$@" ;;
   reset-password) cmd_exec_api reset-password "$@" ;;
   test-alerts) cmd_exec_api test-alerts "$@" ;;
   compose) need_root; need_installed; compose "$@" ;;

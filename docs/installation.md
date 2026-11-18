@@ -20,7 +20,7 @@ less install.sh
 sudo bash install.sh
 ```
 
-It installs Docker if it's missing, puts the app in `/opt/finops-agent`, and installs the `finops-agent` command. From
+It installs Docker if it's missing, puts the app in `/opt/finops-agent`, and installs the `sarfeh` command. From
 then on, you run the installation with that command.
 
 ## Without questions
@@ -31,7 +31,7 @@ Give options and it asks nothing, which suits scripts, cloud-init and Ansible:
 curl -fsSL https://github.com/pendarsolutions/Sarfeh/releases/latest/download/install.sh | sudo bash -s -- \
   --domain finops.example.ir \
   --set SMTP_HOST=mail.example.ir --set SMTP_USER=alerts@example.ir --set ALERT_EMAIL_TO=ops@example.ir
-echo "$SMTP_PASSWORD" | sudo finops-agent config set SMTP_PASSWORD
+echo "$SMTP_PASSWORD" | sudo sarfeh config set SMTP_PASSWORD
 ```
 
 | Option | What it does |
@@ -50,26 +50,26 @@ echo "$SMTP_PASSWORD" | sudo finops-agent config set SMTP_PASSWORD
 
 Running the installer again is safe: it keeps your settings, secrets and data.
 
-## The `finops-agent` command
+## The `sarfeh` command
 
 | Command | What it does |
 | --- | --- |
-| `finops-agent status` | What's running, the version, the address, backups and alerts |
-| `finops-agent doctor` | Checks Docker, the services, the address, DNS, the certificate, disk, backups and updates, and says how to fix what's wrong |
-| `finops-agent config` | Shows the settings, with secrets hidden |
-| `finops-agent config keys` | Lists every setting you can change |
-| `finops-agent config set KEY=VALUE...` | Changes settings and restarts what uses them |
-| `finops-agent address --domain NAME` | Changes the address. Also `--ip`, `--port`, `--proxy` |
-| `finops-agent test-alerts` | Sends a test message through email and Bale |
-| `finops-agent logs [-f] [SERVICE]` | Recent logs |
-| `finops-agent restart`, `start`, `stop` | What they say |
-| `finops-agent upgrade [VERSION]` | Backs up, then moves to the latest release or the version given |
-| `finops-agent backup`, `restore FILE` | [Backups](#backups) |
-| `finops-agent reset-password --email ADDRESS` | For when nobody can sign in |
-| `finops-agent compose ...` | Runs `docker compose` in `/opt/finops-agent` |
-| `finops-agent uninstall` | Removes the app and keeps the data; `--delete-data` deletes it too |
+| `sarfeh status` | What's running, the version, the address, backups and alerts |
+| `sarfeh doctor` | Checks Docker, the services, the address, DNS, the certificate, disk, backups and updates, and says how to fix what's wrong |
+| `sarfeh config` | Shows the settings, with secrets hidden |
+| `sarfeh config keys` | Lists every setting you can change |
+| `sarfeh config set KEY=VALUE...` | Changes settings and restarts what uses them |
+| `sarfeh address --domain NAME` | Changes the address. Also `--ip`, `--port`, `--proxy` |
+| `sarfeh test-alerts` | Sends a test message through email and Bale |
+| `sarfeh logs [-f] [SERVICE]` | Recent logs |
+| `sarfeh restart`, `start`, `stop` | What they say |
+| `sarfeh upgrade [VERSION]` | Backs up, then moves to the latest release or the version given |
+| `sarfeh backup`, `restore FILE` | [Backups](#backups) |
+| `sarfeh reset-password --email ADDRESS` | For when nobody can sign in |
+| `sarfeh compose ...` | Runs `docker compose` in `/opt/finops-agent` |
+| `sarfeh uninstall` | Removes the app and keeps the data; `--delete-data` deletes it too |
 
-Run them with `sudo`. `finops-agent help` lists the options.
+Run them with `sudo`. `sarfeh help` lists the options.
 
 ## Settings
 
@@ -78,10 +78,10 @@ hand: it checks each value, refuses ones that would break the installation, and 
 them.
 
 ```bash
-sudo finops-agent config set SMTP_HOST=mail.example.ir SMTP_PORT=587 ALERT_EMAIL_TO=ops@example.ir
-sudo finops-agent config set SMTP_PASSWORD        # asks for it, so it stays out of your shell history
-sudo finops-agent config unset BALE_CHAT_ID
-sudo finops-agent config keys                     # everything you can set
+sudo sarfeh config set SMTP_HOST=mail.example.ir SMTP_PORT=587 ALERT_EMAIL_TO=ops@example.ir
+sudo sarfeh config set SMTP_PASSWORD        # asks for it, so it stays out of your shell history
+sudo sarfeh config unset BALE_CHAT_ID
+sudo sarfeh config keys                     # everything you can set
 ```
 
 Names work with or without `FINOPS_` and in any case: `smtp_host` is `FINOPS_SMTP_HOST`. Some keys belong to other
@@ -92,13 +92,13 @@ servers.
 ## Address and certificates
 
 ```bash
-sudo finops-agent address                                  # show it
-sudo finops-agent address --domain finops.example.ir       # a real certificate, once DNS points here
-sudo finops-agent address --ip 203.0.113.10 --port 8443
+sudo sarfeh address                                  # show it
+sudo sarfeh address --domain finops.example.ir       # a real certificate, once DNS points here
+sudo sarfeh address --ip 203.0.113.10 --port 8443
 ```
 
 A domain gets a certificate from Let's Encrypt automatically when its DNS points at the server and ports 80 and 443
-are reachable. `finops-agent doctor` checks both. On any other port, or on an IP address, the app uses its own
+are reachable. `sarfeh doctor` checks both. On any other port, or on an IP address, the app uses its own
 certificate, and browsers warn about it.
 
 **If a firewall keeps the port closed,** an installation with its own certificate also answers on the server's other
@@ -114,7 +114,7 @@ If nginx, Traefik or a load balancer already handles HTTPS on the server, the ap
 local port:
 
 ```bash
-sudo finops-agent address --proxy https://finops.example.ir --listen 127.0.0.1:8080
+sudo sarfeh address --proxy https://finops.example.ir --listen 127.0.0.1:8080
 ```
 
 Then point the proxy at it. The app must be at the root of its host, not under a path. For nginx:
@@ -167,16 +167,16 @@ Docker and internet access.
 ## Upgrading
 
 ```bash
-sudo finops-agent upgrade            # the latest release
-sudo finops-agent upgrade 0.3.1      # a given version
-sudo finops-agent upgrade --bundle finops-agent-0.3.1.tar.gz     # offline
+sudo sarfeh upgrade            # the latest release
+sudo sarfeh upgrade 0.3.1      # a given version
+sudo sarfeh upgrade --bundle finops-agent-0.3.1.tar.gz     # offline
 ```
 
 It backs up first and stops if the backup fails. Then it downloads the new images and applies the new version's
 settings. The database is upgraded when the app starts, and your settings and data are kept. Going back to an older
 version means restoring the backup taken before the upgrade.
 
-**From 0.2.0**, which had no `finops-agent` command: run the new installer once, the same way as a fresh install. It
+**From 0.2.0**, which had no `sarfeh` command: run the new installer once, the same way as a fresh install. It
 keeps everything, including the domain.
 
 ## Alerts
@@ -184,11 +184,11 @@ keeps everything, including the domain.
 Use email, Bale, or both:
 
 ```bash
-sudo finops-agent config set SMTP_HOST=smtp.example.ir SMTP_USER=alerts@example.ir ALERT_EMAIL_TO=you@example.ir
-sudo finops-agent config set SMTP_PASSWORD
-sudo finops-agent config set BALE_CHAT_ID=123456789
-sudo finops-agent config set BALE_BOT_TOKEN
-sudo finops-agent test-alerts
+sudo sarfeh config set SMTP_HOST=smtp.example.ir SMTP_USER=alerts@example.ir ALERT_EMAIL_TO=you@example.ir
+sudo sarfeh config set SMTP_PASSWORD
+sudo sarfeh config set BALE_CHAT_ID=123456789
+sudo sarfeh config set BALE_BOT_TOKEN
+sudo sarfeh test-alerts
 ```
 
 You'll hear about price changes (naming your servers on those plans), failed price updates, price moves that need
@@ -201,9 +201,9 @@ by root. Each backup is one file with the database, the uploaded invoices, and t
 holds the keys that decrypt the SSH keys stored for your servers, so keep backups as safe as the server.
 
 ```bash
-sudo finops-agent backup                         # back up now
-sudo finops-agent restore FILE                   # put a backup back
-sudo finops-agent config set DAILY_BACKUP=false  # no nightly backup (true turns it back on)
+sudo sarfeh backup                         # back up now
+sudo sarfeh restore FILE                   # put a backup back
+sudo sarfeh config set DAILY_BACKUP=false  # no nightly backup (true turns it back on)
 ```
 
 **Copy backups off the server.** A backup on the same disk doesn't survive losing the server. For example, from
@@ -235,7 +235,7 @@ one-time reset link, valid for 30 minutes. The link points at the installation's
 sets a temporary password instead. If the owner is the one locked out, run this on the server:
 
 ```bash
-sudo finops-agent reset-password --email you@example.ir
+sudo sarfeh reset-password --email you@example.ir
 ```
 
 It prints a new password and signs that person out everywhere. To choose the password yourself, add
@@ -248,9 +248,9 @@ One installation can scrape prices and publish a signed catalog, so the others d
 **On the publisher:**
 
 ```bash
-sudo finops-agent compose exec api python -m finops_api.cli catalog-keygen
-sudo finops-agent config set CATALOG_PUBLISH_DIR=/app/var/catalog
-sudo finops-agent config set CATALOG_SIGNING_KEY       # paste the signing key it printed; keep it secret
+sudo sarfeh compose exec api python -m finops_api.cli catalog-keygen
+sudo sarfeh config set CATALOG_PUBLISH_DIR=/app/var/catalog
+sudo sarfeh config set CATALOG_SIGNING_KEY       # paste the signing key it printed; keep it secret
 ```
 
 The catalog is then served at `https://your-publisher/catalog/` and refreshed after each scrape. Host the publisher in
@@ -259,7 +259,7 @@ Iran, because Iranian providers' sites may block foreign addresses.
 **On every other installation:**
 
 ```bash
-sudo finops-agent config set CATALOG_URL=https://your-publisher/catalog CATALOG_PUBLIC_KEY=...
+sudo sarfeh config set CATALOG_URL=https://your-publisher/catalog CATALOG_PUBLIC_KEY=...
 ```
 
 Those installations stop scraping and check the catalog twice a day. A file without a valid signature is refused, an
@@ -268,8 +268,8 @@ older file can't roll prices back, and sharp price moves are still held for revi
 ## Uninstalling
 
 ```bash
-sudo finops-agent uninstall                  # removes the app; the data stays, and installing again brings it back
-sudo finops-agent uninstall --delete-data    # also deletes the database, invoices and settings
+sudo sarfeh uninstall                  # removes the app; the data stays, and installing again brings it back
+sudo sarfeh uninstall --delete-data    # also deletes the database, invoices and settings
 ```
 
 Backups in `/var/backups/finops-agent` are never deleted.

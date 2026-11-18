@@ -18,7 +18,7 @@ own. Pendar runs it on one server, the **relay**.
   waiting to be checked), `/help`, and `/unlink`. Budget alerts, unusual changes, price alerts and the monthly report
   (on the 1st) also go to linked chats.
 
-An installation uses the relay at `FINOPS_RELAY_URL` (`sudo finops-agent config set FINOPS_RELAY_URL=https://...`).
+An installation uses the relay at `FINOPS_RELAY_URL` (`sudo sarfeh config set FINOPS_RELAY_URL=https://...`).
 Without it, the Bale bot card doesn't appear, and alerts go only by email and the installation's own bot
 (`FINOPS_BALE_BOT_TOKEN` and `FINOPS_BALE_CHAT_ID`), as before.
 

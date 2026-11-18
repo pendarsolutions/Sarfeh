@@ -14,7 +14,7 @@ COPY migrations ./migrations
 COPY alembic.ini ./
 COPY data ./data
 COPY docker/entrypoint.sh /entrypoint.sh
-# finops-agent upgrade takes the new version's compose file, backup script and command from here
+# sarfeh upgrade takes the new version's compose file, backup script and command from here
 COPY deploy ./deploy
 # strip CRLF in case the repo was checked out on Windows without .gitattributes
 RUN sed -i 's/\r$//' /entrypoint.sh /app/deploy/*.sh /app/deploy/finops-agent && chmod +x /entrypoint.sh && mkdir -p /app/var/uploads /app/var/catalog && chown -R finops /app/var

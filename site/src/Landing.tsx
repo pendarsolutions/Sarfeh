@@ -47,12 +47,12 @@ const FEATURES: [IconName, Key, Key][] = [
   ["globe", "lpF6T", "lpF6B"],
 ];
 
-/** A few of the `finops-agent` commands an installation is run with (deploy/finops-agent). */
+/** A few of the `sarfeh` commands an installation is run with (deploy/finops-agent). */
 const MANAGE: [Key, string][] = [
-  ["lpManage1", "sudo finops-agent status"],
-  ["lpManage2", "sudo finops-agent config set SMTP_HOST=mail.example.ir"],
-  ["lpManage3", "sudo finops-agent upgrade"],
-  ["lpManage4", "sudo finops-agent doctor"],
+  ["lpManage1", "sudo sarfeh status"],
+  ["lpManage2", "sudo sarfeh config set SMTP_HOST=mail.example.ir"],
+  ["lpManage3", "sudo sarfeh upgrade"],
+  ["lpManage4", "sudo sarfeh doctor"],
 ];
 
 /** An item's place in its group, for the stagger in site.css (one by one, in reading order). */

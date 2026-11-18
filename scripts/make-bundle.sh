@@ -2,7 +2,7 @@
 # Build an offline bundle: every image plus the installer, for a server with no registry access.
 #   scripts/make-bundle.sh [version]   ->  finops-agent-<version>.tar.gz
 # On the server:  tar xzf finops-agent-*.tar.gz && cd finops-agent-* && sudo ./install.sh --bundle images.tar.gz
-# (or, on an installation that has it: sudo finops-agent upgrade --bundle finops-agent-<version>.tar.gz)
+# (or, on an installation that has it: sudo sarfeh upgrade --bundle finops-agent-<version>.tar.gz)
 #
 # The version and image prefix default to the ones in deploy/finops-agent. FINOPS_IMAGE_PREFIX overrides the prefix,
 # and FINOPS_IMAGE_SOURCE (a repository URL) labels the images so a registry can link them to it.

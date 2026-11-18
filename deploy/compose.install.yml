@@ -1,10 +1,10 @@
-# Installed as /opt/finops-agent/compose.yml by install.sh and run by `finops-agent`. Prebuilt images only.
+# Installed as /opt/finops-agent/compose.yml by install.sh and run by `sarfeh`. Prebuilt images only.
 name: finops-agent
 
 x-app: &app
   image: ${FINOPS_APP_IMAGE}
   restart: unless-stopped
-  # every setting in .env (sudo finops-agent config set ...); the ones below are fixed by the installation
+  # every setting in .env (sudo sarfeh config set ...); the ones below are fixed by the installation
   env_file: .env
   environment:
     FINOPS_ENV: prod

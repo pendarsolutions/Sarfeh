@@ -54,13 +54,13 @@ curl -fsSL https://github.com/pendarsolutions/Sarfeh/releases/latest/download/in
 It asks a few questions (or takes them as options, such as `--domain finops.example.ir`), then prints the address of
 your dashboard. Open it, create the first account, and add your other servers from the **Servers** page.
 
-From then on, the `finops-agent` command runs the installation:
+From then on, the `sarfeh` command runs the installation:
 
 ```bash
-sudo finops-agent status                                   # what's running, the address, backups, alerts
-sudo finops-agent config set SMTP_HOST=mail.example.ir     # change a setting; it restarts what uses it
-sudo finops-agent upgrade                                  # back up, then move to the latest release
-sudo finops-agent doctor                                   # check everything, with how to fix it
+sudo sarfeh status                                   # what's running, the address, backups, alerts
+sudo sarfeh config set SMTP_HOST=mail.example.ir     # change a setting; it restarts what uses it
+sudo sarfeh upgrade                                  # back up, then move to the latest release
+sudo sarfeh doctor                                   # check everything, with how to fix it
 ```
 
 If Docker Hub isn't reachable from your server, use the offline bundle from the
@@ -168,7 +168,7 @@ apps/api        FastAPI service: auth, catalog, inventory, analysis, reports
 apps/worker     Scheduled price updates, server collection, alerts and cleanup
 apps/web        React and TypeScript dashboard: what an installation serves, and nothing else
 site/           The public website (landing page and install command), deployed on its own; never installed
-deploy/         What the installer puts on a server: the finops-agent command, the compose file, backups
+deploy/         What the installer puts on a server: the sarfeh command, the compose file, backups
 packages/       Pricing, recommendations, scrapers, server monitoring, AI and invoice parsing, independent of the web framework
 data/seeds      Starting price catalog and engine rules
 docs/           Architecture, pricing model, scrapers, AI safety and operations
