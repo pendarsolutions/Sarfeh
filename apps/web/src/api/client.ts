@@ -55,6 +55,8 @@ export class ApiError extends Error {
 }
 
 export const UNAUTHORIZED_EVENT = "finops:unauthorized";
+/** A public demo refused a change (the API answers every one with 403 "read_only_demo"). */
+export const READ_ONLY_EVENT = "finops:read-only";
 
 async function request<T>(method: string, path: string, body?: unknown, raw = false): Promise<T> {
   const headers: Record<string, string> = { Accept: raw ? "*/*" : "application/json" };
@@ -84,6 +86,7 @@ async function request<T>(method: string, path: string, body?: unknown, raw = fa
       saveSession(null);
       window.dispatchEvent(new Event(UNAUTHORIZED_EVENT));
     }
+    if (res.status === 403 && detail === "read_only_demo") window.dispatchEvent(new Event(READ_ONLY_EVENT));
     throw new ApiError(res.status, detail);
   }
   if (raw) return (await res.blob()) as T;
@@ -95,7 +98,8 @@ const post = <T>(p: string, b: unknown = {}) => request<T>("POST", p, b);
 const V = "/api/v1";
 
 export const api = {
-  authStatus: () => get<{ registration_open: boolean; setup_needed: boolean; demo_user: boolean; password_reset_email: boolean }>(`${V}/auth/status`),
+  authStatus: () => get<{ registration_open: boolean; setup_needed: boolean; demo_user: boolean; password_reset_email: boolean; demo: boolean }>(`${V}/auth/status`),
+  demoSession: () => post<Session>(`${V}/auth/demo`),
   forgotPassword: (email: string) => post<{ status: string }>(`${V}/auth/forgot-password`, { email }),
   resetPassword: (token: string, password: string) => post<{ status: string }>(`${V}/auth/reset-password`, { token, password }),
   changePassword: (current_password: string, new_password: string) =>

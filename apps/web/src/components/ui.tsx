@@ -374,6 +374,7 @@ const API_MESSAGES: Record<string, TKey> = {
   "no organization membership": "apiNoMembership",
   "registration is closed; ask an admin to add you": "apiRegistrationClosed",
   "background jobs aren't running; an admin can check with: finops-agent doctor": "apiNoWorker",
+  read_only_demo: "demoReadOnly",
 };
 
 export function ErrorBox({ error, onRetry }: { error: unknown; onRetry?: () => void }) {

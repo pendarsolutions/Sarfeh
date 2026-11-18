@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 from ..alerts import email_configured, send_email
 from ..config import get_settings
 from ..db import get_db
+from ..demo import VISITOR_ROLE, ensure_demo
 from ..orm import AuditLog, CatalogItemVersion, Membership, Organization, User
 from ..platform import limiter
 from ..security import (
@@ -73,9 +74,23 @@ def auth_status(db: Session = Depends(get_db)):
 
     `setup_needed` means nobody has an account yet, so the dashboard opens on creating the first one (the owner).
     """
+    s = get_settings()
+    if s.demo_mode:  # nobody signs in or signs up: the dashboard asks for a visitor's session instead
+        return {"registration_open": False, "setup_needed": False, "demo_user": False, "password_reset_email": False,
+                "demo": True}
     no_accounts = db.scalar(select(User.id).limit(1)) is None
-    return {"registration_open": get_settings().allow_registration or no_accounts, "setup_needed": no_accounts,
-            "demo_user": get_settings().env == "dev", "password_reset_email": _reset_by_email()}
+    return {"registration_open": s.allow_registration or no_accounts, "setup_needed": no_accounts,
+            "demo_user": s.env == "dev", "password_reset_email": _reset_by_email(), "demo": False}
+
+
+@router.post("/api/v1/auth/demo")
+def demo_session(request: Request, db: Session = Depends(get_db)):
+    """A visitor's session in a public demo: the shared sample workspace, where nothing can be changed."""
+    if not get_settings().demo_mode:
+        raise HTTPException(404, "this installation is not a demo")
+    limiter().check(f"demo:{_client_ip(request)}", 30)
+    user, org = ensure_demo(db)
+    return _session(user, org, VISITOR_ROLE)
 
 
 @router.post("/api/v1/auth/register")

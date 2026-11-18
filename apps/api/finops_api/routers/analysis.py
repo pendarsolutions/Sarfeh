@@ -56,7 +56,16 @@ def quote_view(row: QuoteRow) -> dict[str, Any]:
 
 @router.post("/inventories/{inventory_id}/quote")
 def quote(inventory_id: str, body: QuoteIn, db: Session = Depends(get_db), p: Principal = Depends(require("analyst"))):
-    row, _ = create_quote(db, p, get_inventory(db, p, inventory_id), body.include_tax)
+    inv = get_inventory(db, p, inventory_id)
+    if get_settings().demo_mode:
+        # a public demo keeps one quote per price catalog, however many visitors open the page
+        kept = db.scalar(select(QuoteRow).where(QuoteRow.inventory_id == inv.id,
+                                                QuoteRow.include_tax == body.include_tax,
+                                                QuoteRow.catalog_version == snapshot(db).catalog_version)
+                         .order_by(QuoteRow.created_at.desc()).limit(1))
+        if kept is not None:
+            return quote_view(kept)
+    row, _ = create_quote(db, p, inv, body.include_tax)
     return quote_view(row)
 
 
@@ -93,9 +102,10 @@ def compare(inventory_id: str, body: CompareIn, db: Session = Depends(get_db),
             p: Principal = Depends(require("analyst"))):
     inv = get_inventory(db, p, inventory_id)
     result = _compare(db, p, inv, body)
-    audit(db, p, "analysis.compare", "inventory", inv.id, {"resources": len(result["results"]),
-                                                           "allow_outside_iran": body.allow_outside_iran})
-    db.commit()
+    if not get_settings().demo_mode:  # a public demo keeps no record of what visitors look at
+        audit(db, p, "analysis.compare", "inventory", inv.id, {"resources": len(result["results"]),
+                                                               "allow_outside_iran": body.allow_outside_iran})
+        db.commit()
     return result
 
 
@@ -257,8 +267,9 @@ def advisor_chat(body: AdvisorIn, db: Session = Depends(get_db), p: Principal = 
                 prompt_version=ans.meta["prompt_version"], input_redacted={"question": redact(body.question)},
                 tool_calls=ans.tool_calls, output_text=ans.answer, guard_result={**ans.guard, "path": ans.path,
                                                                                   **ans.meta})
-    db.add(run)
-    db.commit()
+    if not s.demo_mode:  # a public demo answers without keeping what visitors ask
+        db.add(run)
+        db.commit()
     return {"answer": ans.answer, "path": ans.path, "evidence_ids": ans.evidence_ids, "guard": ans.guard,
             "tool_calls": [{"tool": t["tool"], "input": t["input"], "error": t["error"]} for t in ans.tool_calls],
-            "ai_run_id": run.id}
+            "ai_run_id": None if s.demo_mode else run.id}

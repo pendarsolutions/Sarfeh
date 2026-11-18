@@ -230,6 +230,7 @@ FINOPS_INVOICE_RETENTION_DAYS|int|Days to keep uploaded invoice files (default 3
 FINOPS_PASSWORD_RESET_MINUTES|int|How long an emailed reset link works (default 30)
 FINOPS_JWT_TTL_MINUTES|int|How long a sign-in lasts (default 720)
 FINOPS_LOGIN_RATE_LIMIT_PER_MINUTE|int|Sign-in attempts allowed per address per minute (default 10)
+FINOPS_DEMO_MODE|bool|A public read-only demo with sample data: no sign-in, no changes (only on its own installation)
 FINOPS_COLLECTOR_SOURCE_IP|ip|Server keys then only work from this address
 FINOPS_CATALOG_URL|url|Use a shared signed price catalog instead of scraping
 FINOPS_CATALOG_PUBLIC_KEY|text|The shared catalog's public key

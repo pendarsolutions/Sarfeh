@@ -61,6 +61,9 @@ class Settings(BaseSettings):
     #: open sign-up. The first account can always register; later users are added by an admin.
     allow_registration: bool = False
     login_rate_limit_per_minute: int = 10
+    #: a public, read-only demo: visitors get a session without an account, in a shared sample workspace, and every
+    #: change is refused (see demo.py). For an installation of its own, never one that holds real data.
+    demo_mode: bool = False
 
     @property
     def is_prod(self) -> bool:
@@ -77,4 +80,6 @@ def get_settings() -> Settings:
             raise RuntimeError("FINOPS_CREDENTIALS_KEY must be set in staging/prod")
         if "finops-dev-password" in s.database_url:
             raise RuntimeError("POSTGRES_PASSWORD must be changed from the development default in staging/prod")
+    if s.demo_mode:
+        s.ai_provider = "offline"  # strangers never spend an API key
     return s

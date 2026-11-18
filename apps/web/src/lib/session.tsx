@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, loadSession, saveSession, UNAUTHORIZED_EVENT } from "../api/client";
 import type { InventorySummary, Role, Session } from "../api/types";
@@ -10,6 +10,11 @@ interface SessionCtx {
   signIn: (s: Session) => void;
   signOut: () => void;
   hasRole: (min: Role) => boolean;
+  /** Whether this is a public read-only demo, which signs its visitors in by itself. Undefined until the API says. */
+  demo: boolean | undefined;
+  /** Why a visitor's session couldn't be started, when it couldn't. */
+  demoError: unknown;
+  retryDemo: () => void;
   inventories: InventorySummary[] | undefined;
   inventoriesLoading: boolean;
   activeId: string | null;
@@ -52,6 +57,29 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener(UNAUTHORIZED_EVENT, h);
   }, []);
 
+  // A public demo has no sign-in. Once the API says this is one, a visitor's session is asked for, and asked for
+  // again whenever it ends. The answer is kept in state: signing in clears every cached request, this one too.
+  const [demo, setDemo] = useState<boolean | undefined>(undefined);
+  const [demoError, setDemoError] = useState<unknown>(null);
+  const asking = useRef(false);
+  const status = useQuery({ queryKey: ["authStatus"], queryFn: api.authStatus });
+  useEffect(() => {
+    if (status.data) setDemo(status.data.demo === true);
+    else if (status.isError) setDemo(false);
+  }, [status.data, status.isError]);
+  useEffect(() => {
+    if (!demo || session || demoError || asking.current) return;
+    asking.current = true;
+    api
+      .demoSession()
+      .then(signIn)
+      .catch((e: unknown) => setDemoError(e))
+      .finally(() => {
+        asking.current = false;
+      });
+  }, [demo, session, demoError, signIn]);
+  const retryDemo = useCallback(() => setDemoError(null), []);
+
   const setActiveId = useCallback((id: string | null) => {
     setActive(id);
     try {
@@ -77,12 +105,15 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       signIn,
       signOut,
       hasRole: (min) => !!session && RANK.indexOf(session.role) >= RANK.indexOf(min),
+      demo,
+      demoError,
+      retryDemo,
       inventories: invQ.data,
       inventoriesLoading: invQ.isLoading,
       activeId: invQ.data?.some((i) => i.id === activeId) ? activeId : null,
       setActiveId,
     }),
-    [session, signIn, signOut, invQ.data, invQ.isLoading, activeId, setActiveId],
+    [session, signIn, signOut, demo, demoError, retryDemo, invQ.data, invQ.isLoading, activeId, setActiveId],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

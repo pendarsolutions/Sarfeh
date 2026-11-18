@@ -31,6 +31,7 @@ export function LoginPage({ mode }: { mode: "login" | "register" }) {
   });
 
   if (session) return <Navigate to={from} replace />;
+  if (status.data?.demo) return <Navigate to="/" replace />; // a public demo has nobody to sign in
   if (setup && mode === "login") return <Navigate to="/register" replace />;
 
   const submit = (e: FormEvent) => {

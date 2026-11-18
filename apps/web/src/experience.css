@@ -691,3 +691,16 @@
   letter-spacing: 0.08em;
   user-select: all;
 }
+
+/* a public demo's banner: stays in view, so a refused change is explained wherever the visitor has scrolled to */
+.demo-banner {
+  position: sticky;
+  inset-block-start: var(--spacing-2);
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-2) var(--spacing-4);
+  margin-block-end: var(--spacing-4);
+}

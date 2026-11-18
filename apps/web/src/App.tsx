@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import type { ReactElement } from "react";
 import { Layout } from "./components/Layout";
+import { ErrorBox, Loading } from "./components/ui";
 import { useSession } from "./lib/session";
 import { LoginPage } from "./pages/Login";
 import { ForgotPasswordPage, ResetPasswordPage } from "./pages/PasswordReset";
@@ -19,9 +20,12 @@ import { SettingsPage } from "./pages/Settings";
 
 /** Signed-out visitors go to sign-in, which sends a fresh installation on to creating its first account. */
 function RequireAuth({ children }: { children: ReactElement }) {
-  const { session } = useSession();
+  const { session, demo, demoError, retryDemo } = useSession();
   const loc = useLocation();
   if (!session) {
+    // A public demo signs its visitors in. Until the API has said whether this is one, wait, so the sign-in page
+    // doesn't flash past.
+    if (demo !== false) return <div className="auth-page">{demoError ? <ErrorBox error={demoError} onRetry={retryDemo} /> : <Loading />}</div>;
     const from = loc.pathname === "/" ? undefined : { from: loc.pathname + loc.search };
     return <Navigate to="/login" replace state={from} />;
   }

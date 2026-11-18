@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import hashlib
 from datetime import UTC, datetime, timedelta
-from decimal import Decimal
 from typing import Any
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
@@ -13,12 +12,12 @@ from sqlalchemy.orm import Session
 
 from ai_gateway import LLMConfig, extract_inventory
 from invoice_parser import extract_text, parse_invoice
-from pricing_engine.catalog import load_json
 from shared_types import ResourceDraft
 
 from ..config import get_settings
-from ..dates import current_month, shift_month
+from ..dates import current_month
 from ..db import get_db
+from ..demo import sample_workspace
 from ..orm import AIRun, CostSnapshot, Inventory, InventoryResource, SpendEntry, Upload
 from ..platform import limiter, redact, store_private, validate_upload, verify_download
 from ..security import Principal, audit, current_principal, require
@@ -83,24 +82,7 @@ def create_from_builder(body: InventoryIn, db: Session = Depends(get_db), p: Pri
 
 @router.post("/inventories/demo")
 def create_demo(lang: str = "en", db: Session = Depends(get_db), p: Principal = Depends(require("analyst"))):
-    data = load_json(get_settings().seed_dir / "sample_inventory.json")
-    drafts = [ResourceDraft(**{k: v for k, v in r.items()}) for r in data["resources"]]
-    name = data["name_fa"] if lang == "fa" else data["name"]
-    inv = create_inventory(db, p, name, "builder", drafts, {"demo": True})
-    # a few months of sample payments, so the spend page has a trend and a gap to show
-    month = current_month()
-    for s in data.get("sample_spend", []):
-        db.add(SpendEntry(organization_id=p.org.id, month=shift_month(month, -int(s["months_ago"])),
-                          provider_id=s["provider_id"], amount_toman=Decimal(s["amount_toman"]), source="sample",
-                          status="confirmed", inventory_id=inv.id, created_by=p.user.id))
-    db.commit()
-    org_settings = dict(p.org.settings or {})
-    if "engineer_day_rate_toman" not in org_settings:
-        org_settings["engineer_day_rate_toman"] = data["organization_settings"]["engineer_day_rate_toman"]
-        org_settings["engineer_day_rate_label"] = data["organization_settings"]["engineer_day_rate_label"]
-        p.org.settings = org_settings
-        db.commit()
-    return inventory_view(db, inv, snapshot(db).policy)
+    return inventory_view(db, sample_workspace(db, p, lang), snapshot(db).policy)
 
 
 @router.post("/inventories/from-chat")

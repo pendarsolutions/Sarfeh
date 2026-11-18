@@ -8,7 +8,9 @@ from decimal import Decimal
 import fastapi.encoders
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
+from . import demo
 from .config import get_settings
 from .platform import configure_logging
 from .routers import analysis, auth, bale, catalog, integrations, inventories, owners, servers, spend
@@ -27,6 +29,13 @@ def create_app() -> FastAPI:
                               "money fields are exact decimal strings in Toman.")
     app.add_middleware(CORSMiddleware, allow_origins=s.cors_origins, allow_credentials=False,
                        allow_methods=["*"], allow_headers=["Authorization", "Content-Type"])
+
+    @app.middleware("http")
+    async def read_only_demo(request: Request, call_next):
+        """In a public demo, the one place that stops changes, whatever a route would otherwise allow."""
+        if get_settings().demo_mode and demo.refuses(request.method, request.url.path):
+            return JSONResponse({"detail": "read_only_demo"}, status_code=403)
+        return await call_next(request)
 
     @app.middleware("http")
     async def request_log(request: Request, call_next):

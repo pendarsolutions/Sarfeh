@@ -729,6 +729,9 @@ const dict = {
   baleUnlinkConfirm: ["این گفتگو جدا شود؟ دیگر هشدار و گزارشی به آن نمی‌رسد.", "Unlink this chat? It won't get alerts or reports any more."],
   baleTest: ["فرستادن گزارش این ماه", "Send this month's report"],
   baleTestSent: ["گزارش فرستاده شد.", "Report sent."],
+  demoBanner: ["این یک نسخه نمایشی با داده‌های نمونه است. همه‌جا را ببینید؛ چیزی ذخیره یا عوض نمی‌شود.", "This is a demo with sample data. Look anywhere you like; nothing is saved or changed."],
+  demoInstall: ["نصب روی سرور خودتان", "Install it on your own server"],
+  demoReadOnly: ["این نسخه نمایشی فقط برای دیدن است، پس این کار انجام نشد. برای کار با داده‌های خودتان، آن را نصب کنید.", "This demo is for looking only, so that wasn't done. To work with your own data, install it."],
   editingBanner: ["این زیرساخت در حال ویرایش است. تا تغییرات تأیید نشده‌اند، این صفحه نسخه‌ای را نشان می‌دهد که آخرین بار تأیید شد.", "This setup is being edited. Until the changes are confirmed, this page shows the version confirmed last."],
 } satisfies Record<string, [string, string]>;
 

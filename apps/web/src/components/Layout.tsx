@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { useI18n, type TKey } from "../lib/i18n";
 import { useSession } from "../lib/session";
+import { READ_ONLY_EVENT } from "../api/client";
 import { Advisor } from "./Advisor";
 import { Button } from "./ui";
 import { formatDate } from "../lib/money";
@@ -42,7 +43,7 @@ export function Layout() {
 function Shell({ navOpen, setNavOpen }: { navOpen: boolean; setNavOpen: (f: (o: boolean) => boolean) => void }) {
   const { t, lang, setLang } = useI18n();
   const plain = usePlain();
-  const { session, signOut, inventories, activeId, setActiveId } = useSession();
+  const { session, signOut, inventories, activeId, setActiveId, demo } = useSession();
   const tour = useTour();
   useEffect(() => {
     if (session) tour.maybeAutoStart(session.user.id);
@@ -92,9 +93,11 @@ function Shell({ navOpen, setNavOpen }: { navOpen: boolean; setNavOpen: (f: (o: 
           <span className="who" title={session?.user.email}>
             {session?.organization.name} · <small>{plain.role(session?.role)}</small>
           </span>
-          <Button variant="ghost" onClick={signOut} title={t("logout")}>
-            <Icon name="logout" /> <span className="hide-sm">{t("logout")}</span>
-          </Button>
+          {demo ? null : (
+            <Button variant="ghost" onClick={signOut} title={t("logout")}>
+              <Icon name="logout" /> <span className="hide-sm">{t("logout")}</span>
+            </Button>
+          )}
         </div>
       </header>
       <nav id="sidenav" className={navOpen ? "sidenav open" : "sidenav"} aria-label="Primary">
@@ -109,6 +112,7 @@ function Shell({ navOpen, setNavOpen }: { navOpen: boolean; setNavOpen: (f: (o: 
         </ul>
       </nav>
       <main id="main" className="main">
+        {demo ? <DemoBanner /> : null}
         {/* a page's blocks arrive one by one, in reading order, when they first appear */}
         <div className="page">
           <Outlet />
@@ -116,6 +120,37 @@ function Shell({ navOpen, setNavOpen }: { navOpen: boolean; setNavOpen: (f: (o: 
         <PoweredBy />
       </main>
       {activeId ? <Advisor open={advisorOpen} onClose={() => setAdvisorOpen(false)} inventoryId={activeId} /> : null}
+    </div>
+  );
+}
+
+/** Where the demo's banner sends people who want it for their own servers. */
+const INSTALL_GUIDE = "https://github.com/pendarsolutions/FinOps#quick-start";
+
+/**
+ * In a public demo: says what this is, and stays in view. When a visitor presses something that would change the
+ * workspace, the API refuses it, and for a few seconds the banner says so, wherever on the page they are.
+ */
+function DemoBanner() {
+  const { t } = useI18n();
+  const [refused, setRefused] = useState(false);
+  useEffect(() => {
+    let timer: number | undefined;
+    const onRefused = () => {
+      setRefused(true);
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => setRefused(false), 7000);
+    };
+    window.addEventListener(READ_ONLY_EVENT, onRefused);
+    return () => {
+      window.removeEventListener(READ_ONLY_EVENT, onRefused);
+      window.clearTimeout(timer);
+    };
+  }, []);
+  return (
+    <div className={`alert demo-banner ${refused ? "alert-warn" : "alert-info"}`} role="status">
+      <span>{t(refused ? "demoReadOnly" : "demoBanner")}</span>
+      <a href={INSTALL_GUIDE}>{t("demoInstall")}</a>
     </div>
   );
 }
