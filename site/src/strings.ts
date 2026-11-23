@@ -117,7 +117,9 @@ const S = {
   prDatacenter: ["مرکز داده", "Datacenter"],
   prSource: ["منبع قیمت", "Price source"],
   prReadOn: ["خوانده‌شده در {date}", "read on {date}"],
-  prOld: ["بیش از {n} روز پیش خوانده شده؛ ممکن است عوض شده باشد", "Read over {n} days ago; it may have changed"],
+  // a badge, so a word or two (it must fit on a phone); the date is beside it, the reason in its tooltip
+  prOld: ["قیمت قدیمی", "Old price"],
+  prOldTitle: ["بیش از {n} روز پیش خوانده شده و ممکن است عوض شده باشد", "Read over {n} days ago; it may have changed"],
   prMissingTitle: ["در این مقایسه نیستند", "Not in this comparison"],
   prMissingStart: ["فقط «شروع قیمت» را منتشر می‌کند، پس قیمت دقیقی برای مقایسه نیست.", "It publishes starting prices only, so there is no exact price to compare."],
   prMissingSize: ["پلنی که این اندازه را پوشش دهد ندارد، یا قیمتش دقیق به دست نمی‌آید.", "It sells no plan that covers this size, or the plan can't be priced exactly."],

@@ -177,7 +177,9 @@ function OfferRow({ offer, rank, size, table }: { offer: Offer; rank: number; si
           {offer.old_after_days !== undefined && (
             <>
               {" "}
-              <span className="badge badge-warn">{fill(t("prOld"), { n: localizeDigits(String(offer.old_after_days), lang) })}</span>
+              <span className="badge badge-warn" title={fill(t("prOldTitle"), { n: localizeDigits(String(offer.old_after_days), lang) })}>
+                {t("prOld")}
+              </span>
             </>
           )}
         </p>
