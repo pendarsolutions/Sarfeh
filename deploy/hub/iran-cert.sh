@@ -24,7 +24,10 @@ if [ "${1:-}" = --installed ]; then
 fi
 
 if [ -d "/etc/letsencrypt/live/$NAME" ]; then exit 0; fi  # certbot.timer renews it from here on
-found="$(getent ahostsv4 "$NAME" | awk '{ print $1; exit }' || true)"
+# asked of a public resolver: Let's Encrypt checks the public record, and this server's own resolver may still be
+# holding an earlier "no such name" for half an hour
+found="$(dig +short +time=5 +tries=2 @1.1.1.1 "$NAME" A 2>/dev/null | tail -1 || true)"
+[ -n "$found" ] || found="$(getent ahostsv4 "$NAME" | awk '{ print $1; exit }' || true)"
 if [ "$found" != "$ADDRESS" ]; then
   echo "$NAME doesn't point at $ADDRESS yet (${found:-no address}); trying again later"
   exit 0
