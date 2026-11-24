@@ -25,16 +25,23 @@ takes one over) can't change a price; at most it can stop serving.
 
 ## Setting up a mirror
 
+From a checkout (GitHub is slow or closed from inside Iran, so the code goes over SSH):
+
 ```bash
-mkdir -p ~/sarfeh-hub && cd ~/sarfeh-hub
-git clone https://github.com/pendarsolutions/Sarfeh.git src
-cp src/deploy/hub/compose.yml src/deploy/hub/compose.edge.yml src/deploy/hub/Caddyfile .
-# .env (chmod 600): the catalog's public key, the token secret (copy it from the other mirror; never print it), and
-#   in Iran:     COMPOSE_PROFILES=tls  HUB_DOMAIN=sarfeh-api-ir.pendarsolutions.ir
-#   outside:     COMPOSE_FILE=compose.yml:compose.edge.yml
-docker compose up -d
-docker exec sarfeh-hub python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8090/health').read())"
+deploy/hub/deploy.sh ubuntu@109.122.247.136     # copies apps/relay and deploy/hub to ~/sarfeh-hub/src
 ```
+
+Then on the mirror, `~/sarfeh-hub/.env` (chmod 600):
+
+```bash
+FINOPS_HUB_PUBLIC_KEY=FgZ6B1RBtESN+VYQYBxzc4N7dlQF8D96+ExCsIe4ZAw=
+FINOPS_HUB_TOKEN_SECRET=...       # the same on both mirrors: copy it from the other one, never print it
+COMPOSE_PROFILES=tls              # in Iran, with:
+HUB_DOMAIN=sarfeh-api-ir.pendarsolutions.ir
+COMPOSE_FILE=compose.yml:compose.edge.yml    # outside Iran, instead of the two lines above
+```
+
+and run `deploy/hub/deploy.sh` again, which starts it and prints `/health`.
 
 Outside Iran, `edge.conf` goes to `/opt/infrastructure/nginx/services/sarfeh-api.conf.services`, then
 `docker exec mn2-nginx nginx -t && docker exec mn2-nginx nginx -s reload`. In Iran, ports 80 and 443 are Caddy's; if
@@ -59,7 +66,8 @@ A mirror that was down gets the next run's catalog. To send it now without readi
 
 ## Day to day
 
-- Update the code: `cd ~/sarfeh-hub/src && git pull && cd .. && docker compose restart hub`
+- Update the code: commit, then `deploy/hub/deploy.sh` for each mirror (the deployed commit is in
+  `~/sarfeh-hub/src/REVISION`).
 - Installations seen in the last 30 days, per mirror:
   `docker exec sarfeh-hub python -c "import sqlite3,time; print(sqlite3.connect('/app/var/prices/clients.db').execute('select count(*) from clients where last_seen > ?', (time.time()-30*86400,)).fetchone()[0])"`
   (an installation that switched mirrors is counted on both)
