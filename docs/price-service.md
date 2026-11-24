@@ -44,4 +44,5 @@ Your server then reads the providers' pages twice a day, as before 0.6.0, and ne
 providers block automated reading (ArvanCloud): those prices stay as they are until you apply a reviewed price file
 (`docs/provider-adapters.md`). To use a signed catalog of your own, see `FINOPS_CATALOG_URL` in `sudo sarfeh config keys`.
 
+The service's HTTP API, with curl examples and how to check a signature: [price-service-api.md](price-service-api.md).
 Running the mirrors (for Pendar): [deploy/hub/README.md](../deploy/hub/README.md).

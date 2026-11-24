@@ -211,6 +211,7 @@ docs/           Architecture, pricing model, scrapers, AI safety and operations
 - [x] Owners and budgets per team, with alerts before a budget runs out
 - [x] The CPU model of each server, and the CPU time its host takes away
 - [x] A public record of price changes
+- [x] Prices from one signed price service, with a mirror in Iran, instead of every server reading the providers
 - [ ] Suggestions that are tracked to done, with the saving measured
 - [ ] A monthly report by email or Bale
 - [ ] An exact catalog for ArvanCloud through its API
@@ -227,6 +228,7 @@ docs/           Architecture, pricing model, scrapers, AI safety and operations
 - [Architecture](docs/architecture.md)
 - [Pricing model](docs/pricing-model.md)
 - [Provider scrapers](docs/provider-adapters.md)
+- [Sarfeh's price service](docs/price-service.md) and [its API](docs/price-service-api.md)
 - [AI safety](docs/ai-safety.md)
 - [Operations and production](docs/runbook.md)
 - [Releasing](docs/releasing.md)

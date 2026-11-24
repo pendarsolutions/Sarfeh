@@ -1,6 +1,7 @@
 # Sarfeh's price service: running the mirrors
 
-Installations update their prices from Sarfeh's price service (docs/price-service.md explains it from their side).
+Installations update their prices from Sarfeh's price service (docs/price-service.md explains it from their side,
+and docs/price-service-api.md is the API, with curl examples).
 Pendar runs it on two mirrors with the same code and the same token secret, so a token from one works on the other:
 
 | Mirror | Address | Server | In front |

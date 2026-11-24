@@ -5,6 +5,10 @@ and versions follow [Semantic Versioning](https://semver.org/). Until 1.0, a min
 
 ## [Unreleased]
 
+## [0.6.0] — 2026-11-24
+
+One price catalog for every installation: read by Pendar, signed, and served from a mirror in Iran and one outside.
+
 ### Changed
 
 - **Prices come from Sarfeh's price service.** An installation no longer reads the providers' sites itself: Pendar
@@ -20,8 +24,12 @@ and versions follow [Semantic Versioning](https://semver.org/). Until 1.0, a min
 ### Added
 
 - `sudo sarfeh prices [status | check | update]`, and a Prices line in `sudo sarfeh status`.
+- On the Catalog page, where prices come from and whether new ones are out; for admins, a notice on every page while
+  new prices wait.
 - The central service (`apps/relay`) serves the price catalog: tokens that work on both mirrors, per-installation
-  and per-address limits, and only newer catalogs signed with Pendar's key are kept (deploy/hub).
+  and per-address limits, and only newer catalogs signed with Pendar's key are kept (deploy/hub). Its API, with curl
+  examples and how to check a signature: docs/price-service-api.md.
+- The release carries the catalog of 24 November 2026 (`data/feed`), with every provider read that day.
 
 ### Fixed
 

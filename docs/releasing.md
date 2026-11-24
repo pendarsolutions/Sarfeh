@@ -11,8 +11,13 @@ release is live for new installs the moment it's published. Existing installatio
 1. Set the version everywhere it appears:
 
    ```bash
-   scripts/bump-version.sh 0.3.0
+   PYTHON=.venv/bin/python scripts/bump-version.sh 0.3.0
    ```
+
+   It also puts the newest signed catalog from [Sarfeh's price service](price-service.md) in `data/feed/`
+   (`scripts/fetch_catalog.py`, which checks its signature first), so a new installation starts with that day's prices.
+   Commit it with the release. If the service can't be reached, it says so and the release carries the catalog
+   already there.
 
 2. Add a `## [0.3.0] — YYYY-MM-DD` section to [CHANGELOG.md](../CHANGELOG.md), and write the release notes in
    `docs/releases/v0.3.0.md`. In the notes, `{{REPO}}` and `{{VERSION}}` are replaced when the release is published.

@@ -241,15 +241,33 @@ sudo sarfeh reset-password --email you@example.ir
 It prints a new password and signs that person out everywhere. To choose the password yourself, add
 `--password-stdin` and type it.
 
+## Prices
+
+An installation takes its prices from [Sarfeh's price service](price-service.md): Pendar reads the providers twice a
+day and publishes the prices signed. Your installation checks every hour and, when new prices are out, tells admins
+in the dashboard (and by email and Bale, where set up). They're used once an admin updates:
+
+```bash
+sudo sarfeh prices            # where prices come from, and whether new ones are out
+sudo sarfeh prices check      # ask now
+sudo sarfeh prices update     # start using the newest prices (or: Catalog → Update prices)
+sudo sarfeh config set PRICE_AUTO_UPDATE=true    # use new prices as soon as they're out
+sudo sarfeh config set PRICE_SOURCE=scrape       # read the providers from this server instead, as before 0.6.0
+```
+
+The installation sends the service only its token and Sarfeh's version. If it can't reach the service (no way out of
+the network), it keeps the prices it has, and the ones that came with its release are there from the first start.
+
 ## Sharing one price catalog
 
-One installation can scrape prices and publish a signed catalog, so the others don't each have to scrape.
+Instead of Sarfeh's price service, one installation of yours can scrape prices and publish a signed catalog for the
+others.
 
 **On the publisher:**
 
 ```bash
 sudo sarfeh compose exec api python -m finops_api.cli catalog-keygen
-sudo sarfeh config set CATALOG_PUBLISH_DIR=/app/var/catalog
+sudo sarfeh config set PRICE_SOURCE=scrape CATALOG_PUBLISH_DIR=/app/var/catalog
 sudo sarfeh config set CATALOG_SIGNING_KEY       # paste the signing key it printed; keep it secret
 ```
 
@@ -262,8 +280,8 @@ Iran, because Iranian providers' sites may block foreign addresses.
 sudo sarfeh config set CATALOG_URL=https://your-publisher/catalog CATALOG_PUBLIC_KEY=...
 ```
 
-Those installations stop scraping and check the catalog twice a day. A file without a valid signature is refused, an
-older file can't roll prices back, and sharp price moves are still held for review.
+Those installations check the catalog twice a day and apply it. A file without a valid signature is refused, and an
+older file can't roll prices back. A sharp move the publisher's admin approved is applied as reviewed, not held again.
 
 ## Uninstalling
 
