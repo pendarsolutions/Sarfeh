@@ -7,6 +7,18 @@ and versions follow [Semantic Versioning](https://semver.org/). Until 1.0, a min
 
 ### Added
 
+- **A record of price changes.** Whatever a refresh of the public table changes (prices and sizes that moved, plans
+  that appeared or left) is kept as an event, published as `changes.json` and shown on the price page under "Latest
+  price changes". With a bot token and a channel in `notify.json`, each event is also posted once to Telegram and
+  Bale (`scripts/price_feed.py`).
+- **CPU models reported by users** (`data/hardware/cpu-reports.json`) appear beside the plan they were found on, with
+  the report's date; a stand-in name such as `QEMU Virtual CPU` is shown as "the host hides the CPU model".
+- **Servers: the CPU model, and the CPU time the host takes away.** The collector (version 2) also reads the
+  processor's model name and clock speed and the "steal" counter. The Servers page shows the 95th percentile of
+  steal and warns from 10%, a sign of an oversold host. CPU use still includes stolen time, so a starved server is
+  never advised to shrink. Servers added earlier keep the old script until the setup command is run on them again;
+  the page says so.
+
 - **The price page says what each figure assumes or leaves out:** an IPv4 address that is assumed to come with the
   plan (or its price, where the provider charges one), a price that is for 30 days, and ParsPack's setup fee equal to
   7 days. These were in `prices.json` as English notes and never shown. Each offer now carries `conditions`, ids the
@@ -19,6 +31,13 @@ and versions follow [Semantic Versioning](https://semver.org/). Until 1.0, a min
   the same guardrails as a read; an installation takes it with `price-import`.
 - CI opens the built website as a 320px and a 360px phone and fails if a page is wider than the screen
   (`scripts/check_page_widths.py`).
+
+### Fixed
+
+- **ParsPack prices stopped updating** on 24 November, when one of its datacenters listed its control-panel
+  licences at another price: the read compared whole tables. It now compares the CPU, memory and disk prices it
+  reads.
+- Server.ir's retired IRAT plans no longer raise a warning on every read.
 
 ## [0.4.0] — 2026-11-18
 

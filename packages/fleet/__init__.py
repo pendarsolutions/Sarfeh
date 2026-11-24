@@ -3,6 +3,7 @@
 from .collector import (
     COLLECT_PATH,
     COLLECTOR_USER,
+    COLLECTOR_VERSION,
     Collected,
     CollectError,
     Sample,
@@ -17,7 +18,7 @@ from .collector import (
 from .ssh import HostKeyChanged, SshError, collect, generate_keypair
 
 __all__ = [
-    "COLLECTOR_USER", "COLLECT_PATH", "CollectError", "Collected", "HostKeyChanged", "Sample", "SshError", "UsageSummary",
+    "COLLECTOR_USER", "COLLECTOR_VERSION", "COLLECT_PATH", "CollectError", "Collected", "HostKeyChanged", "Sample", "SshError", "UsageSummary",
     "collect", "enroll_command", "enroll_script", "generate_keypair", "parse_collect", "removal_command", "suggest_plans",
     "summarize",
 ]

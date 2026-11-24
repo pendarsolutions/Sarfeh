@@ -70,6 +70,24 @@ def _owner(client):
 def test_adding_a_server_collects_and_remembers_identity(server):
     assert server["status"] == "online"
     assert server["cpu_cores"] == 2 and server["hostname"] == "web-1"
+    # this test's server answers as one set up before the collector read the CPU model and steal
+    assert (server["cpu_model"], server["cpu_model_hidden"], server["steal_high"]) == (None, False, False)
+    assert server["collector_outdated"] is True
+
+
+def test_cpu_model_and_a_host_that_takes_cpu_time_are_shown(client, auth, server, ssh, api_env):
+    from finops_api.db import SessionLocal
+    from finops_api.fleet_service import collect_all
+
+    extra = "cpu_model=QEMU Virtual CPU version 2.5+\ncpu_mhz=2400\n"
+    for total, steal in ((1000, 0), (2000, 200), (3000, 400)):  # a fifth of every interval is taken by the host
+        ssh["output"] = "version=2\n" + output(total=total, idle=int(total * 0.5)) + extra + f"cpu_steal={steal}\n"
+        with SessionLocal() as db:
+            collect_all(db)
+    s = client.get(f"/api/v1/servers/{server['id']}", headers=auth).json()
+    assert (s["cpu_model"], s["cpu_mhz"], s["cpu_model_hidden"]) == ("QEMU Virtual CPU version 2.5+", 2400, True)
+    assert s["usage"]["p95_steal_percent"] == "20.00" and s["steal_high"] is True
+    assert s["collector_outdated"] is False
     assert server["priced"] is False and server["monthly_total_toman"] is None  # never priced before confirmation
 
 

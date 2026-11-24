@@ -15,6 +15,9 @@ from typing import Any, Iterable
 
 from pricing_engine.models import CatalogItem
 
+#: the script's version. 2 added the CPU model and the time the host takes away (steal); a server set up before
+#: keeps answering with version 1 until its setup command is run again.
+COLLECTOR_VERSION = 2
 COLLECTOR_USER = "finops-collector"
 COLLECT_PATH = "/usr/local/lib/finops-agent/collect.sh"
 HUNDRED = Decimal(100)
@@ -31,11 +34,13 @@ DISK_TOLERANCE = Decimal("0.12")
 COLLECT_SCRIPT = r"""#!/bin/sh
 # FinOps agent collector. Read-only: prints usage counters and exits.
 export LC_ALL=C
-echo "version=1"
+echo "version=2"
 echo "hostname=$(hostname)"
 [ -r /etc/os-release ] && . /etc/os-release && echo "os=${PRETTY_NAME:-unknown}"
 echo "cpu_cores=$(grep -c '^processor' /proc/cpuinfo)"
-awk '/^cpu /{t=0; for(i=2;i<=9;i++) t+=$i; printf "cpu_total=%.0f\ncpu_idle=%.0f\n", t, $5+$6}' /proc/stat
+awk '/^model name/{sub(/^[^:]*: */, ""); print "cpu_model=" $0; exit}' /proc/cpuinfo
+awk '/^cpu MHz/{sub(/^[^:]*: */, ""); printf "cpu_mhz=%.0f\n", $0; exit}' /proc/cpuinfo
+awk '/^cpu /{t=0; for(i=2;i<=9;i++) t+=$i; printf "cpu_total=%.0f\ncpu_idle=%.0f\ncpu_steal=%.0f\n", t, $5+$6, $9}' /proc/stat
 awk '/^MemTotal:/{printf "mem_total_kb=%.0f\n",$2} /^MemAvailable:/{printf "mem_available_kb=%.0f\n",$2}' /proc/meminfo
 df -Pk / | awk 'NR==2{printf "disk_total_kb=%.0f\ndisk_used_kb=%.0f\n",$2,$3}'
 awk 'NR>2{sub(/:/," "); if($1!~/^(lo|docker|veth|br-|virbr|cni|flannel|cali|tun|tap)/){r+=$2; t+=$10}} END{printf "rx_bytes=%.0f\ntx_bytes=%.0f\n",r,t}' /proc/net/dev
@@ -57,6 +62,8 @@ class Sample:
     disk_used_kb: int
     rx_bytes: int
     tx_bytes: int
+    #: time the host gave this server's CPU to someone else; None from a version 1 collector
+    cpu_steal: int | None = None
 
 
 @dataclass
@@ -65,11 +72,19 @@ class Collected:
     os: str | None
     cpu_cores: int
     sample: Sample
+    version: int = 1
+    #: as /proc/cpuinfo names it; a host can show a stand-in instead of the real processor
+    cpu_model: str | None = None
+    cpu_mhz: int | None = None
 
 
 @dataclass
 class UsageSummary:
+    #: busy time and stolen time together: what the server asked for. A server starved by its host still counts
+    #: as in use, so it is never advised to shrink.
     p95_cpu_percent: Decimal | None = None
+    #: the part of that which the host didn't deliver. High values mean the host is oversold.
+    p95_steal_percent: Decimal | None = None
     p95_ram_percent: Decimal | None = None
     disk_used_gb: Decimal | None = None
     observation_days: int = 0
@@ -87,6 +102,9 @@ def parse_collect(text: str, taken_at: datetime) -> Collected:
         key, sep, value = line.partition("=")
         if sep:
             values[key.strip()] = value.strip()
+    def optional(key: str) -> int | None:  # what version 1 doesn't print, or a machine doesn't have
+        return int(values[key]) if values.get(key, "").isdigit() else None
+
     try:
         return Collected(
             hostname=values.get("hostname", "")[:200],
@@ -95,7 +113,11 @@ def parse_collect(text: str, taken_at: datetime) -> Collected:
             sample=Sample(taken_at=taken_at, cpu_total=int(values["cpu_total"]), cpu_idle=int(values["cpu_idle"]),
                           mem_total_kb=int(values["mem_total_kb"]), mem_available_kb=int(values["mem_available_kb"]),
                           disk_total_kb=int(values["disk_total_kb"]), disk_used_kb=int(values["disk_used_kb"]),
-                          rx_bytes=int(values["rx_bytes"]), tx_bytes=int(values["tx_bytes"])),
+                          rx_bytes=int(values["rx_bytes"]), tx_bytes=int(values["tx_bytes"]),
+                          cpu_steal=optional("cpu_steal")),
+            version=optional("version") or 1,
+            cpu_model=" ".join(values.get("cpu_model", "").split())[:200] or None,
+            cpu_mhz=optional("cpu_mhz"),
         )
     except (KeyError, ValueError) as exc:
         raise CollectError(f"unexpected collector output: {exc}") from exc
@@ -124,18 +146,23 @@ def summarize(samples: list[Sample], days_per_month: int = 30) -> UsageSummary:
     out.p95_ram_percent = (lambda v: None if v is None else _round(v))(percentile95(Decimal(x) for x in ram))
     out.disk_used_gb = _round(Decimal(samples[-1].disk_used_kb) / KIB_PER_GIB)
     cpu: list[Decimal] = []
+    steal: list[Decimal] = []
     rx, tx = 0, 0
     measured_seconds = Decimal(0)
     for prev, cur in zip(samples, samples[1:], strict=False):
         total, idle = cur.cpu_total - prev.cpu_total, cur.cpu_idle - prev.cpu_idle
         if total > 0 and 0 <= idle <= total:
             cpu.append(HUNDRED * (total - idle) / total)
+            if prev.cpu_steal is not None and cur.cpu_steal is not None and 0 <= cur.cpu_steal - prev.cpu_steal <= total:
+                steal.append(HUNDRED * (cur.cpu_steal - prev.cpu_steal) / total)
         if cur.rx_bytes >= prev.rx_bytes and cur.tx_bytes >= prev.tx_bytes:
             rx += cur.rx_bytes - prev.rx_bytes
             tx += cur.tx_bytes - prev.tx_bytes
             measured_seconds += Decimal(str((cur.taken_at - prev.taken_at).total_seconds()))
     p95 = percentile95(cpu)
     out.p95_cpu_percent = None if p95 is None else _round(p95)
+    p95 = percentile95(steal)
+    out.p95_steal_percent = None if p95 is None else _round(p95)
     span = (samples[-1].taken_at - samples[0].taken_at).total_seconds()
     out.observation_days = int(span // 86_400)
     if measured_seconds >= MIN_PROJECTION_SECONDS:

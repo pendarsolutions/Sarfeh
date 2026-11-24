@@ -121,6 +121,16 @@ const dict = {
   srvUpload: ["ترافیک ورودی ماهانه", "Monthly incoming traffic"],
   srvProjected: ["برآورد از روی مدت مشاهده", "projected from the time observed"],
   srvObserved: ["روز مشاهده", "days observed"],
+  srvSteal: ["سهم گرفته‌شده توسط میزبان (p95)", "Taken by the host (p95)"],
+  srvStealHigh: [
+    "میزبان بخش قابل‌توجهی از زمان پردازنده این سرور را به ماشین‌های دیگر می‌دهد. این نشانه فروش بیش از ظرفیت است و سرور را کندتر از مشخصاتش می‌کند.",
+    "The host gives a noticeable share of this server's CPU time to other machines. That is a sign of overselling, and it makes the server slower than its size suggests.",
+  ],
+  srvCpuHidden: ["میزبان مدل پردازنده را پنهان کرده", "the host hides the CPU model"],
+  srvCollectorOld: [
+    "برای دیدن مدل پردازنده و سهمی که میزبان از پردازنده می‌گیرد، دستور راه‌اندازی صفحه «سرورها» را یک بار دیگر روی این سرور اجرا کنید.",
+    "To see the CPU model and how much CPU the host takes, run the setup command from the Servers page on this server once more.",
+  ],
   srvRenewal: ["تاریخ تمدید", "Renewal date"],
   srvRenewsIn: ["تمدید", "Renews"],
   srvEnv: ["محیط", "Environment"],

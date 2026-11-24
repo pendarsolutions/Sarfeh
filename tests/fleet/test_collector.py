@@ -8,6 +8,7 @@ import pytest
 
 from fleet import CollectError, Sample, enroll_command, enroll_script, parse_collect, suggest_plans, summarize
 from pricing_engine.models import CatalogItem
+from pricing_engine.size_table import cpu_model_hidden
 
 T0 = datetime(2026, 11, 1, tzinfo=UTC)
 PUB = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIExampleExampleExampleExampleExample"
@@ -26,8 +27,8 @@ tx_bytes=2000
 """
 
 
-def sample(minutes=0, total=0, idle=0, avail=2_000_000, rx=0, tx=0):
-    return Sample(T0 + timedelta(minutes=minutes), total, idle, 4_000_000, avail, 41_000_000, 10_485_760, rx, tx)
+def sample(minutes=0, total=0, idle=0, avail=2_000_000, rx=0, tx=0, steal=None):
+    return Sample(T0 + timedelta(minutes=minutes), total, idle, 4_000_000, avail, 41_000_000, 10_485_760, rx, tx, steal)
 
 
 def test_parse_reads_all_fields():
@@ -40,6 +41,37 @@ def test_parse_reads_all_fields():
 def test_parse_rejects_incomplete_output(bad):
     with pytest.raises(CollectError):
         parse_collect(bad, T0)
+
+
+def test_version_2_also_reads_the_cpu_model_and_what_the_host_takes():
+    old = parse_collect(OUTPUT, T0)  # a server set up before: nothing is missing, the new readings are just unknown
+    assert (old.version, old.cpu_model, old.cpu_mhz, old.sample.cpu_steal) == (1, None, None, None)
+
+    new = parse_collect(OUTPUT.replace("version=1", "version=2")
+                        + "cpu_model=Intel(R) Xeon(R)   Gold 6248R CPU @ 3.00GHz\ncpu_mhz=2993\ncpu_steal=1500\n", T0)
+    assert (new.version, new.cpu_model, new.cpu_mhz) == (2, "Intel(R) Xeon(R) Gold 6248R CPU @ 3.00GHz", 2993)
+    assert new.sample.cpu_steal == 1500
+    assert not cpu_model_hidden(new.cpu_model)
+    assert cpu_model_hidden("QEMU Virtual CPU version 2.5+") and cpu_model_hidden("Common KVM processor")
+    assert not cpu_model_hidden(None)
+
+
+def test_stolen_time_is_measured_beside_use_and_still_counts_as_demand():
+    # of each 1,000 ticks: 600 idle, 250 worked, 150 the host gave to someone else
+    s = summarize([sample(0, 0, 0, steal=0), sample(5, 1000, 600, steal=150), sample(10, 2000, 1200, steal=300)])
+    assert s.p95_steal_percent == D("15.00")
+    # the server asked for 40%: a starved server must never look idle enough to shrink
+    assert s.p95_cpu_percent == D("40.00")
+    # without the counter (a version 1 collector) there is no steal figure, and nothing else changes
+    s = summarize([sample(0, 0, 0), sample(5, 1000, 600), sample(10, 2000, 1200)])
+    assert (s.p95_steal_percent, s.p95_cpu_percent) == (None, D("40.00"))
+
+
+def test_the_script_only_reads_and_reports_its_version():
+    script = enroll_script(PUB)
+    assert 'echo "version=2"' in script and "cpu_steal=" in script and "/proc/cpuinfo" in script
+    collect = script.split("<<'FINOPS_COLLECT'")[1].split("FINOPS_COLLECT")[0]
+    assert not any(word in collect for word in (" > ", ">>", "rm ", "sudo", "curl", "wget", "tee "))
 
 
 def test_cpu_comes_from_counter_differences():

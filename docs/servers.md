@@ -24,14 +24,22 @@ The command contains only a public key, so it isn't secret.
 
 ## What is collected
 
-CPU and memory counters, root disk usage, total network traffic, hostname and operating system. It doesn't read files,
-processes, logs or application data. Usage is kept for 90 days.
+CPU and memory counters, root disk usage, total network traffic, hostname, operating system, and the processor's
+model name and clock speed. It doesn't read files, processes, logs or application data. Usage is kept for 90 days.
 
 | Shown as | How it's worked out |
 |---|---|
 | CPU and memory | 95th percentile over the last 30 days, a value that was really observed |
+| Taken by the host | The share of the server's CPU time its host gave to other machines ("steal"), 95th percentile. From 10% the page warns: the host is oversold, and the server is slower than its size suggests |
+| CPU model | As the server names its processor. A host can show a stand-in such as `QEMU Virtual CPU`; the page says so |
 | Monthly traffic | Measured over 30 days. Before that, projected from at least one day and labelled as projected |
 | Rightsizing advice | Only after 14 days of observation, because allocated size alone proves nothing |
+
+CPU use includes the time the host took away: it is what the server asked for, so a server starved by its host is
+never advised to shrink.
+
+Servers added before version 0.5 keep the older script, which doesn't read the CPU model or the host's share. Run the
+setup command on them once more (it is safe to repeat) and both appear from the next collection.
 
 Download means traffic leaving the server. Providers may count traffic differently, so check this against your invoice
 if you're close to a quota.

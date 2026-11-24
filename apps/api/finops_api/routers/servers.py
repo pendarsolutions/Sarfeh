@@ -18,7 +18,7 @@ from shared_types import ResourceDraft
 
 from ..config import get_settings
 from ..db import get_db
-from ..fleet_service import collect_one, fleet_key, org_settings_of, server_costs, to_resource
+from ..fleet_service import collect_one, fleet_key, hardware, org_settings_of, server_costs, to_resource
 from ..orm import Server
 from ..security import Principal, audit, current_principal, require
 from ..services import create_inventory, resources_of, snapshot
@@ -66,7 +66,8 @@ def _view(server: Server, costs: dict[str, Any]) -> dict[str, Any]:
     return {"id": server.id, "name": server.name, "host": server.host, "port": server.port, "status": server.status,
             "last_seen_at": server.last_seen_at, "last_error": server.last_error, "hostname": server.hostname,
             "os": server.os, "cpu_cores": server.cpu_cores, "mem_total_kb": server.mem_total_kb,
-            "disk_total_kb": server.disk_total_kb, "usage": server.usage or {}, "environment": server.environment,
+            "disk_total_kb": server.disk_total_kb, "usage": server.usage or {}, **hardware(server),
+            "environment": server.environment,
             "provider_id": server.provider_id, "sku": server.sku, "resource_class": server.resource_class,
             "storage_type": server.storage_type, "download_gb_override": server.download_gb_override,
             "upload_gb_override": server.upload_gb_override, "renewal_date": server.renewal_date,

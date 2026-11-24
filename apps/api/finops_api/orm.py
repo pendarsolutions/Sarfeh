@@ -505,6 +505,11 @@ class Server(Base):
     hostname: Mapped[str | None] = mapped_column(String(200))
     os: Mapped[str | None] = mapped_column(String(200))
     cpu_cores: Mapped[int | None] = mapped_column(Integer)
+    #: as the server names its processor; a host can show a stand-in instead of the real one
+    cpu_model: Mapped[str | None] = mapped_column(String(200))
+    cpu_mhz: Mapped[int | None] = mapped_column(Integer)
+    #: the version of the collector script on the server; older ones don't report the CPU model or steal
+    collector_version: Mapped[int | None] = mapped_column(Integer)
     mem_total_kb: Mapped[int | None] = mapped_column(BigInteger)
     disk_total_kb: Mapped[int | None] = mapped_column(BigInteger)
     usage: Mapped[dict[str, Any]] = mapped_column(JSONType, default=dict)
@@ -531,6 +536,8 @@ class ServerSample(Base):
     taken_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     cpu_total: Mapped[int] = mapped_column(BigInteger)
     cpu_idle: Mapped[int] = mapped_column(BigInteger)
+    #: None from a server whose collector is older than version 2
+    cpu_steal: Mapped[int | None] = mapped_column(BigInteger)
     mem_total_kb: Mapped[int] = mapped_column(BigInteger)
     mem_available_kb: Mapped[int] = mapped_column(BigInteger)
     disk_total_kb: Mapped[int] = mapped_column(BigInteger)

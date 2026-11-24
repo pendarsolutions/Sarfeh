@@ -91,6 +91,12 @@ function UsageGrid({ s }: { s: ServerView }) {
         <span className="stat-label">{t("srvCpu")}</span>
         {u.p95_cpu_percent != null ? <Pct v={u.p95_cpu_percent} /> : "—"}
       </div>
+      {u.p95_steal_percent != null && (
+        <div className="stat">
+          <span className="stat-label">{t("srvSteal")}</span>
+          <Pct v={u.p95_steal_percent} />
+        </div>
+      )}
       <div className="stat">
         <span className="stat-label">{t("srvRam")}</span>
         {u.p95_ram_percent != null ? <Pct v={u.p95_ram_percent} /> : "—"}
@@ -162,8 +168,12 @@ function ServerDrawer({ id, onClose, canEdit }: { id: string; onClose: () => voi
         <div className="stack">
           <p dir="ltr" className="muted">
             {d.host}:{d.port} {d.os ? `· ${d.os}` : ""} {d.cpu_cores ? `· ${d.cpu_cores} CPU` : ""}
+            {d.cpu_model && !d.cpu_model_hidden ? ` · ${d.cpu_model}` : ""}
           </p>
+          {d.cpu_model_hidden && <p className="muted">{t("srvCpuHidden")}</p>}
           {d.last_error && <p className="alert alert-bad">{d.last_error}</p>}
+          {d.steal_high && <p className="alert alert-warn">{t("srvStealHigh")}</p>}
+          {d.collector_outdated && <p className="alert alert-info">{t("srvCollectorOld")}</p>}
           {d.status === "host_key_changed" && (
             <div className="stack">
               <p className="alert alert-bad">{t("srvKeyChangedHelp")}</p>

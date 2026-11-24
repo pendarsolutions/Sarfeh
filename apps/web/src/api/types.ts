@@ -482,6 +482,8 @@ export interface Member {
 
 export interface ServerUsage {
   p95_cpu_percent?: string | null;
+  /** the part of the server's CPU time its host gave to others; absent from servers set up before the collector read it */
+  p95_steal_percent?: string | null;
   p95_ram_percent?: string | null;
   disk_used_gb?: string | null;
   observation_days?: number;
@@ -504,6 +506,13 @@ export interface ServerView {
   mem_total_kb: number | null;
   disk_total_kb: number | null;
   usage: ServerUsage;
+  cpu_model?: string | null;
+  cpu_mhz?: number | null;
+  /** the host shows a stand-in name instead of the real processor */
+  cpu_model_hidden?: boolean;
+  steal_high?: boolean;
+  /** the collector on the server is older than this version's: running the setup command again updates it */
+  collector_outdated?: boolean;
   environment: string | null;
   provider_id: string | null;
   sku: string | null;

@@ -11,6 +11,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
 from fleet import (
+    COLLECTOR_VERSION,
     Collected,
     CollectError,
     HostKeyChanged,
@@ -22,6 +23,7 @@ from fleet import (
     summarize,
 )
 from pricing_engine import CatalogSnapshot, Resource, UsageMetrics, price_resource
+from pricing_engine.size_table import cpu_model_hidden
 from recommendation_engine import OrgSettings, recommend
 from recommendation_engine import summarize as summarize_recs
 
@@ -33,6 +35,8 @@ SAMPLE_RETENTION_DAYS = 90
 RENEWAL_ALERT_DAYS = (7, 3, 1)
 KIB_PER_GIB = Decimal(1024 ** 2)
 MAX_PARALLEL_COLLECTS = 16
+#: a host that takes this much of a server's CPU time, 95% of the time or more, is worth a warning
+HIGH_STEAL_PERCENT = Decimal(10)
 
 
 def fleet_key(db: Session, organization_id: str) -> FleetKey:
@@ -49,7 +53,7 @@ def _as_sample(row: ServerSample) -> Sample:
     taken = row.taken_at if row.taken_at.tzinfo else row.taken_at.replace(tzinfo=UTC)
     return Sample(taken_at=taken, cpu_total=row.cpu_total, cpu_idle=row.cpu_idle, mem_total_kb=row.mem_total_kb,
                   mem_available_kb=row.mem_available_kb, disk_total_kb=row.disk_total_kb, disk_used_kb=row.disk_used_kb,
-                  rx_bytes=row.rx_bytes, tx_bytes=row.tx_bytes)
+                  rx_bytes=row.rx_bytes, tx_bytes=row.tx_bytes, cpu_steal=row.cpu_steal)
 
 
 def refresh_usage(db: Session, server: Server, at: datetime) -> None:
@@ -62,11 +66,12 @@ def record_collection(db: Session, server: Server, parsed: Collected, host_key: 
     s = parsed.sample
     db.add(ServerSample(server_id=server.id, taken_at=s.taken_at, cpu_total=s.cpu_total, cpu_idle=s.cpu_idle,
                         mem_total_kb=s.mem_total_kb, mem_available_kb=s.mem_available_kb, disk_total_kb=s.disk_total_kb,
-                        disk_used_kb=s.disk_used_kb, rx_bytes=s.rx_bytes, tx_bytes=s.tx_bytes))
+                        disk_used_kb=s.disk_used_kb, rx_bytes=s.rx_bytes, tx_bytes=s.tx_bytes, cpu_steal=s.cpu_steal))
     db.flush()
     server.status, server.last_error, server.last_seen_at = "online", None, s.taken_at
     server.host_key = server.host_key or host_key
     server.hostname, server.os, server.cpu_cores = parsed.hostname, parsed.os, parsed.cpu_cores
+    server.cpu_model, server.cpu_mhz, server.collector_version = parsed.cpu_model, parsed.cpu_mhz, parsed.version
     server.mem_total_kb, server.disk_total_kb = s.mem_total_kb, s.disk_total_kb
     refresh_usage(db, server, s.taken_at)
 
@@ -108,6 +113,15 @@ def collect_all(db: Session) -> dict[str, int]:
         counts[server.status] = counts.get(server.status, 0) + 1
     db.commit()
     return counts
+
+
+def hardware(server: Server) -> dict[str, Any]:
+    """What a server says about the processor under it, and whether its host is taking CPU time away."""
+    steal = _dec((server.usage or {}).get("p95_steal_percent"))
+    return {"cpu_model": server.cpu_model, "cpu_mhz": server.cpu_mhz, "cpu_model_hidden": cpu_model_hidden(server.cpu_model),
+            "steal_high": steal is not None and steal >= HIGH_STEAL_PERCENT,
+            # set up before the collector learned these: running the setup command again brings them
+            "collector_outdated": server.collector_version is not None and server.collector_version < COLLECTOR_VERSION}
 
 
 def purge_samples(db: Session, now: datetime | None = None) -> int:
