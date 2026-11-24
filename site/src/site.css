@@ -1393,20 +1393,37 @@ ul.plain {
 .pr-cpu-model {
   overflow-wrap: anywhere;
 }
-/* The latest price changes: who, when, and the lines that moved. */
+/* Two parts of the price page, as tabs: the comparison, and the record of price changes. */
+.pr-tabs {
+  display: flex;
+  gap: var(--spacing-2);
+  border-block-end: 1px solid var(--color-line-default);
+}
+.pr-tab {
+  appearance: none;
+  margin-block-end: -1px;
+  padding: var(--spacing-3) var(--spacing-4);
+  background: none;
+  border: 0;
+  border-block-end: 2px solid transparent;
+  font: var(--type-label);
+  color: var(--color-ink-muted);
+  cursor: pointer;
+}
+.pr-tab:hover {
+  color: var(--color-ink-default);
+}
+.pr-tab[aria-selected="true"] {
+  color: var(--color-ink-default);
+  border-block-end-color: var(--color-action-default);
+}
+/* The record of price changes: a filter by provider, then one card for each read that changed something. */
 .pr-changes {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-3);
-  padding-block-start: var(--spacing-6);
-  border-block-start: 1px solid var(--color-line-default);
+  gap: var(--spacing-4);
 }
-.pr-changes h2 {
-  margin: 0;
-  font: var(--type-heading-small);
-}
-.pr-changes > .note,
-.pr-event .note {
+.pr-changes .note {
   margin: 0;
 }
 .pr-events {
@@ -1415,28 +1432,112 @@ ul.plain {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-4);
+  gap: var(--spacing-3);
 }
-.pr-event h3 {
+.pr-event {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2);
+  padding: var(--spacing-4) var(--spacing-5);
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-line-default);
+  border-radius: var(--radius-card);
+}
+.pr-event-head {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--spacing-1) var(--spacing-3);
-  margin: 0;
-  font: var(--type-label);
+  align-items: center;
+  gap: var(--spacing-2) var(--spacing-3);
 }
-.pr-event h3 small {
+.pr-event-head h3 {
+  margin: 0;
+  font: var(--type-heading-small);
+}
+.pr-event-head .badge {
+  white-space: normal;
+}
+.pr-event-head small {
+  margin-inline-start: auto;
   font: var(--type-caption);
   color: var(--color-ink-muted);
 }
-.pr-event ul {
-  margin: var(--spacing-2) 0 0;
-  padding-inline-start: var(--spacing-4);
+/* The rows of an event as a table: plan, before, after, change. On a phone a row is two lines. */
+.pr-change-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.pr-change {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.9fr);
+  gap: var(--spacing-1) var(--spacing-4);
+  align-items: baseline;
+  padding-block: var(--spacing-2);
+  border-block-start: 1px solid var(--color-line-default);
   font: var(--type-body-small);
+}
+.pr-change-head {
+  border-block-start: 0;
+  font: var(--type-caption);
+  color: var(--color-ink-muted);
+}
+.pr-change-prices {
+  display: contents;
+}
+.pr-change-plan {
+  font-weight: 600;
   overflow-wrap: anywhere;
 }
-.pr-event-plan {
-  font-weight: 600;
+.pr-change-plan small {
+  display: block;
+  font: var(--type-caption);
+  color: var(--color-ink-muted);
+}
+.pr-change-old {
+  color: var(--color-ink-muted);
+}
+/* the unit is in the column heading; a phone has no headings, so it goes after the number there */
+.pr-change-unit {
+  display: none;
+  color: var(--color-ink-muted);
+}
+.pr-more {
+  align-self: flex-start;
+}
+@media (max-width: 560px) {
+  .pr-change-head {
+    display: none;
+  }
+  .pr-change {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .pr-change-list > .pr-change:nth-child(2) {
+    border-block-start: 0;
+  }
+  .pr-change-plan {
+    grid-area: 1 / 1;
+  }
+  .pr-change-move {
+    grid-area: 1 / 2;
+  }
+  .pr-change-prices {
+    grid-area: 2 / 1 / 3 / 3;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--spacing-2);
+  }
+  /* before, an arrow in the reading direction, after */
+  .pr-change-old::after {
+    content: "←";
+    margin-inline-start: var(--spacing-2);
+  }
+  :root[dir="ltr"] .pr-change-old::after {
+    content: "→";
+  }
+  .pr-change-unit {
+    display: inline;
+  }
 }
 .pr-cost {
   display: flex;

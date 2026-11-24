@@ -117,11 +117,16 @@ def test_a_failed_post_is_tried_again(rows):
 
 def test_the_published_list_is_newest_first_and_keeps_counts_when_it_cuts_lines(rows):
     before = rows["arvancloud"]
-    after = [i.model_copy(update={"price_toman": i.price_toman + 1}) if i.price_toman else i for i in before]
+    after = [i.model_copy(update={"price_toman": i.price_toman * D("1.2")}) if i.price_toman else i for i in before]
     data = {"schema": 1, "events": []}
     price_feed.add(data, [price_feed.event("arvancloud", before, after, AT - timedelta(days=1)),
                           price_feed.event("iranserver", rows["iranserver"], rows["iranserver"][1:], AT)])
     out = json.loads(price_feed.published(data, {"arvancloud": {"name_fa": "ابر آروان", "name_en": "ArvanCloud"}}))
     assert [e["provider_id"] for e in out["events"]] == ["iranserver", "arvancloud"]
     arvan = out["events"][1]
-    assert arvan["counts"]["changed"] > price_feed.LINES == len(arvan["changed"]) and "posted" not in arvan
+    # a long event is cut for the page, and still says how many rows there were
+    assert len(arvan["changed"]) == price_feed.PAGE_LINES < arvan["counts"]["changed"] and "posted" not in arvan
+    # which way the event went and by about how much come worked out, and each row has its own percent
+    assert (arvan["direction"], arvan["typical_percent"], arvan["changed"][0]["percent"]) == ("up", "20", "20")
+    assert (out["events"][0]["direction"], out["events"][0]["counts"]["removed"]) == (None, 1)
+

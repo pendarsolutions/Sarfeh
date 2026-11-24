@@ -36,7 +36,7 @@ import refresh_prices  # noqa: E402
 
 WIDTHS = (320, 360)
 PAGES = ("/", "/?lang=en", "/prices/?cpu=2&ram=4&disk=50", "/prices/?cpu=2&ram=4&disk=50&lang=en",
-         "/prices/?cpu=16&ram=64&disk=400")
+         "/prices/?cpu=16&ram=64&disk=400", "/prices/?view=changes", "/prices/?view=changes&lang=en")
 BROWSERS = ("google-chrome", "chromium", "chromium-browser", "microsoft-edge",
             r"C:\Program Files\Google\Chrome\Application\chrome.exe",
             r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
@@ -118,7 +118,9 @@ async def _check(site: int, debug: int) -> list[str]:
             await cdp("Emulation.setDeviceMetricsOverride", width=width, height=800, deviceScaleFactor=2, mobile=True)
             for path in PAGES:
                 await cdp("Page.navigate", url=f"http://127.0.0.1:{site}{path}")
-                ready = "!!document.querySelector('.pr-offer')" if path.startswith("/prices") else "!!document.querySelector('.lp')"
+                ready = ("!!document.querySelector('.pr-event')" if "view=changes" in path
+                         else "!!document.querySelector('.pr-offer')" if path.startswith("/prices")
+                         else "!!document.querySelector('.lp')")
                 for _ in range(60):
                     await asyncio.sleep(0.25)
                     if await value(ready):

@@ -64,6 +64,7 @@ interface Table {
 interface ChangeRow {
   plan: string;
   toman: string | null;
+  /** the price move as a whole percent, negative when it fell; worked out by the file */
   percent?: string;
   cpu_cores?: string;
   ram_gb?: string;
@@ -77,16 +78,21 @@ interface ChangeEvent {
   since: string | null;
   source: string;
   counts: { changed: number; new: number; removed: number };
+  /** which way the prices went, and by about how much, when they all went one way */
+  direction: "up" | "down" | "mixed" | null;
+  typical_percent: string | null;
   changed: ChangeRow[];
+  new: ChangeRow[];
+  removed: ChangeRow[];
 }
 interface Changes {
   providers: Record<string, { name_fa: string; name_en: string }>;
   events: ChangeEvent[];
 }
 type Want = { cpu: number | null; ram: number | null; disk: number | null };
-/** How many events the page shows, and how many lines of each. The file has more. */
-const EVENTS_SHOWN = 6;
-const LINES_SHOWN = 5;
+type View = "prices" | "changes";
+/** How many rows of one event show before "show more". */
+const ROWS_SHOWN = 6;
 type SpecField = "cpu_cores" | "ram_gb" | "storage_gb" | "included_traffic_gb";
 const SPEC_CHANGES: [SpecField, Key][] = [
   ["cpu_cores", "prChCpu"],
@@ -316,66 +322,127 @@ function Comparison({ table }: { table: Table }) {
   );
 }
 
-/** A changed row in words: its price move with the percent, then any size that moved with it. */
-function changeText(row: ChangeRow, t: (k: Key) => string, lang: Lang): string {
+/** The sizes of a plan that moved with its price, in words: "memory 32 to 16". */
+function specText(row: ChangeRow, t: (k: Key) => string, lang: Lang): string {
   const was = row.was ?? {};
   const parts: string[] = [];
-  if (was.toman && row.toman) {
-    let text = fill(t("prChPrice"), { old: formatWhole(was.toman, lang), new: formatWhole(row.toman, lang) });
-    if (row.percent) {
-      const p = localizeDigits(row.percent.replace("-", ""), lang);
-      text += ` (${fill(t(row.percent.startsWith("-") ? "prChDown" : "prChUp"), { p })})`;
-    }
-    parts.push(text);
-  }
   for (const [field, label] of SPEC_CHANGES) {
     const old = was[field];
     const now = row[field];
     if (old && now) parts.push(fill(t("prChSpec"), { what: t(label), old: localizeDigits(old, lang), new: localizeDigits(now, lang) }));
   }
-  return parts.length ? parts.join(lang === "fa" ? "، " : ", ") : t("prChOther");
+  return parts.join(lang === "fa" ? "، " : ", ");
 }
 
-function ChangesSection({ changes }: { changes: Changes }) {
+/** "25% up" or "35% down" as a badge. Dearer gets the warning colour: it is bad news for whoever pays. */
+function Move({ percent }: { percent?: string | null }) {
   const { t, lang } = useT();
+  if (!percent) return null;
+  const down = percent.startsWith("-");
+  return <span className={`badge ${down ? "badge-good" : "badge-bad"}`}>{fill(t(down ? "prChDown" : "prChUp"), { p: localizeDigits(percent.replace("-", ""), lang) })}</span>;
+}
+
+/** One read of one provider that changed something: a line saying what happened, then the rows as a table. */
+function EventCard({ e, changes }: { e: ChangeEvent; changes: Changes }) {
+  const { t, lang } = useT();
+  const [all, setAll] = useState(false);
   const n = (v: number) => localizeDigits(String(v), lang);
+  const provider = changes.providers[e.provider_id];
+  const rows = all ? e.changed : e.changed.slice(0, ROWS_SHOWN);
+  const names = (list: ChangeRow[]) => list.map((r) => `\u2068${r.plan}\u2069`).join(lang === "fa" ? "، " : ", ");
+  const listed = (count: number, list: ChangeRow[], allKey: Key, someKey: Key) =>
+    count > list.length ? fill(t(someKey), { n: n(count), names: names(list) }) : fill(t(allKey), { names: names(list) });
+  // a read long after the one before it is not one day's news: say which read it is compared with
+  const gapDays = e.since ? (Date.parse(e.at.slice(0, 10)) - Date.parse(e.since)) / 86_400_000 : 0;
+  const notes = [
+    e.counts.new > 0 && listed(e.counts.new, e.new, "prChNewAll", "prChNewList"),
+    e.counts.removed > 0 && listed(e.counts.removed, e.removed, "prChRemovedAll", "prChRemovedList"),
+    e.counts.changed > e.changed.length && fill(t("prChCut"), { n: n(e.counts.changed - e.changed.length) }),
+    gapDays > 2 && e.since && fill(t("prChSince"), { date: day(e.since, lang) }),
+    e.source === "file" && t("prChByHand"),
+  ].filter((x): x is string => Boolean(x));
+  const headline =
+    e.counts.changed > 0 &&
+    fill(t(e.direction === "up" ? "prChHeadUp" : e.direction === "down" ? "prChHeadDown" : "prChHeadMixed"), { n: n(e.counts.changed) }) +
+      (e.typical_percent ? `${lang === "fa" ? "،" : ","} ${fill(t("prChTypical"), { p: localizeDigits(e.typical_percent, lang) })}` : "");
+  return (
+    <li className="pr-event">
+      <header className="pr-event-head">
+        <h3>{provider ? (lang === "fa" ? provider.name_fa : provider.name_en) : e.provider_id}</h3>
+        {headline && <span className={`badge ${e.direction === "up" ? "badge-bad" : e.direction === "down" ? "badge-good" : ""}`}>{headline}</span>}
+        <small>{dayInIran(e.at, lang)}</small>
+      </header>
+      {rows.length > 0 && (
+        <ul className="pr-change-list">
+          <li className="pr-change pr-change-head" aria-hidden>
+            <span>{t("prChColPlan")}</span>
+            <span className="pr-change-prices">
+              <span>{t("prChColBefore")}</span>
+              <span>{t("prChColAfter")}</span>
+            </span>
+            <span>{t("prChColChange")}</span>
+          </li>
+          {rows.map((row, i) => {
+            const spec = specText(row, t, lang);
+            const priced = Boolean(row.was?.toman && row.toman);
+            return (
+              <li key={`${row.plan}${i}`} className="pr-change">
+                <span className="pr-change-plan">
+                  <bdi>{row.plan}</bdi>
+                  {(spec || !priced) && <small>{spec || t("prChOther")}</small>}
+                </span>
+                <span className="pr-change-prices">
+                  <span className="pr-change-old">{priced ? formatWhole(row.was!.toman!, lang) : "—"}</span>
+                  <span className="pr-change-new">
+                    {row.toman ? formatWhole(row.toman, lang) : "—"}
+                    {row.toman && <small className="pr-change-unit"> {t("prToman")}</small>}
+                  </span>
+                </span>
+                <span className="pr-change-move">
+                  <Move percent={row.percent} />
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+      {e.changed.length > ROWS_SHOWN && (
+        <button type="button" className="btn btn-ghost pr-more" onClick={() => setAll(!all)} aria-expanded={all}>
+          {all ? t("prChShowLess") : fill(t("prChShowAll"), { n: n(e.changed.length - ROWS_SHOWN) })}
+        </button>
+      )}
+      {notes.map((note) => (
+        <p key={note} className="note">
+          {note}
+        </p>
+      ))}
+    </li>
+  );
+}
+
+/** The record of price changes: every read that changed something, newest first, for all providers or one. */
+function ChangesView({ changes }: { changes: Changes }) {
+  const { t, lang } = useT();
+  const [who, setWho] = useState<string | null>(null);
+  const providers = [...new Set(changes.events.map((e) => e.provider_id))];
+  const name = (id: string) => (changes.providers[id] ? (lang === "fa" ? changes.providers[id].name_fa : changes.providers[id].name_en) : id);
   return (
     <section className="pr-changes" id="changes">
-      <h2>{t("prChTitle")}</h2>
       <p className="note">{t("prChLead")}</p>
+      <div className="pr-chips" role="radiogroup" aria-label={t("prChFilter")}>
+        {[null, ...providers].map((id) => (
+          <label key={id ?? "all"} className="pr-chip">
+            <input type="radio" name="provider" checked={who === id} onChange={() => setWho(id)} />
+            <span>{id === null ? t("prChAll") : name(id)}</span>
+          </label>
+        ))}
+      </div>
       <ol className="pr-events">
-        {changes.events.slice(0, EVENTS_SHOWN).map((e) => {
-          const provider = changes.providers[e.provider_id];
-          const counts = [
-            e.counts.changed > 0 && fill(t("prChCountChanged"), { n: n(e.counts.changed) }),
-            e.counts.new > 0 && fill(t("prChCountNew"), { n: n(e.counts.new) }),
-            e.counts.removed > 0 && fill(t("prChCountRemoved"), { n: n(e.counts.removed) }),
-          ].filter(Boolean);
-          // a read long after the one before it is not one day's news: say which read it is compared with
-          const gapDays = e.since ? (Date.parse(e.at.slice(0, 10)) - Date.parse(e.since)) / 86_400_000 : 0;
-          const notes = [gapDays > 2 && e.since && fill(t("prChSince"), { date: day(e.since, lang) }), e.source === "file" && t("prChByHand")].filter(Boolean);
-          return (
-            <li key={`${e.at}${e.provider_id}`} className="pr-event">
-              <h3>
-                {provider ? (lang === "fa" ? provider.name_fa : provider.name_en) : e.provider_id}
-                <small>
-                  {dayInIran(e.at, lang)} · {counts.join(" · ")}
-                </small>
-              </h3>
-              {e.changed.length > 0 && (
-                <ul>
-                  {e.changed.slice(0, LINES_SHOWN).map((row) => (
-                    <li key={`${row.plan}${row.toman}`}>
-                      <bdi className="pr-event-plan">{row.plan}</bdi> {changeText(row, t, lang)}
-                    </li>
-                  ))}
-                  {e.counts.changed > LINES_SHOWN && <li>{fill(t("prChMore"), { n: n(e.counts.changed - LINES_SHOWN) })}</li>}
-                </ul>
-              )}
-              {notes.length > 0 && <p className="note">{notes.join(" · ")}</p>}
-            </li>
-          );
-        })}
+        {changes.events
+          .filter((e) => who === null || e.provider_id === who)
+          .map((e) => (
+            <EventCard key={`${e.at}${e.provider_id}`} e={e} changes={changes} />
+          ))}
       </ol>
       <p className="pr-links">
         <a href={CHANGES_JSON} download>
@@ -386,11 +453,26 @@ function ChangesSection({ changes }: { changes: Changes }) {
   );
 }
 
+/** Which part of the page an address asks for: ?view=changes, or the #changes that older links carry. */
+function viewFromAddress(): View {
+  return new URLSearchParams(window.location.search).get("view") === "changes" || window.location.hash === "#changes" ? "changes" : "prices";
+}
+
 export function Prices() {
   const { t, lang, setLang } = useT();
   const [table, setTable] = useState<Table | null>(null);
   const [failed, setFailed] = useState(false);
   const [changes, setChanges] = useState<Changes | null>(null);
+  const [view, setView] = useState<View>(viewFromAddress);
+
+  // the address names the part on screen, so a link to the changes opens the changes
+  const show = (next: View) => {
+    setView(next);
+    const params = new URLSearchParams(window.location.search);
+    if (next === "changes") params.set("view", "changes");
+    else params.delete("view");
+    window.history.replaceState(null, "", `?${params}`);
+  };
 
   useEffect(() => {
     let live = true;
@@ -398,7 +480,7 @@ export function Prices() {
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       .then((data: Table) => live && setTable(data))
       .catch(() => live && setFailed(true));
-    // the record of changes is an extra: without it the page is simply shorter
+    // the record of changes is an extra: without it the page has no second tab
     fetch(CHANGES_JSON)
       .then((r) => (r.ok ? r.json() : null))
       .then((data: Changes | null) => live && data && data.events?.length > 0 && setChanges(data))
@@ -437,9 +519,23 @@ export function Prices() {
           {table && <p className="note">{fill(t("prCatalogDate"), { date: day(table.catalog_date, lang) })}</p>}
         </div>
 
-        {table ? <Comparison table={table} /> : <p role="status">{t(failed ? "prError" : "prLoading")}</p>}
+        {changes && (
+          <div className="pr-tabs" role="tablist" aria-label={t("prTabsLabel")}>
+            {(["prices", "changes"] as View[]).map((v) => (
+              <button key={v} type="button" role="tab" className="pr-tab" aria-selected={view === v} onClick={() => show(v)}>
+                {t(v === "prices" ? "prTabPrices" : "prTabChanges")}
+              </button>
+            ))}
+          </div>
+        )}
 
-        {changes && <ChangesSection changes={changes} />}
+        {view === "changes" && changes ? (
+          <ChangesView changes={changes} />
+        ) : table ? (
+          <Comparison table={table} />
+        ) : (
+          <p role="status">{t(failed ? "prError" : "prLoading")}</p>
+        )}
 
         <section className="pr-method">
           <h2>{t("prMethodTitle")}</h2>

@@ -26,12 +26,14 @@ from pricing_engine.models import CatalogItem
 from provider_adapters import natural_key
 
 SCHEMA = 1
-PAGE = "https://pendarsolutions.ir/sarfeh/prices/#changes"
+PAGE = "https://pendarsolutions.ir/sarfeh/prices/?view=changes"
 #: what counts as a change of a row, beyond its price
 SPECS = ("cpu_cores", "ram_gb", "storage_gb", "included_traffic_gb")
 #: how many events the page gets, and how many lines of one event a post or the page spells out
 PUBLISHED = 60
 LINES = 8
+#: how many changed rows of one event the page's table gets (a post spells out LINES of them)
+PAGE_LINES = 40
 #: an event older than this is never posted: a channel set up today doesn't start with a month of old news
 POST_WITHIN = timedelta(hours=36)
 APIS = {"telegram": "https://api.telegram.org", "bale": "https://tapi.bale.ai"}
@@ -114,14 +116,31 @@ def _with_percent(row: dict[str, Any]) -> dict[str, Any]:
     return {**row, "percent": str(move)} if move else row
 
 
+def _overall(changed: list[dict[str, Any]]) -> dict[str, Any]:
+    """Which way an event's prices went, and by about how much: 'up' or 'down' when every priced row went that
+    way ('mixed' otherwise), with the median move as a whole percent when more than one row moved."""
+    moves = [(Decimal(r["toman"]) - Decimal(r["was"]["toman"])) * 100 / Decimal(r["was"]["toman"]) for r in changed
+             if r.get("was", {}).get("toman") and r.get("toman") and Decimal(r["was"]["toman"]) != 0]
+    moves = [m for m in moves if m != 0]
+    if not moves:
+        return {"direction": None, "typical_percent": None}
+    direction = "up" if all(m > 0 for m in moves) else "down" if all(m < 0 for m in moves) else "mixed"
+    ordered = sorted(abs(m) for m in moves)
+    middle = ordered[len(ordered) // 2] if len(ordered) % 2 else (ordered[len(ordered) // 2 - 1] + ordered[len(ordered) // 2]) / 2
+    typical = middle.quantize(Decimal(1), rounding=ROUND_HALF_UP)
+    return {"direction": direction,
+            "typical_percent": str(typical) if direction != "mixed" and len(moves) > 1 and typical else None}
+
+
 def published(data: dict[str, Any], providers: dict[str, dict[str, str]]) -> str:
-    """The page's copy: the newest events first, long lists cut to their first lines with the full counts kept.
-    Each price change comes with its percent worked out, so the page never does arithmetic on a price."""
+    """The page's copy: the newest events first, long lists cut with the full counts kept. Every price change comes
+    with its percent, and every event with its direction and typical move, so the page never does arithmetic on a
+    price."""
     out = []
     for e in reversed(data["events"][-PUBLISHED:]):
         out.append({"at": e["at"], "provider_id": e["provider_id"], "since": e.get("since"), "source": e["source"],
-                    "counts": {k: len(e[k]) for k in ("changed", "new", "removed")},
-                    "changed": [_with_percent(r) for r in e["changed"][:LINES]], "new": e["new"][:3],
+                    "counts": {k: len(e[k]) for k in ("changed", "new", "removed")}, **_overall(e["changed"]),
+                    "changed": [_with_percent(r) for r in e["changed"][:PAGE_LINES]], "new": e["new"][:3],
                     "removed": e["removed"][:3]})
     return json.dumps({"schema": SCHEMA, "providers": providers, "events": out}, ensure_ascii=False,
                       separators=(",", ":")) + "\n"
