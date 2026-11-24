@@ -74,7 +74,9 @@ class Hub:
     @classmethod
     def from_env(cls) -> Hub:
         revoked = {r.strip() for r in os.environ.get("FINOPS_HUB_REVOKED", "").split(",") if r.strip()}
-        return cls(Path(os.environ.get("FINOPS_HUB_DATA", "/app/var/prices")),
+        # beside the relay's database unless told otherwise
+        default = Path(os.environ.get("FINOPS_RELAY_DB", "/data/relay.db")).parent / "prices"
+        return cls(Path(os.environ.get("FINOPS_HUB_DATA") or default),
                    os.environ.get("FINOPS_HUB_PUBLIC_KEY") or None,
                    os.environ.get("FINOPS_HUB_TOKEN_SECRET") or None, revoked)
 
