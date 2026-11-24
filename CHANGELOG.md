@@ -5,12 +5,17 @@ and versions follow [Semantic Versioning](https://semver.org/). Until 1.0, a min
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-11-24
+
+What users of the price page asked for: the conditions behind each figure, a record of price changes, and what can
+be known about the hardware under a plan.
+
 ### Added
 
 - **A record of price changes.** Whatever a refresh of the public table changes (prices and sizes that moved, plans
-  that appeared or left) is kept as an event, published as `changes.json` and shown on the price page under "Latest
-  price changes". With a bot token and a channel in `notify.json`, each event is also posted once to Telegram and
-  Bale (`scripts/price_feed.py`).
+  that appeared or left) is kept as an event, published as `changes.json` and shown on the price page's second tab:
+  a filter by provider, and for each change a table of plan, before, after and percent. With a bot token and a
+  channel in `notify.json`, each event is also posted once to Telegram and Bale (`scripts/price_feed.py`).
 - **CPU models reported by users** (`data/hardware/cpu-reports.json`) appear beside the plan they were found on, with
   the report's date; a stand-in name such as `QEMU Virtual CPU` is shown as "the host hides the CPU model".
 - **Servers: the CPU model, and the CPU time the host takes away.** The collector (version 2) also reads the

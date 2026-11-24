@@ -25,9 +25,15 @@ Install it on one server and see the real cost and usage of all of them.
 
 Not ready to install anything? The [prices page](https://pendarsolutions.ir/sarfeh/prices/) shows one server size at
 every provider, cheapest first, read from each provider's own page twice a day, with the source and the date beside
-every price. The table behind it is open: [prices.json](https://pendarsolutions.ir/sarfeh/prices.json).
+every price, and what each figure assumes or leaves out. The table behind it is open:
+[prices.json](https://pendarsolutions.ir/sarfeh/prices.json).
 
 <p align="center"><img src="docs/images/prices.png" alt="The prices page: 2 vCPU, 4 GB and 50 GB at seven providers, cheapest first, each with its plan, traffic terms, source and the date it was read" width="900"></p>
+
+Its second tab, [price changes](https://pendarsolutions.ir/sarfeh/prices/?view=changes), records every change those
+reads find: which provider moved which plan, from what to what, and when.
+
+<p align="center"><img src="docs/images/price-changes.png" alt="The price changes tab: a filter by provider, and for each change a table of plan, price before, price after and the percent" width="900"></p>
 
 ## Why Sarfeh?
 
@@ -194,6 +200,8 @@ docs/           Architecture, pricing model, scrapers, AI safety and operations
 - [x] Shared, signed price catalog
 - [x] Spend ledger: payments by month, a monthly cost estimate, and the gaps between them
 - [x] Owners and budgets per team, with alerts before a budget runs out
+- [x] The CPU model of each server, and the CPU time its host takes away
+- [x] A public record of price changes
 - [ ] Suggestions that are tracked to done, with the saving measured
 - [ ] A monthly report by email or Bale
 - [ ] An exact catalog for ArvanCloud through its API
