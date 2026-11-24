@@ -56,6 +56,11 @@ For a provider that can't be scraped, such as ArvanCloud, copy the prices from t
 Then run `python -m finops_api.cli price-import --provider arvancloud --file prices.json`. An unknown SKU fails the
 whole file, rows it doesn't mention are kept, and a sharp price move is held for review like any other update.
 
+Reviewed files are kept in [`data/price-files/`](../data/price-files), newest last, so every installation can apply
+the same one. The public price table takes one with `python scripts/refresh_prices.py --import FILE` (see
+[deploy/sarfeh-site](../deploy/sarfeh-site/README.md)). A file's rows are dated the day it is applied, and the price
+page marks them old again 14 days later, so ArvanCloud needs reading again about twice a month.
+
 ## Sync pipeline
 
 `run_provider_sync` (API `POST /api/v1/admin/providers/{id}/sync`, CLI `make sync-prices`, worker

@@ -1,11 +1,12 @@
 """Owners and budgets: every toman has a team (or is shown as unallocated), and teams hear before a budget runs out."""
 
 import itertools
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
 import pytest
 
-from finops_api.dates import current_month, shift_month
+from finops_api.dates import current_month, shift_month, to_jalali, today_in_iran
 
 _n = itertools.count()
 V = "/api/v1"
@@ -167,9 +168,14 @@ def test_unusual_changes_alert_once_for_last_month(client, org, sent):
         client.post(f"{V}/spend/entries", headers=org, json={"month": month, "provider_id": "arvancloud", "amount": arvan})
     m = next(x for x in client.get(f"{V}/spend", headers=org).json()["months"] if x["month"] == last)
     assert [(x["kind"], x["key"], x["change_percent"]) for x in m["movers"]] == [("provider", "liara", "75")]
+    # the alert goes out from the 5th of the month, so the test names its days instead of using today's
+    now = datetime.now(UTC)
+    first = now - timedelta(days=to_jalali(today_in_iran(now))[2] - 1)
+    fifth = first + timedelta(days=4)
     with SessionLocal() as db:
-        unusual_change_alerts(db)
-        unusual_change_alerts(db)
+        assert unusual_change_alerts(db, first) == 0  # too early: last month's invoices may not be in yet
+        unusual_change_alerts(db, fifth)
+        unusual_change_alerts(db, fifth)
     mine = [s for s in sent if s[0].startswith("Unusual spend changes")]
     assert len(mine) == 1 and "Liara: 3,500,000 Toman, 75.0% up" in mine[0][1] and "ArvanCloud" not in mine[0][1]
 

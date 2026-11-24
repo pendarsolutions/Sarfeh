@@ -5,6 +5,21 @@ and versions follow [Semantic Versioning](https://semver.org/). Until 1.0, a min
 
 ## [Unreleased]
 
+### Added
+
+- **The price page says what each figure assumes or leaves out:** an IPv4 address that is assumed to come with the
+  plan (or its price, where the provider charges one), a price that is for 30 days, and ParsPack's setup fee equal to
+  7 days. These were in `prices.json` as English notes and never shown. Each offer now carries `conditions`, ids the
+  page words in Persian and English.
+- The price page says when a provider doesn't state whether its CPU is shared or dedicated, and that it compares
+  prices and published specs, not network quality, support or uptime. A link asks readers to report their server's
+  CPU model (a new issue template).
+- **ArvanCloud prices of 24 November 2026** as a reviewed price file (`data/price-files/`): about 20% above the
+  catalog's June prices. `scripts/refresh_prices.py --import FILE` applies such a file to the public table through
+  the same guardrails as a read; an installation takes it with `price-import`.
+- CI opens the built website as a 320px and a 360px phone and fails if a page is wider than the screen
+  (`scripts/check_page_widths.py`).
+
 ## [0.4.0] — 2026-11-18
 
 The product is called Sarfeh (صرفه), with a public price page that stays current, a spend ledger, owners and

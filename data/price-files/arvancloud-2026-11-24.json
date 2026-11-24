@@ -1,0 +1,178 @@
+{
+  "provider_id": "arvancloud",
+  "source_url": "https://www.arvancloud.ir/fa/pricing/all",
+  "price_date": "2026-11-24",
+  "note": "Read from the official page in a browser on 2026-11-24, Iran region. The page states no effective date, so price_date is the day it was read. GPU prices were the same as the catalog's and are left out (their rows share a SKU, which a price file can't tell apart). The page also lists a new 'Premium Plus' class (vCore 592,200; RAM 372,780), which the catalog doesn't have yet.",
+  "prices": [
+    {
+      "sku": "IR-CPU-BASIC",
+      "price_toman": "252000"
+    },
+    {
+      "sku": "IR-CPU-STANDARD",
+      "price_toman": "327600"
+    },
+    {
+      "sku": "IR-CPU-PREMIUM",
+      "price_toman": "478800"
+    },
+    {
+      "sku": "IR-RAM-BASIC",
+      "price_toman": "196200"
+    },
+    {
+      "sku": "IR-RAM-STANDARD",
+      "price_toman": "255060"
+    },
+    {
+      "sku": "IR-RAM-PREMIUM",
+      "price_toman": "372780"
+    },
+    {
+      "sku": "IR-ST-WARM",
+      "price_toman": "8640"
+    },
+    {
+      "sku": "IR-ST-LOCAL",
+      "price_toman": "25200"
+    },
+    {
+      "sku": "IR-ST-ECO",
+      "price_toman": "18000"
+    },
+    {
+      "sku": "IR-ST-HOT_SSD",
+      "price_toman": "18000"
+    },
+    {
+      "sku": "IR-ST-IMAGE",
+      "price_toman": "18000"
+    },
+    {
+      "sku": "IR-ST-BACKUP",
+      "price_toman": "17280"
+    },
+    {
+      "sku": "IR-ST-SNAPSHOT",
+      "price_toman": "18000"
+    },
+    {
+      "sku": "IR-ST-FILE",
+      "price_toman": "20700"
+    },
+    {
+      "sku": "IR-IPV4-FIRST",
+      "price_toman": "234000"
+    },
+    {
+      "sku": "IR-IPV4-EXTRA",
+      "price_toman": "468000"
+    },
+    {
+      "sku": "IR-EGRESS",
+      "price_toman": "0",
+      "tier_min": "0"
+    },
+    {
+      "sku": "IR-INGRESS-0-250",
+      "price_toman": "0",
+      "tier_min": "0"
+    },
+    {
+      "sku": "IR-INGRESS-250-10TB",
+      "price_toman": "1800",
+      "tier_min": "250"
+    },
+    {
+      "sku": "IR-INGRESS-10-100TB",
+      "price_toman": "1200",
+      "tier_min": "10240"
+    },
+    {
+      "sku": "IR-INGRESS-100TBPLUS",
+      "price_toman": "1050",
+      "tier_min": "102400"
+    },
+    {
+      "sku": "OBJ-STD-0-5",
+      "price_toman": "0",
+      "tier_min": "0"
+    },
+    {
+      "sku": "OBJ-STD-5GB-5TB",
+      "price_toman": "3600",
+      "tier_min": "5"
+    },
+    {
+      "sku": "OBJ-STD-5-50TB",
+      "price_toman": "3060",
+      "tier_min": "5120"
+    },
+    {
+      "sku": "OBJ-STD-50-500TB",
+      "price_toman": "2700",
+      "tier_min": "51200"
+    },
+    {
+      "sku": "OBJ-STD-500TBPLUS",
+      "price_toman": "2340",
+      "tier_min": "512000"
+    },
+    {
+      "sku": "OBJ-HIOPS",
+      "price_toman": "10800"
+    },
+    {
+      "sku": "DB-CPU-STARTER",
+      "price_toman": "264600"
+    },
+    {
+      "sku": "DB-CPU-BASIC",
+      "price_toman": "579600"
+    },
+    {
+      "sku": "DB-CPU-STANDARD",
+      "price_toman": "819000"
+    },
+    {
+      "sku": "DB-CPU-PREMIUM",
+      "price_toman": "1292760"
+    },
+    {
+      "sku": "DB-RAM-STARTER",
+      "price_toman": "206010"
+    },
+    {
+      "sku": "DB-RAM-BASIC",
+      "price_toman": "451260"
+    },
+    {
+      "sku": "DB-RAM-STANDARD",
+      "price_toman": "637650"
+    },
+    {
+      "sku": "DB-RAM-PREMIUM",
+      "price_toman": "1006510"
+    },
+    {
+      "sku": "DB-ST-HDD",
+      "price_toman": "17280"
+    },
+    {
+      "sku": "DB-ST-SSD",
+      "price_toman": "36000"
+    },
+    {
+      "sku": "DB-ST-LOCAL",
+      "price_toman": "50400"
+    },
+    {
+      "sku": "DB-IPV4",
+      "price_toman": "234000"
+    },
+    {
+      "sku": "DB-TRAFFIC",
+      "price_toman": "0"
+    }
+  ]
+}

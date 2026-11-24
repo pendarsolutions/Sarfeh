@@ -3,6 +3,7 @@
     python scripts/refresh_prices.py --state var/prices-state.json --out site/public/prices.json
     python scripts/refresh_prices.py ... --approve iranserver     # apply a move the guardrails held for review
     python scripts/refresh_prices.py ... --only liara --only chabokan
+    python scripts/refresh_prices.py ... --import data/price-files/arvancloud-2026-11-24.json
 
 Each provider's page is read with the same adapter and the same guardrails as an installation's price sync
 (packages/provider_adapters/sync.py). What happens to a provider:
@@ -12,8 +13,10 @@ Each provider's page is read with the same adapter and the same guardrails as an
 * prices moved more than the guardrail allows: nothing is applied until it is approved with --approve.
 
 The last good rows are kept in the state file, so a failed read never brings back older prices. Providers never
-read live (ArvanCloud, whose site blocks automated reading; Abrha) keep their catalog rows. The report printed at
-the end lists every change, so it can be checked before it is published.
+read live (ArvanCloud, whose site blocks automated reading; Abrha) keep their catalog rows, until a reviewed price
+file is applied with --import: someone copies the prices from the official page into a file
+(docs/provider-adapters.md), and it goes through the same guardrails as a read. The report printed at the end lists
+every change, so it can be checked before it is published.
 """
 
 from __future__ import annotations
@@ -33,7 +36,7 @@ from pricing_engine import load_seed_snapshot  # noqa: E402
 from pricing_engine.catalog import CatalogSnapshot  # noqa: E402
 from pricing_engine.models import CatalogItem  # noqa: E402
 from pricing_engine.size_table import size_table  # noqa: E402
-from provider_adapters import ADAPTERS, natural_key, plan_sync  # noqa: E402
+from provider_adapters import ADAPTERS, ManualPriceAdapter, ParseError, natural_key, plan_sync  # noqa: E402
 
 STATE_SCHEMA = 1
 #: a price read longer ago than this is marked on the page, so nobody mistakes it for today's
@@ -96,6 +99,41 @@ def refresh(state: dict[str, Any], *, only: set[str], approve: set[str], timeout
     return reports
 
 
+def import_file(state: dict[str, Any], path: Path, *, approve: set[str]) -> dict[str, Any]:
+    """Apply a reviewed price file to `state`: the rows it names get its prices and today as their read date, the
+    provider's other rows stay as they were. Returns a report entry like refresh()'s."""
+    content = path.read_text(encoding="utf-8")
+    try:
+        pid = json.loads(content).get("provider_id")
+    except (json.JSONDecodeError, AttributeError) as exc:
+        raise SystemExit(f"{path}: not a price file ({exc})") from exc
+    kept = state["providers"].get(pid)
+    previous = ([CatalogItem.model_validate(i) for i in kept["items"]] if kept
+                else [i for i in load_seed_snapshot().items if i.provider_id == pid])
+    if not previous:
+        raise SystemExit(f"{path}: the catalog has no provider {pid!r}")
+    adapter = ManualPriceAdapter(pid, previous)
+    raw, error = None, None
+    try:
+        raw = adapter.load(content)
+    except ParseError as exc:
+        error = exc
+    plan = plan_sync(adapter, raw, previous, parse_error=error)
+    entry = {"provider_id": pid, "status": plan.status, "error": plan.error, "warnings": plan.warnings,
+             "changes": plan.summary()["changes"], "applied": False}
+    if raw is not None and (plan.applicable or (plan.status == "quarantined" and pid in approve)):
+        fresh = {natural_key(i): i for i in adapter.normalize_catalog(raw)}
+        state["providers"][pid] = {
+            "read_on": raw.fetched_at.isoformat(timespec="seconds"),
+            "source_url": raw.source_url,
+            "from_file": path.name,
+            "items": [_dump(fresh.get(natural_key(p), p)) for p in previous],
+        }
+        entry["applied"] = True
+    state["updated_at"] = datetime.now(UTC).isoformat(timespec="seconds")
+    return entry
+
+
 def snapshot_from(state: dict[str, Any], at: datetime) -> CatalogSnapshot:
     """The catalog with every provider read live replaced by its last good rows."""
     seed = load_seed_snapshot(snapshot_at=at)
@@ -137,12 +175,17 @@ def main() -> int:
     ap.add_argument("--only", action="append", default=[], help="read only this provider (repeatable)")
     ap.add_argument("--approve", action="append", default=[], help="apply a held move for this provider")
     ap.add_argument("--offline", action="store_true", help="read nothing; rebuild the table from the state file")
+    ap.add_argument("--import", dest="price_file", type=Path, metavar="FILE",
+                    help="apply a reviewed price file and read nothing else (for a provider that can't be read)")
     ap.add_argument("--timeout", type=float, default=60.0)
     args = ap.parse_args()
 
     state = _load_state(args.state)
     if not args.offline:
-        reports = refresh(state, only=set(args.only), approve=set(args.approve), timeout_s=args.timeout)
+        if args.price_file:
+            reports = [import_file(state, args.price_file, approve=set(args.approve))]
+        else:
+            reports = refresh(state, only=set(args.only), approve=set(args.approve), timeout_s=args.timeout)
         _print_report(reports)
         args.state.parent.mkdir(parents=True, exist_ok=True)
         tmp = args.state.with_suffix(".tmp")

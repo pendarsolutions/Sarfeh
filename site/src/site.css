@@ -1376,6 +1376,19 @@ ul.plain {
   font: var(--type-body-small);
   color: var(--color-ink-muted);
 }
+/* What the figure assumes or leaves out: said plainly under the plan, never hidden in the data file. */
+.pr-conditions {
+  margin: var(--spacing-2) 0 0;
+  padding-inline-start: var(--spacing-4);
+  font: var(--type-caption);
+  color: var(--color-ink-muted);
+}
+.pr-conditions li + li {
+  margin-block-start: 2px;
+}
+.pr-scope {
+  margin: 0;
+}
 .pr-cost {
   display: flex;
   flex-direction: column;

@@ -90,6 +90,14 @@ jobs:
         with: {node-version: "20", cache: npm, cache-dependency-path: site/package-lock.json}
       - run: npm ci
       - run: npm run build
+      # one badge that doesn't wrap once made the whole price page scroll sideways on phones
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12", cache: pip, cache-dependency-path: requirements.txt}
+      - run: pip install -r requirements.txt -c constraints.txt
+        working-directory: .
+      - name: No page is wider than a phone
+        run: python scripts/check_page_widths.py site/dist
+        working-directory: .
 
   scripts:
     runs-on: ubuntu-latest

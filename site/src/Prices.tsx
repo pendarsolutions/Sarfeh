@@ -10,7 +10,7 @@ import { Lockup, PoweredBy } from "./Brand";
 import { Icon } from "./Icon";
 import { formatWhole, localizeDigits } from "./format";
 import type { Lang } from "./lang";
-import { CATALOG, HOME, LICENSE, PRICES, PRICES_JSON, PRICING_MODEL, REPO, WRONG_PRICE } from "./links";
+import { CATALOG, CPU_MODEL, HOME, LICENSE, PRICES, PRICES_JSON, PRICING_MODEL, REPO, WRONG_PRICE } from "./links";
 import { useT, type Key } from "./strings";
 
 interface Offer {
@@ -31,8 +31,15 @@ interface Offer {
   datacenter: string | null;
   source_url: string | null;
   read_on: string | null;
+  /** what a reader should know about the figure, by id; older tables have none */
+  conditions?: Condition[];
   /** set by the table when the row was read too long ago: how many days counts as old */
   old_after_days?: number;
+}
+interface Condition {
+  id: string;
+  toman?: string;
+  days?: number;
 }
 interface Missing {
   provider_id: string;
@@ -62,6 +69,15 @@ const TRAFFIC: Record<string, Key> = {
   metered_download: "prTrafficMetered",
 };
 const DISK_TYPE: Record<string, string> = { ssd: "SSD", hot_ssd: "SSD", nvme: "NVMe", hdd: "HDD" };
+/** A condition in the reader's language, or nothing for an id this page doesn't know yet. */
+function conditionText(c: Condition, t: (k: Key) => string, lang: Lang): string | null {
+  if (c.id === "ipv4_assumed") return t("prCondIpv4Assumed");
+  if (c.id === "ipv4_priced" && c.toman) return fill(t("prCondIpv4Priced"), { amount: formatWhole(c.toman, lang) });
+  if (c.id === "thirty_day_plan") return t("prCondThirtyDay");
+  if (c.id === "setup_fee" && c.days) return fill(t("prCondSetupFee"), { n: localizeDigits(String(c.days), lang) });
+  return null;
+}
+
 const MISSING: Record<Missing["reason"], Key> = { starting_price_only: "prMissingStart", nothing_this_size: "prMissingSize" };
 
 const uniq = (xs: number[]) => [...new Set(xs)].sort((a, b) => a - b);
@@ -127,6 +143,7 @@ function OfferRow({ offer, rank, size, table }: { offer: Offer; rank: number; si
   const diskType = offer.disk_type ? DISK_TYPE[offer.disk_type] : undefined;
   const trafficKey = TRAFFIC[offer.traffic] ?? "prTrafficUnknown";
   const times = n(offer.times_cheapest).replace(".", lang === "fa" ? "٫" : ".");
+  const conditions = (offer.conditions ?? []).map((c) => conditionText(c, t, lang)).filter((text): text is string => text !== null);
   return (
     <li className="pr-offer">
       <span className="pr-rank num" aria-hidden>
@@ -151,7 +168,7 @@ function OfferRow({ offer, rank, size, table }: { offer: Offer; rank: number; si
           {bigger && <span className="badge badge-info">{t("prBigger")}</span>}
         </p>
         <ul className="pr-terms">
-          {offer.cpu_shared !== null && <li>{t(offer.cpu_shared ? "prCpuShared" : "prCpuDedicated")}</li>}
+          <li>{t(offer.cpu_shared === null ? "prCpuUnknown" : offer.cpu_shared ? "prCpuShared" : "prCpuDedicated")}</li>
           <li>{fill(t(trafficKey), { n: formatWhole(offer.included_traffic_gb ?? "", lang) })}</li>
           {offer.datacenter && (
             <li>
@@ -159,6 +176,13 @@ function OfferRow({ offer, rank, size, table }: { offer: Offer; rank: number; si
             </li>
           )}
         </ul>
+        {conditions.length > 0 && (
+          <ul className="pr-conditions">
+            {conditions.map((text) => (
+              <li key={text}>{text}</li>
+            ))}
+          </ul>
+        )}
       </div>
       <div className="pr-cost">
         <strong className="pr-price">
@@ -224,6 +248,7 @@ function Comparison({ table }: { table: Table }) {
             <OfferRow key={o.provider_id} offer={o} rank={i + 1} size={size} table={table} />
           ))}
         </ol>
+        <p className="note pr-scope">{t("prScope")}</p>
         {size.missing.length > 0 && (
           <div className="pr-missing">
             <h3>{t("prMissingTitle")}</h3>
@@ -299,6 +324,11 @@ export function Prices() {
             <li>
               <a href={WRONG_PRICE}>
                 {t("prWrong")} <Icon name="external" />
+              </a>
+            </li>
+            <li>
+              <a href={CPU_MODEL}>
+                {t("prCpuReport")} <Icon name="external" />
               </a>
             </li>
             <li>

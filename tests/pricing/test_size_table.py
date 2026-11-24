@@ -67,6 +67,18 @@ def test_vat_is_beside_the_price_never_inside_it(snapshot):
     assert all(o["vat_toman"] is None for pid, o in by.items() if pid != "serverir")
 
 
+def test_what_a_figure_assumes_or_leaves_out_is_said_with_it(snapshot):
+    offers, _ = offers_for(snapshot, 2, 4, 50)
+    by = {o["provider_id"]: o["conditions"] for o in offers}
+    # plan providers don't say an address comes with the plan; the two that price one have it in the figure
+    assert by["mobinhost"] == by["serverir"] == by["iranserver"] == [{"id": "ipv4_assumed"}]
+    assert by["arvancloud"] == [{"id": "ipv4_priced", "toman": "195000"}]
+    assert by["liara"] == [{"id": "ipv4_priced", "toman": "200000"}]
+    # Chabokan sells 30 days, and ParsPack's price list mentions a setup fee that a monthly figure can't hold
+    assert by["chabokan"] == [{"id": "ipv4_assumed"}, {"id": "thirty_day_plan"}]
+    assert by["parspack"] == [{"id": "ipv4_assumed"}, {"id": "setup_fee", "days": 7}]
+
+
 def test_a_provider_that_sells_nothing_this_large_is_named_not_dropped(snapshot):
     offers, missing = offers_for(snapshot, 16, 64, 400)
     assert {"provider_id": "chabokan", "reason": "nothing_this_size"} in missing

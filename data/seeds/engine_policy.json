@@ -81,7 +81,8 @@
       "exact_eligible": true,
       "traffic_note": "the official calculator doesn't price traffic, so none is included here. Extra traffic may be billed.",
       "ipv4_note": "the official calculator doesn't price IPv4, so one is assumed included.",
-      "setup_fee_note": "the price list mentions a setup fee equal to 7 days; a one-time fee isn't in this monthly figure."
+      "setup_fee_note": "the price list mentions a setup fee equal to 7 days; a one-time fee isn't in this monthly figure.",
+      "setup_fee_days": 7
     },
     "abrha": {
       "strategy": "discovery_only",

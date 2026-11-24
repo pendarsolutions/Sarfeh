@@ -85,7 +85,13 @@ someone checks the page and approves it:
   --out ~/sarfeh/www/prices.json --only iranserver --approve iranserver
 ```
 
-Some providers can't be read from this server (Server.ir doesn't answer foreign addresses reliably, and ArvanCloud
-blocks automated reading). Their last good rows stay, with the date they were read, and the page marks a price as
-old after 14 days. To refresh them from somewhere that can read them, run the script there with the same state
-file and copy both files back.
+ArvanCloud blocks automated reading, so its prices come from a reviewed price file: someone opens its pricing page,
+copies the prices into a file in `data/price-files/` (see [docs/provider-adapters.md](../../docs/provider-adapters.md)),
+and after `git pull` in `~/sarfeh/src` applies it:
+
+```bash
+~/sarfeh/venv/bin/python ~/sarfeh/src/scripts/refresh_prices.py --state ~/sarfeh/state/prices-state.json   --out ~/sarfeh/www/prices.json --import ~/sarfeh/src/data/price-files/arvancloud-2026-11-24.json
+```
+
+The page marks a price as old 14 days after it was read, so this needs doing about twice a month. If any other
+provider's page can't be read, its last good rows stay, with the date they were read.

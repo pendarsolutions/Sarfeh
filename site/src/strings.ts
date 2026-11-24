@@ -108,6 +108,20 @@ const S = {
   prDisk: ["دیسک", "disk"],
   prCpuShared: ["پردازنده اشتراکی", "Shared CPU"],
   prCpuDedicated: ["پردازنده اختصاصی", "Dedicated CPU"],
+  prCpuUnknown: ["اشتراکی یا اختصاصی بودن پردازنده: اعلام نشده", "Shared or dedicated CPU: not stated"],
+  // conditions of an offer (packages/pricing_engine/size_table.py: _conditions), by id
+  prCondIpv4Assumed: ["یک IPv4 جزو پلن فرض شده؛ ارائه‌دهنده صریح ننوشته", "One IPv4 is assumed to come with the plan; the provider doesn't say"],
+  prCondIpv4Priced: ["شامل {amount} تومان برای یک IPv4", "Includes {amount} Toman for one IPv4"],
+  prCondThirtyDay: ["قیمت برای ۳۰ روز است، نه ماه تقویمی", "The price is for 30 days, not a calendar month"],
+  prCondSetupFee: [
+    "فهرست قیمت از هزینه راه‌اندازی معادل {n} روز می‌گوید؛ در این رقم ماهانه نیست",
+    "The price list mentions a setup fee equal to {n} days; it isn't in this monthly figure",
+  ],
+  prScope: [
+    "این صفحه قیمت و مشخصاتِ اعلام‌شده را مقایسه می‌کند، نه کیفیت شبکه، پشتیبانی یا پایداری را. مدل و نسل پردازنده را هم بیشتر ارائه‌دهندگان اعلام نمی‌کنند.",
+    "This page compares prices and published specs, not network quality, support or uptime. Most providers don't publish the CPU model or generation either.",
+  ],
+  prCpuReport: ["مدل پردازنده سرورتان را گزارش کنید", "Report your server's CPU model"],
   prTrafficQuota: ["{n} گیگابایت ترافیک در ماه", "{n} GB of traffic a month"],
   prTrafficFair: ["ترافیک نامحدود با مصرف منصفانه", "Unlimited traffic, fair use"],
   prTrafficUnlimited: ["ترافیک نامحدود", "Unlimited traffic"],

@@ -13,7 +13,7 @@ from typing import Any
 
 from .catalog import CatalogSnapshot
 from .equivalence import _workload, compare_resource
-from .models import BillingContext, CatalogItem, PriceBreakdown, PriceStatus, Resource
+from .models import BillingContext, CatalogItem, LineStatus, PriceBreakdown, PriceStatus, Resource
 from .money import _serialize
 from .pricing import price_resource
 
@@ -36,8 +36,27 @@ def _source(priced: PriceBreakdown, row: CatalogItem | None) -> dict[str, str | 
     }
 
 
-def _offer(pid: str, kind: str, priced: PriceBreakdown, size: tuple[int, int, int], strategy: str,
+def _conditions(priced: PriceBreakdown, row: CatalogItem | None, pol: dict[str, Any]) -> list[dict[str, Any]]:
+    """What a reader should know about the figure beyond its size: each an id (with its numbers) that the page puts
+    into words in its own language. Worked out from the priced lines and the policy, never from free text."""
+    out: list[dict[str, Any]] = []
+    ipv4 = [c for c in priced.components if c.code == "ipv4" or c.code.startswith("ipv4.")]
+    if any(c.status == LineStatus.ASSUMED_INCLUDED for c in ipv4):
+        out.append({"id": "ipv4_assumed"})  # the provider's page doesn't say an address comes with the plan
+    else:
+        paid = sum((c.subtotal_toman for c in ipv4 if c.status == LineStatus.PRICED and c.subtotal_toman), Decimal(0))
+        if paid:
+            out.append({"id": "ipv4_priced", "toman": _serialize(paid)})
+    if row is not None and row.billing_period == "30_days":
+        out.append({"id": "thirty_day_plan"})
+    if pol.get("setup_fee_days"):
+        out.append({"id": "setup_fee", "days": pol["setup_fee_days"]})
+    return out
+
+
+def _offer(pid: str, kind: str, priced: PriceBreakdown, size: tuple[int, int, int], pol: dict[str, Any],
            row: CatalogItem | None = None, plan: str | None = None) -> dict[str, Any]:
+    strategy = pol["strategy"]
     cpu, ram, disk = (row.cpu_cores, row.ram_gb, row.storage_gb) if row else map(Decimal, size)
     policy = TRAFFIC_BY_STRATEGY.get(strategy) or (row.attributes.get("traffic_policy") if row else None) or "unknown"
     return {
@@ -56,6 +75,7 @@ def _offer(pid: str, kind: str, priced: PriceBreakdown, size: tuple[int, int, in
         "included_traffic_gb": _serialize(row.included_traffic_gb) if row and policy == "included_quota" else None,
         "datacenter": row.datacenter if row else None,
         **_source(priced, row),
+        "conditions": _conditions(priced, row, pol),
         "notes": list(priced.assumptions),
     }
 
@@ -83,11 +103,11 @@ def offers_for(snapshot: CatalogSnapshot, cpu: int, ram: int,
                 cand = _workload(src, provider_id=pid, resource_class=cls, storage_type=storage)
                 priced = price_resource(cand, snapshot, ctx)
                 if priced.status == PriceStatus.EXACT:
-                    found.append({**_offer(pid, "components", priced, size, strategy, plan=cls), "disk_type": storage})
+                    found.append({**_offer(pid, "components", priced, size, pol, plan=cls), "disk_type": storage})
         elif strategy == "daily_table":
             priced = price_resource(_workload(src, provider_id=pid), snapshot, ctx)
             if priced.status == PriceStatus.EXACT:
-                found.append(_offer(pid, "by_size", priced, size, strategy))
+                found.append(_offer(pid, "by_size", priced, size, pol))
         else:
             for row in snapshot.provider_items(pid):
                 if row.service_type != "compute_vm" or not row.sku or row.availability != "available":
@@ -95,7 +115,7 @@ def offers_for(snapshot: CatalogSnapshot, cpu: int, ram: int,
                 cand = _workload(src, provider_id=pid, sku=row.sku, storage_type=row.storage_type)
                 c = compare_resource(src, cand, snapshot, ctx, candidate_row=row)
                 if c.passed_hard_constraints and c.candidate.status == PriceStatus.EXACT:
-                    found.append(_offer(pid, "plan", c.candidate, size, strategy, row=row))
+                    found.append(_offer(pid, "plan", c.candidate, size, pol, row=row))
         if found:
             offers.append(min(found, key=lambda o: (Decimal(o["monthly_toman"]), Decimal(o["cpu"]),
                                                     Decimal(o["ram_gb"]), Decimal(o["disk_gb"]), o["plan"] or "")))
