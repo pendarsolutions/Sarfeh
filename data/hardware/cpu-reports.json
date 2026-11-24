@@ -1,0 +1,4 @@
+{
+  "note": "CPU models people found on servers they rent, by provider and plan. Providers rarely publish this, so the price page shows the newest report beside the plan, with its date. One entry per report: provider_id, plan (the plan's name as the price page shows it; null where a provider prices by size), cpu_model (the 'Model name' line of lscpu, as it is), cpu_mhz if given, reported_on, and source (the issue it came from). Reports come through the 'CPU model of a plan' issue template.",
+  "reports": []
+}

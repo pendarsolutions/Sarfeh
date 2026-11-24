@@ -32,6 +32,14 @@ Read [docs/provider-adapters.md](docs/provider-adapters.md). In short:
 4. Add tests against the fixture. CI never touches live websites.
 5. Check that the provider's terms allow automated reading. Don't bypass bot protection.
 
+## Adding a reported CPU model
+
+Providers rarely say which processor is behind a plan, so the price page shows what users report through the
+"CPU model of a plan" issue template. To add a report, append one entry to
+[`data/hardware/cpu-reports.json`](data/hardware/cpu-reports.json): the provider's id, the plan as the price page
+names it (`null` where a provider prices by size), the "Model name" line of `lscpu` exactly as it was sent, the date,
+and the issue's address as `source`. The newest report for a plan is the one shown.
+
 ## Pull requests
 
 Keep them small, add tests, and run `make test` and `make lint` first.

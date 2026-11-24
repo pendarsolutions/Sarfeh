@@ -25,7 +25,7 @@ class ServerIrAdapter(HttpAdapterMixin):
     provider_id = "serverir"
     source_url = "https://server.ir/vps/iran/"
     scope = {("compute_vm", "iran_vps")}
-    key_skus = {"IRAT3024", "IRAF3024", "IRFH5024", "IRAF2011"}
+    key_skus = {"IRAF3024", "IRFH5024", "IRAF2011"}  # the IRAT plans left the page in November 2026
 
     def normalize_catalog(self, raw: RawCatalog) -> list[CatalogItem]:
         soup = BeautifulSoup(raw.content, "lxml")

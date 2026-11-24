@@ -68,6 +68,23 @@ journalctl -u sarfeh-stats -n 20
 sudo systemctl start sarfeh-stats
 ```
 
+## Price changes
+
+Whatever a refresh changes is kept as an event in `state/price-changes.json` and published as
+`/sarfeh/changes.json`; the price page shows the newest under "Latest price changes".
+
+To also post each change to a Telegram or Bale channel, make a bot (@BotFather on either), add it to the channel as
+an admin, and put its token and the channel in `~/sarfeh/state/notify.json` (readable only by you):
+
+```json
+{"telegram": {"token": "123456:ABC...", "chat_id": "@your_channel"},
+ "bale": {"token": "...", "chat_id": "@your_channel"}}
+```
+
+Either service can be left out. From the next refresh, every new event is posted once: a few lines of Persian and a
+link to the price page. Events older than a day and a half are never posted, so a new channel doesn't start with old
+news, and a post that fails is tried again on the next run.
+
 ## Prices
 
 `sarfeh-prices.timer` runs the refresh at 03:15 and 15:15 Tehran time. To see what the last runs did, and to run one:

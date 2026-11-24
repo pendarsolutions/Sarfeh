@@ -17,6 +17,9 @@ read live (ArvanCloud, whose site blocks automated reading; Abrha) keep their ca
 file is applied with --import: someone copies the prices from the official page into a file
 (docs/provider-adapters.md), and it goes through the same guardrails as a read. The report printed at the end lists
 every change, so it can be checked before it is published.
+
+What a read changes is also kept as an event (scripts/price_feed.py): published as changes.json beside the table,
+and posted to Telegram and Bale when notify.json beside the state file names a bot and a channel.
 """
 
 from __future__ import annotations
@@ -31,6 +34,9 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "packages"))
+sys.path.insert(0, str(ROOT / "scripts"))
+
+import price_feed  # noqa: E402
 
 from pricing_engine import load_seed_snapshot  # noqa: E402
 from pricing_engine.catalog import CatalogSnapshot  # noqa: E402
@@ -88,6 +94,8 @@ def refresh(state: dict[str, Any], *, only: set[str], approve: set[str], timeout
             for item in fresh:
                 item.id = ids.get(natural_key(item), item.id)  # the same row keeps its identity
             outside = [p for p in previous if (p.service_type, p.product_family) not in adapter.scope]
+            since = kept["read_on"][:10] if kept else seed.snapshot_at.date().isoformat()
+            entry["event"] = price_feed.event(pid, previous, outside + fresh, raw.fetched_at, since=since)
             state["providers"][pid] = {
                 "read_on": raw.fetched_at.isoformat(timespec="seconds"),
                 "source_url": raw.source_url,
@@ -108,8 +116,9 @@ def import_file(state: dict[str, Any], path: Path, *, approve: set[str]) -> dict
     except (json.JSONDecodeError, AttributeError) as exc:
         raise SystemExit(f"{path}: not a price file ({exc})") from exc
     kept = state["providers"].get(pid)
+    seed = load_seed_snapshot()
     previous = ([CatalogItem.model_validate(i) for i in kept["items"]] if kept
-                else [i for i in load_seed_snapshot().items if i.provider_id == pid])
+                else [i for i in seed.items if i.provider_id == pid])
     if not previous:
         raise SystemExit(f"{path}: the catalog has no provider {pid!r}")
     adapter = ManualPriceAdapter(pid, previous)
@@ -123,11 +132,14 @@ def import_file(state: dict[str, Any], path: Path, *, approve: set[str]) -> dict
              "changes": plan.summary()["changes"], "applied": False}
     if raw is not None and (plan.applicable or (plan.status == "quarantined" and pid in approve)):
         fresh = {natural_key(i): i for i in adapter.normalize_catalog(raw)}
+        merged = [fresh.get(natural_key(p), p) for p in previous]
+        since = kept["read_on"][:10] if kept else seed.snapshot_at.date().isoformat()
+        entry["event"] = price_feed.event(pid, previous, merged, raw.fetched_at, since=since, source="file")
         state["providers"][pid] = {
             "read_on": raw.fetched_at.isoformat(timespec="seconds"),
             "source_url": raw.source_url,
             "from_file": path.name,
-            "items": [_dump(fresh.get(natural_key(p), p)) for p in previous],
+            "items": [_dump(i) for i in merged],
         }
         entry["applied"] = True
     state["updated_at"] = datetime.now(UTC).isoformat(timespec="seconds")
@@ -181,6 +193,9 @@ def main() -> int:
     args = ap.parse_args()
 
     state = _load_state(args.state)
+    feed_path = args.state.with_name("price-changes.json")
+    feed = price_feed.load(feed_path)
+    seed = load_seed_snapshot()
     if not args.offline:
         if args.price_file:
             reports = [import_file(state, args.price_file, approve=set(args.approve))]
@@ -191,11 +206,24 @@ def main() -> int:
         tmp = args.state.with_suffix(".tmp")
         tmp.write_text(json.dumps(state, ensure_ascii=False, indent=1), encoding="utf-8")
         tmp.replace(args.state)
+        price_feed.add(feed, [r["event"] for r in reports if r.get("event")])
+        notify = args.state.with_name("notify.json")
+        if notify.exists():
+            names = {pid: p.name_fa or p.name_en for pid, p in seed.providers.items()}
+            posted = price_feed.post_pending(feed, json.loads(notify.read_text(encoding="utf-8")), names)
+            if posted:
+                print(f"posted {posted} price change(s)")
+        price_feed.save(feed_path, feed)
     text = render(state, datetime.now(UTC))
     args.out.parent.mkdir(parents=True, exist_ok=True)
     tmp = args.out.with_suffix(".tmp")
     tmp.write_text(text, encoding="utf-8", newline="\n")
     tmp.replace(args.out)  # a reader never sees half a file
+    providers = {pid: {"name_fa": p.name_fa or p.name_en, "name_en": p.name_en} for pid, p in seed.providers.items()}
+    changes = args.out.with_name("changes.json")
+    tmp = changes.with_suffix(".tmp")
+    tmp.write_text(price_feed.published(feed, providers), encoding="utf-8", newline="\n")
+    tmp.replace(changes)
     print(f"wrote {args.out} ({len(text.encode()) // 1024} KB)")
     return 0
 

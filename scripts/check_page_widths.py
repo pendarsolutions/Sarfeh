@@ -7,7 +7,8 @@ and nothing else notices: the build passes and a desktop window looks fine. This
 browser as a 320px and a 360px phone and compares each page's width with the screen's.
 
 The price page is checked with every price marked old and every condition shown, the widest it can get: its table
-is rendered from the catalog as if no provider had been read since (scripts/refresh_prices.py).
+is rendered from the catalog as if no provider had been read since (scripts/refresh_prices.py), and its list of
+price changes has a provider whose every price moved.
 The browser is BROWSER, or the first of Chrome, Chromium and Edge that is installed.
 """
 
@@ -134,6 +135,19 @@ async def _check(site: int, debug: int) -> list[str]:
     return failures
 
 
+def _sample_changes(now: datetime) -> str:
+    """A record of changes with long lines: every ArvanCloud rate up by a fifth, read by hand long after the last."""
+    seed = refresh_prices.load_seed_snapshot()
+    before = list(seed.provider_items("arvancloud"))
+    after = [i.model_copy(update={"price_toman": i.price_toman * 6 / 5, "ram_gb": 64}) if i.price_toman else i
+             for i in before]
+    feed = {"schema": 1, "events": []}
+    refresh_prices.price_feed.add(feed, [refresh_prices.price_feed.event(
+        "arvancloud", before, after, now, since="2026-10-04", source="file")])
+    names = {pid: {"name_fa": p.name_fa or p.name_en, "name_en": p.name_en} for pid, p in seed.providers.items()}
+    return refresh_prices.price_feed.published(feed, names)
+
+
 def main() -> int:
     if len(sys.argv) != 2 or not (Path(sys.argv[1]) / "index.html").exists():
         raise SystemExit("usage: check_page_widths.py DIR   (the built site, with index.html)")
@@ -141,8 +155,14 @@ def main() -> int:
         site_dir = Path(tmp) / "site"
         shutil.copytree(sys.argv[1], site_dir)
         # the widest table: the catalog as first read, so today every price is old
-        (site_dir / "prices.json").write_text(refresh_prices.render({"providers": {}}, datetime.now(UTC)),
-                                              encoding="utf-8")
+        now = datetime.now(UTC)
+        table = json.loads(refresh_prices.render({"providers": {}}, now))
+        for size in table["sizes"]:
+            for offer in size["offers"]:  # and a long CPU model on each, as a user's report would put there
+                offer["cpu_model"] = {"model": "Intel(R) Xeon(R) Platinum 8280 CPU @ 2.70GHz", "hidden": False,
+                                      "reported_on": now.date().isoformat()}
+        (site_dir / "prices.json").write_text(json.dumps(table, ensure_ascii=False), encoding="utf-8")
+        (site_dir / "changes.json").write_text(_sample_changes(now), encoding="utf-8")
         debug = _free_port()
         flags = ["--headless=new", f"--remote-debugging-port={debug}", f"--user-data-dir={Path(tmp) / 'profile'}",
                  "--hide-scrollbars", "--no-first-run", "--disable-gpu"]

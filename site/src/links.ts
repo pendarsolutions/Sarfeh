@@ -11,6 +11,7 @@ const BASE = import.meta.env.BASE_URL;
 export const HOME = BASE;
 export const PRICES = `${BASE}prices/`;
 export const PRICES_JSON = `${BASE}prices.json`;
+export const CHANGES_JSON = `${BASE}changes.json`;
 export const WRONG_PRICE = `${REPO}/issues/new?template=wrong-price.md`;
 export const CPU_MODEL = `${REPO}/issues/new?template=cpu-model.md`;
 export const PRICING_MODEL = `${REPO}/blob/main/docs/pricing-model.md`;

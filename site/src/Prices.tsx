@@ -10,7 +10,7 @@ import { Lockup, PoweredBy } from "./Brand";
 import { Icon } from "./Icon";
 import { formatWhole, localizeDigits } from "./format";
 import type { Lang } from "./lang";
-import { CATALOG, CPU_MODEL, HOME, LICENSE, PRICES, PRICES_JSON, PRICING_MODEL, REPO, WRONG_PRICE } from "./links";
+import { CATALOG, CHANGES_JSON, CPU_MODEL, HOME, LICENSE, PRICES, PRICES_JSON, PRICING_MODEL, REPO, WRONG_PRICE } from "./links";
 import { useT, type Key } from "./strings";
 
 interface Offer {
@@ -33,6 +33,8 @@ interface Offer {
   read_on: string | null;
   /** what a reader should know about the figure, by id; older tables have none */
   conditions?: Condition[];
+  /** the CPU a user found on this plan: the newest report, if there is one */
+  cpu_model?: { model: string; hidden: boolean; reported_on: string };
   /** set by the table when the row was read too long ago: how many days counts as old */
   old_after_days?: number;
 }
@@ -58,7 +60,40 @@ interface Table {
   providers: Record<string, { name_fa: string; name_en: string; website: string }>;
   sizes: Size[];
 }
+/** One row of a price change: what it is now, and under `was` what it was (only the parts that moved). */
+interface ChangeRow {
+  plan: string;
+  toman: string | null;
+  percent?: string;
+  cpu_cores?: string;
+  ram_gb?: string;
+  storage_gb?: string;
+  included_traffic_gb?: string;
+  was?: Record<string, string | null>;
+}
+interface ChangeEvent {
+  at: string;
+  provider_id: string;
+  since: string | null;
+  source: string;
+  counts: { changed: number; new: number; removed: number };
+  changed: ChangeRow[];
+}
+interface Changes {
+  providers: Record<string, { name_fa: string; name_en: string }>;
+  events: ChangeEvent[];
+}
 type Want = { cpu: number | null; ram: number | null; disk: number | null };
+/** How many events the page shows, and how many lines of each. The file has more. */
+const EVENTS_SHOWN = 6;
+const LINES_SHOWN = 5;
+type SpecField = "cpu_cores" | "ram_gb" | "storage_gb" | "included_traffic_gb";
+const SPEC_CHANGES: [SpecField, Key][] = [
+  ["cpu_cores", "prChCpu"],
+  ["ram_gb", "prChRam"],
+  ["storage_gb", "prChDisk"],
+  ["included_traffic_gb", "prChTraffic"],
+];
 
 const TRAFFIC: Record<string, Key> = {
   included_quota: "prTrafficQuota",
@@ -169,6 +204,13 @@ function OfferRow({ offer, rank, size, table }: { offer: Offer; rank: number; si
         </p>
         <ul className="pr-terms">
           <li>{t(offer.cpu_shared === null ? "prCpuUnknown" : offer.cpu_shared ? "prCpuShared" : "prCpuDedicated")}</li>
+          {offer.cpu_model && (
+            <li className="pr-cpu-model">
+              {offer.cpu_model.hidden
+                ? fill(t("prCpuHidden"), { date: day(offer.cpu_model.reported_on, lang) })
+                : fill(t("prCpuModel"), { model: `\u2068${offer.cpu_model.model}\u2069`, date: day(offer.cpu_model.reported_on, lang) })}
+            </li>
+          )}
           <li>{fill(t(trafficKey), { n: formatWhole(offer.included_traffic_gb ?? "", lang) })}</li>
           {offer.datacenter && (
             <li>
@@ -266,10 +308,81 @@ function Comparison({ table }: { table: Table }) {
   );
 }
 
+/** A changed row in words: its price move with the percent, then any size that moved with it. */
+function changeText(row: ChangeRow, t: (k: Key) => string, lang: Lang): string {
+  const was = row.was ?? {};
+  const parts: string[] = [];
+  if (was.toman && row.toman) {
+    let text = fill(t("prChPrice"), { old: formatWhole(was.toman, lang), new: formatWhole(row.toman, lang) });
+    if (row.percent) {
+      const p = localizeDigits(row.percent.replace("-", ""), lang);
+      text += ` (${fill(t(row.percent.startsWith("-") ? "prChDown" : "prChUp"), { p })})`;
+    }
+    parts.push(text);
+  }
+  for (const [field, label] of SPEC_CHANGES) {
+    const old = was[field];
+    const now = row[field];
+    if (old && now) parts.push(fill(t("prChSpec"), { what: t(label), old: localizeDigits(old, lang), new: localizeDigits(now, lang) }));
+  }
+  return parts.length ? parts.join(lang === "fa" ? "، " : ", ") : t("prChOther");
+}
+
+function ChangesSection({ changes }: { changes: Changes }) {
+  const { t, lang } = useT();
+  const n = (v: number) => localizeDigits(String(v), lang);
+  return (
+    <section className="pr-changes" id="changes">
+      <h2>{t("prChTitle")}</h2>
+      <p className="note">{t("prChLead")}</p>
+      <ol className="pr-events">
+        {changes.events.slice(0, EVENTS_SHOWN).map((e) => {
+          const provider = changes.providers[e.provider_id];
+          const counts = [
+            e.counts.changed > 0 && fill(t("prChCountChanged"), { n: n(e.counts.changed) }),
+            e.counts.new > 0 && fill(t("prChCountNew"), { n: n(e.counts.new) }),
+            e.counts.removed > 0 && fill(t("prChCountRemoved"), { n: n(e.counts.removed) }),
+          ].filter(Boolean);
+          // a read long after the one before it is not one day's news: say which read it is compared with
+          const gapDays = e.since ? (Date.parse(e.at.slice(0, 10)) - Date.parse(e.since)) / 86_400_000 : 0;
+          const notes = [gapDays > 2 && e.since && fill(t("prChSince"), { date: day(e.since, lang) }), e.source === "file" && t("prChByHand")].filter(Boolean);
+          return (
+            <li key={`${e.at}${e.provider_id}`} className="pr-event">
+              <h3>
+                {provider ? (lang === "fa" ? provider.name_fa : provider.name_en) : e.provider_id}
+                <small>
+                  {day(e.at, lang)} · {counts.join(" · ")}
+                </small>
+              </h3>
+              {e.changed.length > 0 && (
+                <ul>
+                  {e.changed.slice(0, LINES_SHOWN).map((row) => (
+                    <li key={`${row.plan}${row.toman}`}>
+                      <bdi className="pr-event-plan">{row.plan}</bdi> {changeText(row, t, lang)}
+                    </li>
+                  ))}
+                  {e.counts.changed > LINES_SHOWN && <li>{fill(t("prChMore"), { n: n(e.counts.changed - LINES_SHOWN) })}</li>}
+                </ul>
+              )}
+              {notes.length > 0 && <p className="note">{notes.join(" · ")}</p>}
+            </li>
+          );
+        })}
+      </ol>
+      <p className="pr-links">
+        <a href={CHANGES_JSON} download>
+          {t("prChData")}
+        </a>
+      </p>
+    </section>
+  );
+}
+
 export function Prices() {
   const { t, lang, setLang } = useT();
   const [table, setTable] = useState<Table | null>(null);
   const [failed, setFailed] = useState(false);
+  const [changes, setChanges] = useState<Changes | null>(null);
 
   useEffect(() => {
     let live = true;
@@ -277,6 +390,11 @@ export function Prices() {
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
       .then((data: Table) => live && setTable(data))
       .catch(() => live && setFailed(true));
+    // the record of changes is an extra: without it the page is simply shorter
+    fetch(CHANGES_JSON)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: Changes | null) => live && data && data.events?.length > 0 && setChanges(data))
+      .catch(() => undefined);
     return () => {
       live = false;
     };
@@ -312,6 +430,8 @@ export function Prices() {
         </div>
 
         {table ? <Comparison table={table} /> : <p role="status">{t(failed ? "prError" : "prLoading")}</p>}
+
+        {changes && <ChangesSection changes={changes} />}
 
         <section className="pr-method">
           <h2>{t("prMethodTitle")}</h2>

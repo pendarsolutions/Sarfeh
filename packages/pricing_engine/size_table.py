@@ -8,10 +8,13 @@ figure can be checked against the page it was read from.
 
 from __future__ import annotations
 
+import json
+import re
 from decimal import ROUND_HALF_UP, Decimal
+from pathlib import Path
 from typing import Any
 
-from .catalog import CatalogSnapshot
+from .catalog import SEED_DIR, CatalogSnapshot
 from .equivalence import _workload, compare_resource
 from .models import BillingContext, CatalogItem, LineStatus, PriceBreakdown, PriceStatus, Resource
 from .money import _serialize
@@ -25,6 +28,38 @@ DISKS_GB = (25, 50, 100, 200, 400)
 WORKLOAD = {"public_ipv4": 1, "traffic_gb": 0, "country": "IR"}
 #: traffic terms that come from how a provider prices, not from a plan's row
 TRAFFIC_BY_STRATEGY = {"component": "metered", "liara_plan": "metered", "daily_table": "not_published"}
+
+
+CPU_REPORTS = SEED_DIR.parent / "hardware" / "cpu-reports.json"
+#: what a host shows when it hides the real processor from its guests
+_MASKED = re.compile(r"qemu|kvm|virtual|hypervisor|common .*processor", re.IGNORECASE)
+_BRAND = re.compile(r"intel|amd|xeon|epyc|ryzen|ampere|core\(tm\)", re.IGNORECASE)
+
+
+def cpu_model_hidden(model: str | None) -> bool:
+    """Whether a model name is the stand-in a host shows its guests ('QEMU Virtual CPU', 'Common KVM processor')
+    and not a real processor's."""
+    return bool(model) and bool(_MASKED.search(model)) and not _BRAND.search(model)
+
+
+def load_cpu_reports(path: Path = CPU_REPORTS) -> list[dict[str, Any]]:
+    """CPU models users reported for plans they rent (data/hardware/cpu-reports.json), or none without the file."""
+    if not path.exists():
+        return []
+    return list(json.loads(path.read_text(encoding="utf-8")).get("reports") or [])
+
+
+def cpu_models(reports: list[dict[str, Any]]) -> dict[tuple[str, str | None], dict[str, Any]]:
+    """The newest report for each provider and plan, with how many reports there are for it. A model name such as
+    'QEMU Virtual CPU' means the host hides the processor, which is worth saying as it is."""
+    out: dict[tuple[str, str | None], dict[str, Any]] = {}
+    for r in sorted(reports, key=lambda r: r["reported_on"]):
+        key = (r["provider_id"], r.get("plan"))
+        model = " ".join(str(r["cpu_model"]).split())
+        out[key] = {"model": model, "hidden": cpu_model_hidden(model),
+                    "mhz": str(r["cpu_mhz"]) if r.get("cpu_mhz") else None, "reported_on": r["reported_on"],
+                    "reports": out.get(key, {}).get("reports", 0) + 1}
+    return out
 
 
 def _source(priced: PriceBreakdown, row: CatalogItem | None) -> dict[str, str | None]:
@@ -128,13 +163,18 @@ def offers_for(snapshot: CatalogSnapshot, cpu: int, ram: int,
     return offers, missing
 
 
-def size_table(snapshot: CatalogSnapshot) -> dict[str, Any]:
-    """Every size in the grid at every provider. The same catalog always gives the same table."""
+def size_table(snapshot: CatalogSnapshot, cpu_reports: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+    """Every size in the grid at every provider. The same catalog (and the same reports) always gives the same table.
+    An offer whose plan has a CPU model reported by a user carries it as `cpu_model`."""
+    models = cpu_models(load_cpu_reports() if cpu_reports is None else cpu_reports)
     sizes = []
     for cpu, memories in MEMORY_FOR.items():
         for ram in memories:
             for disk in DISKS_GB:
                 offers, missing = offers_for(snapshot, cpu, ram, disk)
+                for o in offers:
+                    if (o["provider_id"], o["plan"]) in models:
+                        o["cpu_model"] = models[(o["provider_id"], o["plan"])]
                 sizes.append({"cpu": cpu, "ram_gb": ram, "disk_gb": disk, "offers": offers, "missing": missing})
     return {
         "schema": SCHEMA,

@@ -79,6 +79,31 @@ def test_what_a_figure_assumes_or_leaves_out_is_said_with_it(snapshot):
     assert by["parspack"] == [{"id": "ipv4_assumed"}, {"id": "setup_fee", "days": 7}]
 
 
+def test_a_cpu_model_a_user_reported_is_shown_with_its_plan(snapshot):
+    from pricing_engine.size_table import cpu_models
+
+    reports = [
+        {"provider_id": "serverir", "plan": "IRFH5024", "cpu_model": "Intel(R) Xeon(R) CPU E5-2680 v4 @ 2.40GHz",
+         "reported_on": "2026-11-20"},
+        {"provider_id": "serverir", "plan": "IRFH5024", "cpu_model": "Intel(R)  Xeon(R) Gold 6248R CPU @ 3.00GHz",
+         "cpu_mhz": 2993, "reported_on": "2026-11-25"},
+        {"provider_id": "parspack", "plan": None, "cpu_model": "QEMU Virtual CPU version 2.5+", "reported_on": "2026-11-25"},
+    ]
+    models = cpu_models(reports)
+    # the newest report wins, and the count says there were two
+    assert models[("serverir", "IRFH5024")] == {"model": "Intel(R) Xeon(R) Gold 6248R CPU @ 3.00GHz", "hidden": False,
+                                                 "mhz": "2993", "reported_on": "2026-11-25", "reports": 2}
+    assert models[("parspack", None)]["hidden"] is True  # the host shows its guests a made-up processor
+
+    table = size_table(snapshot, reports)
+    size = next(s for s in table["sizes"] if (s["cpu"], s["ram_gb"], s["disk_gb"]) == (2, 4, 50))
+    by = {o["provider_id"]: o for o in size["offers"]}
+    assert by["serverir"]["cpu_model"]["model"].startswith("Intel(R) Xeon(R) Gold 6248R")
+    assert by["parspack"]["cpu_model"]["hidden"] is True  # ParsPack prices by size: a report without a plan is its
+    assert "cpu_model" not in by["mobinhost"]
+    assert all("cpu_model" not in o for s in size_table(snapshot, [])["sizes"] for o in s["offers"])
+
+
 def test_a_provider_that_sells_nothing_this_large_is_named_not_dropped(snapshot):
     offers, missing = offers_for(snapshot, 16, 64, 400)
     assert {"provider_id": "chabokan", "reason": "nothing_this_size"} in missing

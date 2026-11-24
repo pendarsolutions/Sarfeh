@@ -33,6 +33,8 @@ def test_a_price_file_replaces_the_rows_it_names_and_dates_them_today(refresh_pr
     report = refresh_prices.import_file(state, FILE, approve=set())
 
     assert (report["status"], report["applied"]) == ("ok", True)
+    # what the file changed is an event for the public record, marked as read by hand
+    assert (report["event"]["source"], report["event"]["since"], len(report["event"]["changed"])) == ("file", "2026-10-04", 33)
     offer = arvan(refresh_prices, state)
     # 2 x 252,000 + 4 x 196,200 + 50 x 18,000 + 234,000 for the first IPv4
     assert offer["monthly_toman"] == "2422800"
