@@ -39,7 +39,8 @@ repository, copy that folder along and point the alias at it.
 ## Rules
 
 - **Nothing from other servers at run time:** no web fonts, analytics, trackers, CDNs or embeds. The site has to work
-  from Iran, where many of those are blocked, and visitors' privacy matters.
+  from Iran, where many of those are blocked, and visitors' privacy matters. Visits are counted on the server, from
+  its own log, with no cookie and no script (`deploy/sarfeh-site/README.md`).
 - **Persian first,** right to left, with complete English.
 - Light and dark, following the visitor's system. Motion follows Pendar's motion tokens and stops for reduced motion.
 - The install command must match the release exactly.

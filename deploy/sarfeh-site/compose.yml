@@ -11,6 +11,11 @@ services:
       # the site lives under /sarfeh/ inside the container too, so the edge passes paths through unchanged
       - ./www:/usr/share/nginx/html/sarfeh:ro
       - ./site.conf:/etc/nginx/conf.d/default.conf:ro
+      # visits are counted from this log by stats.py, which empties it every ten minutes
+      - ./logs:/var/log/sarfeh
+      # the owner's panel at /sarfeh/stats/ (stats.py writes it), and the password file that guards it
+      - ./stats:/usr/share/nginx/stats:ro
+      - ./stats-auth:/etc/nginx/sarfeh-stats:ro
     networks: [infrastructure_default]
     healthcheck:
       test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/sarfeh/"]

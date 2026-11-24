@@ -6,6 +6,6 @@ HOST="${1:-ubuntu@159.195.110.103}"
 cd "$(dirname "$0")/../.."
 (cd site && MSYS2_ENV_CONV_EXCL=SITE_BASE SITE_BASE=/sarfeh/ npm run build)
 tar -C site/dist --exclude=./prices.json -czf - . | ssh "$HOST" 'mkdir -p ~/sarfeh/www && tar -C ~/sarfeh/www -xzf -'
-ssh "$HOST" 'cd ~/sarfeh/src && git pull -q --ff-only && cp deploy/sarfeh-site/compose.yml deploy/sarfeh-site/site.conf ~/sarfeh/ \
-  && cd ~/sarfeh && docker compose up -d --quiet-pull && docker exec sarfeh-site nginx -s reload'
+ssh "$HOST" 'cd ~/sarfeh/src && git pull -q --ff-only && cp deploy/sarfeh-site/compose.yml deploy/sarfeh-site/site.conf deploy/sarfeh-site/stats.py ~/sarfeh/ \
+  && cd ~/sarfeh && mkdir -p logs stats stats-auth && docker compose up -d --quiet-pull && docker exec sarfeh-site nginx -s reload'
 echo "deployed: https://pendarsolutions.ir/sarfeh/prices/"
