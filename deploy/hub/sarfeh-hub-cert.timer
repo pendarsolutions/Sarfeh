@@ -1,0 +1,9 @@
+[Unit]
+Description=Get the certificate for Sarfeh's price service mirror in Iran once its DNS record exists
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=30min
+
+[Install]
+WantedBy=timers.target

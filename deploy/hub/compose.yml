@@ -1,14 +1,15 @@
 # Sarfeh's central service, on each of Pendar's two mirrors: the price service every installation updates from (and
 # the shared Bale bot's relay, if it's given a bot token). Not part of an installation. See deploy/hub/README.md.
 #
-#   cd ~/sarfeh-hub && docker compose up -d
+#   cd ~/sarfeh-hub && docker compose up -d      (deploy/hub/deploy.sh does this)
 #
-# .env next to this file: FINOPS_HUB_PUBLIC_KEY, FINOPS_HUB_TOKEN_SECRET (the same on both mirrors), and
-#   in Iran, where Caddy gets the certificate:   COMPOSE_PROFILES=tls  HUB_DOMAIN=sarfeh-api-ir.pendarsolutions.ir
-#   outside, behind the server's edge nginx:     COMPOSE_FILE=compose.yml:compose.edge.yml
+# .env next to this file: FINOPS_HUB_PUBLIC_KEY, FINOPS_HUB_TOKEN_SECRET (the same on both mirrors), and how the
+# server's own nginx reaches the service:
+#   in Iran, arvan-edge on the host network:    COMPOSE_FILE=compose.yml:compose.local.yml   (127.0.0.1:18095)
+#   outside, mn2-nginx on infrastructure_default: COMPOSE_FILE=compose.yml:compose.edge.yml  (sarfeh-hub:8090)
 #
 # It runs from the app image (on GitHub's registry, which a server in Iran can reach when Docker Hub can't), with the
-# service's code from the checkout in ./src mounted over the image's copy, so `git pull` and a restart update it.
+# service's code from ./src mounted over the image's copy, so deploy.sh and a restart update it.
 name: sarfeh-hub
 
 services:
@@ -32,24 +33,5 @@ services:
       retries: 3
     mem_limit: 256m
 
-  # Only where nothing else serves ports 80 and 443 (the mirror in Iran): COMPOSE_PROFILES=tls in .env
-  caddy:
-    profiles: [tls]
-    image: caddy:2-alpine
-    restart: unless-stopped
-    depends_on: [hub]
-    environment:
-      HUB_DOMAIN: ${HUB_DOMAIN:?set HUB_DOMAIN in .env}
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy-data:/data
-      - caddy-config:/config
-    mem_limit: 128m
-
 volumes:
   hub-data:
-  caddy-data:
-  caddy-config:

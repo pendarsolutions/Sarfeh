@@ -1,0 +1,6 @@
+# The mirror in Iran sits behind that server's arvan-edge nginx, which runs on the host network and reaches the
+# service on 127.0.0.1:18095 (iran-https.conf). Used through COMPOSE_FILE=compose.yml:compose.local.yml in .env.
+services:
+  hub:
+    ports:
+      - "127.0.0.1:18095:8090"

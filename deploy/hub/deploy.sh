@@ -18,10 +18,11 @@ REV="$(git rev-parse --short HEAD)"
 git archive --format=tar HEAD apps/relay deploy/hub | ssh "$HOST" "set -e
 mkdir -p ~/sarfeh-hub && cd ~/sarfeh-hub
 rm -rf src.new && mkdir src.new && tar -x -C src.new && echo $REV > src.new/REVISION
+chmod +x src.new/deploy/hub/*.sh
 rm -rf src && mv src.new src
-cp src/deploy/hub/compose.yml src/deploy/hub/compose.edge.yml src/deploy/hub/Caddyfile .
+cp src/deploy/hub/compose.yml src/deploy/hub/compose.edge.yml src/deploy/hub/compose.local.yml .
 if [ -f .env ]; then
-  sudo docker compose up -d --quiet-pull 2>&1 | grep -v -e Running -e Started -e Waiting || true
+  sudo docker compose up -d --quiet-pull --remove-orphans 2>&1 | grep -v -e Running -e Started -e Waiting || true
   sudo docker compose restart 2>&1 | grep -v -e Restarting -e Started || true
   sleep 5
   sudo docker exec sarfeh-hub python -c \"import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8090/health').read().decode())\"
