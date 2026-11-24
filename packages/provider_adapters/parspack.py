@@ -19,6 +19,12 @@ DAYS_PER_MONTH = Decimal(30)
 FAMILY = "cloud_server"
 
 
+def _priced(table: dict[str, Any]) -> dict[str, Any]:
+    """The part of a datacenter's table this adapter reads: CPU, memory and disk prices for each size. Add-on prices
+    (control-panel licences, backups) are left out, so a datacenter that only differs in those is not a difference."""
+    return {k: {part: v[part] for part in ("cpu", "ram", "hdd")} for k, v in table.items() if k.isdigit()}
+
+
 def _table(content: str) -> dict[str, Any]:
     start = content.find(MARKER)
     if start < 0:
@@ -31,9 +37,14 @@ def _table(content: str) -> dict[str, Any]:
         raise ParseError(f"ParsPack pricing table not understood: {exc}") from exc
     if not tables:
         raise ParseError("no Iranian ParsPack datacenters found")
-    if any(t != tables[0] for t in tables):
-        raise ParseError("ParsPack datacenters now have different prices; this adapter assumes one price list")
-    sizes = {k: v for k, v in tables[0].items() if k.isdigit()}
+    try:
+        priced = [_priced(t) for t in tables]
+    except (KeyError, TypeError) as exc:
+        raise ParseError(f"ParsPack pricing table not understood: {exc}") from exc
+    if any(p != priced[0] for p in priced):
+        raise ParseError("ParsPack datacenters now have different CPU, memory or disk prices; this adapter assumes "
+                         "one price list")
+    sizes = priced[0]
     if not sizes or len({json.dumps(v["cpu"], sort_keys=True) for v in sizes.values()}) != 1 \
             or len({json.dumps(v["hdd"], sort_keys=True) for v in sizes.values()}) != 1:
         raise ParseError("ParsPack CPU or disk prices now depend on RAM; this adapter assumes they don't")

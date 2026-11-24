@@ -80,8 +80,17 @@ def test_missing_table_and_changed_shape_fail_visibly():
     head, rest = content.split("= ", 1)
     data, _ = json.JSONDecoder().raw_decode(rest)
     data["Iran"]["cities"][0]["data_centers"][1]["billings"]["pricingTable"]["linux"]["2048"]["ram"] += 1
-    with pytest.raises(ParseError, match="different prices"):
+    with pytest.raises(ParseError, match="different CPU, memory or disk prices"):
         ParsPackAdapter().normalize_catalog(raw(f"{head}= {json.dumps(data)};"))
+
+
+def test_a_datacenter_that_differs_only_in_addon_prices_is_still_one_price_list():
+    # 24 November 2026: Tehran1 lists its cPanel and DirectAdmin licences at another price; CPU, memory and disk
+    # are the same in all five datacenters. The read used to fail on that.
+    page = gzip.decompress(FIX.with_name("parspack-2026-11-24.html.gz").read_bytes()).decode()
+    by = {i.sku: i for i in ParsPackAdapter().normalize_catalog(raw(page))}
+    assert (by["PP-CPU-2"].daily_price_toman, by["PP-RAM-4"].daily_price_toman, by["PP-DISK-50"].daily_price_toman) == (
+        D(21047), D(33675), D(8143))
 
 
 def test_sync_against_the_seed_changes_nothing(snapshot):
