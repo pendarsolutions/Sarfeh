@@ -161,6 +161,13 @@ flowchart LR
 Scrapers check official pages twice a day. If a page can't be read, or prices move too sharply, nothing is
 applied and the problem shows up in the app.
 
+Your installation doesn't run them itself: Pendar does, and publishes the result, signed, on
+[Sarfeh's price service](docs/price-service.md), with one mirror in Iran and one outside. The installation checks every
+hour, tells admins when new prices are out, and uses them once an admin updates (**Catalog → Update prices**, or
+`sudo sarfeh prices update`). Every catalog is checked against Pendar's key before a price is used, and the service
+gets only a token and your Sarfeh version. To read the providers from your own server instead:
+`sudo sarfeh config set PRICE_SOURCE=scrape`.
+
 Spotted a wrong price? [Report it](../../issues/new?template=wrong-price.md).
 
 ## Configuration
@@ -173,7 +180,9 @@ Settings live in `.env`, and [`.env.example`](.env.example) lists all of them. T
 | `FINOPS_AI_PROVIDER` | `offline` | `offline` makes no external calls. `anthropic` uses Claude, if it's available to you. |
 | `FINOPS_ALLOW_REGISTRATION` | `false` | Open sign-up. The first account can always register, and admins add the rest. |
 | `FINOPS_INVOICE_RETENTION_DAYS` | `30` | How long uploaded invoices are kept before deletion. |
-| `FINOPS_CATALOG_URL` | none | Use a [shared signed price catalog](docs/installation.md#sharing-one-price-catalog) instead of scraping. |
+| `FINOPS_PRICE_SOURCE` | `sarfeh` | `sarfeh`: prices from [Sarfeh's price service](docs/price-service.md). `scrape`: read here from the providers' pages. |
+| `FINOPS_PRICE_AUTO_UPDATE` | `false` | Use new prices from the price service as soon as they're out, instead of when an admin updates. |
+| `FINOPS_CATALOG_URL` | none | Use a [signed price catalog of your own](docs/installation.md#sharing-one-price-catalog) instead. |
 
 ## Project layout
 

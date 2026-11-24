@@ -179,6 +179,8 @@ def _tehran(stamp: object) -> str:
     if not stamp:
         return "-"
     when = stamp if isinstance(stamp, datetime) else datetime.fromisoformat(str(stamp))
+    if when.tzinfo is None:  # SQLite gives stored times back without their zone; they're UTC
+        when = when.replace(tzinfo=UTC)
     return when.astimezone(ZoneInfo("Asia/Tehran")).strftime("%Y-%m-%d %H:%M")
 
 
