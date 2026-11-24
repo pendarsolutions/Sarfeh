@@ -143,6 +143,14 @@ function day(iso: string, lang: Lang): string {
   return new Intl.DateTimeFormat(locale, { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(d);
 }
 
+/** The day a moment fell on in Iran: a read at 03:15 in Tehran is still the evening before in UTC. */
+function dayInIran(iso: string, lang: Lang): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  const locale = lang === "fa" ? "fa-IR-u-ca-persian" : "en-GB";
+  return new Intl.DateTimeFormat(locale, { day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Tehran" }).format(d);
+}
+
 function host(url: string): string {
   try {
     return new URL(url).hostname.replace(/^www\./, "");
@@ -351,7 +359,7 @@ function ChangesSection({ changes }: { changes: Changes }) {
               <h3>
                 {provider ? (lang === "fa" ? provider.name_fa : provider.name_en) : e.provider_id}
                 <small>
-                  {day(e.at, lang)} · {counts.join(" · ")}
+                  {dayInIran(e.at, lang)} · {counts.join(" · ")}
                 </small>
               </h3>
               {e.changed.length > 0 && (
