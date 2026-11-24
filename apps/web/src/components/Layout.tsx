@@ -11,6 +11,7 @@ import { TourProvider, useTour } from "./Tour";
 import { TooltipLayer } from "./viz";
 import { Lockup, PoweredBy } from "./Brand";
 import { Icon, type IconName } from "./Icon";
+import { PriceNotice } from "./PriceService";
 
 const NAV: { to: string; key: TKey; tour: string; icon: IconName }[] = [
   { to: "/", key: "navOverview", tour: "nav-overview", icon: "home" },
@@ -112,7 +113,7 @@ function Shell({ navOpen, setNavOpen }: { navOpen: boolean; setNavOpen: (f: (o: 
         </ul>
       </nav>
       <main id="main" className="main">
-        {demo ? <DemoBanner /> : null}
+        {demo ? <DemoBanner /> : <PriceNotice />}
         {/* a page's blocks arrive one by one, in reading order, when they first appear */}
         <div className="page">
           <Outlet />

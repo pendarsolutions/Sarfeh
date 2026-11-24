@@ -401,6 +401,27 @@ export interface CatalogItem {
   created_at?: string;
 }
 
+/** Where this installation's prices come from, and whether Sarfeh's price service has newer ones. */
+export interface PriceServiceStatus {
+  source: "sarfeh" | "scrape" | "catalog_url";
+  auto_update: boolean;
+  update_available: boolean;
+  registered?: boolean;
+  mirror?: string | null;
+  checked_at?: string | null;
+  error?: string | null;
+  applied?: { generated_at: string; applied_at: string; by: string; read_on: string | null } | null;
+  latest?: { generated_at: string; read_on: string | null } | null;
+  /** provider ids whose prices differ between the newest catalog and the one in use */
+  changed?: string[];
+}
+
+export interface PriceUpdateResult {
+  generated_at: string;
+  changed: string[];
+  status: PriceServiceStatus;
+}
+
 export interface SyncRun {
   id: string;
   provider_id: string;

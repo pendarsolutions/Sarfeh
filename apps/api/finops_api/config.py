@@ -7,6 +7,14 @@ from typing import Literal
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 ROOT = Path(__file__).resolve().parents[3]
+#: scripts/bump-version.sh sets it
+SARFEH_VERSION = "0.5.0"
+
+#: the key Pendar's price reader signs Sarfeh's price catalog with; an installation trusts no other catalog
+SARFEH_CATALOG_PUBLIC_KEY = "FgZ6B1RBtESN+VYQYBxzc4N7dlQF8D96+ExCsIe4ZAw="
+#: the price service's mirrors, tried in this order: in Iran first, so a server in Iran still updates when the way out
+#: is slow or closed, then outside Iran
+SARFEH_PRICE_SERVICE = "https://sarfeh-api-ir.pendarsolutions.ir,https://sarfeh-api.pendarsolutions.ir"
 
 
 class Settings(BaseSettings):
@@ -32,9 +40,17 @@ class Settings(BaseSettings):
     ai_model: str = "claude-opus-5-5"
     anthropic_api_key: str | None = None
     ai_rate_limit_per_minute: int = 20
-    #: signed price catalog. Consumer: set url + public key and this installation stops scraping.
+    #: where prices come from. "sarfeh": Sarfeh's price service, where Pendar publishes the providers' prices it reads
+    #: twice a day, signed; this installation checks it every hour and says when new prices are out. "scrape": this
+    #: server reads the providers' pages itself, twice a day.
+    price_source: Literal["sarfeh", "scrape"] = "sarfeh"
+    price_service_urls: str = SARFEH_PRICE_SERVICE
+    #: apply new prices from the price service as soon as they're found, instead of waiting for an admin
+    price_auto_update: bool = False
+    #: a signed price catalog of your own (static files: catalog.json and catalog.json.sig), pulled twice a day in
+    #: place of both of the above
     catalog_url: str | None = None
-    catalog_public_key: str | None = None
+    catalog_public_key: str | None = SARFEH_CATALOG_PUBLIC_KEY
     #: publisher: scrape as usual and write a signed catalog here after each run
     catalog_publish_dir: Path | None = None
     catalog_signing_key: str | None = None
@@ -68,6 +84,14 @@ class Settings(BaseSettings):
     @property
     def is_prod(self) -> bool:
         return self.env in ("staging", "prod")
+
+    @property
+    def uses_price_service(self) -> bool:
+        return self.price_source == "sarfeh" and not self.catalog_url and bool(self.price_service_list)
+
+    @property
+    def price_service_list(self) -> list[str]:
+        return [u.strip().rstrip("/") for u in self.price_service_urls.split(",") if u.strip()]
 
 
 @lru_cache

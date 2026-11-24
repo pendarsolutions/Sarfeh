@@ -20,6 +20,15 @@ every change, so it can be checked before it is published.
 
 What a read changes is also kept as an event (scripts/price_feed.py): published as changes.json beside the table,
 and posted to Telegram and Bale when notify.json beside the state file names a bot and a channel.
+
+When publish.json beside the state file names a signing key and Sarfeh's price service, each run (an --offline one
+too) also signs the whole catalog and sends it there, which is where installations update their prices from
+(apps/relay/finops_relay/prices.py):
+
+    {"key_file": "catalog-signing-key", "hubs": ["https://sarfeh-api-ir.pendarsolutions.ir", "https://..."]}
+
+It is sent every run, even when no price moved: the service keeps a catalog only if it is newer, the read dates in it
+show installations that the prices were checked again, and a mirror that was down catches up on the next run.
 """
 
 from __future__ import annotations
@@ -42,7 +51,15 @@ from pricing_engine import load_seed_snapshot  # noqa: E402
 from pricing_engine.catalog import CatalogSnapshot  # noqa: E402
 from pricing_engine.models import CatalogItem  # noqa: E402
 from pricing_engine.size_table import size_table  # noqa: E402
-from provider_adapters import ADAPTERS, ManualPriceAdapter, ParseError, natural_key, plan_sync  # noqa: E402
+from provider_adapters import (  # noqa: E402
+    ADAPTERS,
+    ManualPriceAdapter,
+    ParseError,
+    build_feed,
+    natural_key,
+    plan_sync,
+    sign_feed,
+)
 
 STATE_SCHEMA = 1
 #: a price read longer ago than this is marked on the page, so nobody mistakes it for today's
@@ -168,6 +185,39 @@ def render(state: dict[str, Any], at: datetime) -> str:
     return json.dumps(table, ensure_ascii=False, separators=(",", ":")) + "\n"
 
 
+def _put(url: str, content: bytes, signature: str) -> str:
+    import httpx
+
+    r = httpx.put(url, content=content, timeout=60, headers={
+        "X-Catalog-Signature": signature, "Content-Type": "application/json", "User-Agent": "sarfeh-price-reader"})
+    if r.status_code >= 400:
+        raise RuntimeError(f"HTTP {r.status_code}: {r.text[:200]}")
+    return r.json().get("status", "?")
+
+
+def publish_catalog(state: dict[str, Any], at: datetime, config: dict[str, Any], state_dir: Path,
+                    send: Any = None) -> list[str]:
+    """Sign the whole catalog (each provider's last good rows; the seed's rows for providers never read live), keep a
+    copy beside the state file, and send it to each of the price service's mirrors. Returns a line per mirror."""
+    key = (state_dir / config["key_file"]).read_text(encoding="utf-8").strip()
+    read_on = {pid: p["read_on"] for pid, p in state["providers"].items()}
+    content = build_feed(snapshot_from(state, at).items, at, read_on)
+    signature = sign_feed(content, key)
+    out = state_dir / "catalog"
+    out.mkdir(exist_ok=True)
+    for name, data in (("catalog.json", content), ("catalog.json.sig", signature.encode())):
+        tmp = out / f"{name}.tmp"
+        tmp.write_bytes(data)
+        tmp.replace(out / name)
+    lines = []
+    for hub in config.get("hubs", []):
+        try:
+            lines.append(f"{hub}: {(send or _put)(hub.rstrip('/') + '/v1/prices', content, signature)}")
+        except Exception as exc:  # noqa: BLE001 - one mirror down must not stop the others or the table
+            lines.append(f"{hub}: failed ({type(exc).__name__}: {str(exc)[:200]})")
+    return lines
+
+
 def _print_report(reports: list[dict[str, Any]]) -> None:
     for r in reports:
         mark = "applied" if r["applied"] else "kept last good rows"
@@ -214,7 +264,8 @@ def main() -> int:
             if posted:
                 print(f"posted {posted} price change(s)")
         price_feed.save(feed_path, feed)
-    text = render(state, datetime.now(UTC))
+    now = datetime.now(UTC)
+    text = render(state, now)
     args.out.parent.mkdir(parents=True, exist_ok=True)
     tmp = args.out.with_suffix(".tmp")
     tmp.write_text(text, encoding="utf-8", newline="\n")
@@ -225,6 +276,10 @@ def main() -> int:
     tmp.write_text(price_feed.published(feed, providers), encoding="utf-8", newline="\n")
     tmp.replace(changes)
     print(f"wrote {args.out} ({len(text.encode()) // 1024} KB)")
+    publish = args.state.with_name("publish.json")
+    if publish.exists():
+        for line in publish_catalog(state, now, json.loads(publish.read_text(encoding="utf-8")), args.state.parent):
+            print(f"published to {line}")
     return 0
 
 

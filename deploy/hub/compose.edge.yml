@@ -1,0 +1,10 @@
+# The mirror outside Iran sits behind that server's edge nginx (mn2-nginx), which reaches it as sarfeh-hub:8090 on
+# infrastructure_default (edge.conf). Used through COMPOSE_FILE=compose.yml:compose.edge.yml in .env.
+services:
+  hub:
+    networks: [default, edge]
+
+networks:
+  edge:
+    external: true
+    name: infrastructure_default

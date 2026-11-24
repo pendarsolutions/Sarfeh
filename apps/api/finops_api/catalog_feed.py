@@ -15,7 +15,7 @@ from provider_adapters import FeedAdapter, FeedError, build_feed, read_feed, sig
 from provider_adapters.base import RawCatalog
 
 from .alerts import notify, sync_alert
-from .catalog_store import current_versions, row_to_item, run_provider_sync
+from .catalog_store import approve_quarantined, current_versions, row_to_item, run_provider_sync
 from .config import get_settings
 from .orm import PriceSyncRun, ProviderRow
 
@@ -53,9 +53,16 @@ def _last_applied(db: Session, provider_id: str) -> datetime | None:
     return datetime.fromisoformat(stamp) if stamp else None
 
 
+REVIEWED = "the catalog's publisher, before signing it"
+
+
 def apply_feed(db: Session, content: bytes, signature: str, public_key: str) -> dict[str, str]:
-    """Verified rows go through the normal guardrails, per provider. An older feed is ignored, so nobody can roll
-    prices back by replaying a validly signed old file."""
+    """Verified rows go through the normal sync, per provider. An older feed is ignored, so nobody can roll prices
+    back by replaying a validly signed old file.
+
+    A move large enough for the guardrails to hold is applied anyway, marked as reviewed: a publisher signs only
+    prices that passed its own guardrails or that a person approved there (publish() takes the applied versions,
+    never held ones), so holding it again would only make every installation approve the same change."""
     generated_at, by_provider = read_feed(content, signature, public_key)
     now = datetime.now(UTC)
     known = {p.id for p in db.scalars(select(ProviderRow))}
@@ -74,6 +81,8 @@ def apply_feed(db: Session, content: bytes, signature: str, public_key: str) -> 
         run = run_provider_sync(db, provider_id, triggered_by=TRIGGER, raw=raw, adapter=FeedAdapter(provider_id, current, rows))
         run.summary = {**(run.summary or {}), "feed_generated_at": generated_at.isoformat()}
         db.commit()
+        if run.status == "quarantined" and run.pending_items:
+            approve_quarantined(db, run, reviewer=REVIEWED)
         sync_alert(db, run)
         out[provider_id] = run.status
     return out

@@ -9,6 +9,7 @@ import { providerColor } from "../lib/viz";
 import { Badge, Card, Date_, Drawer, ErrorBox, FreshnessBadge, Loading, Money, Num, StatusChip } from "../components/ui";
 import { Initial, Rec, RecList, ServiceIcon } from "../components/records";
 import { Icon } from "../components/Icon";
+import { PriceServiceCard } from "../components/PriceService";
 
 /** A price update's outcome in words; an unlisted status is shown as the server wrote it. */
 const SYNC_LABEL: Record<string, TKey> = {
@@ -308,6 +309,7 @@ export function CatalogPage() {
   return (
     <div className="stack">
       <h1>{t("navCatalog")}</h1>
+      <PriceServiceCard />
       <Card title={t("providers")}>{providers.isLoading ? <Loading /> : providers.error ? <ErrorBox error={providers.error} /> : <ProviderCards providers={providers.data ?? []} />}</Card>
 
       <Card

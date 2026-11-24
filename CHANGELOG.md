@@ -5,6 +5,28 @@ and versions follow [Semantic Versioning](https://semver.org/). Until 1.0, a min
 
 ## [Unreleased]
 
+### Changed
+
+- **Prices come from Sarfeh's price service.** An installation no longer reads the providers' sites itself: Pendar
+  reads them twice a day, signs the catalog and publishes it on two mirrors (in Iran and outside). The installation
+  takes a token when it's installed, checks every hour, tells admins when new prices are out (dashboard, email,
+  Bale), and applies them when an admin updates (Catalog → Update prices, or `sudo sarfeh prices update`); with
+  `PRICE_AUTO_UPDATE=true`, at once. Every catalog is checked against Pendar's key built into Sarfeh. A release
+  carries the newest catalog, applied at the first start. `PRICE_SOURCE=scrape` keeps the old way
+  (docs/price-service.md).
+- A signed catalog's price move that the guardrails would hold is applied as reviewed by its publisher, instead of
+  waiting for every installation's admin to approve the same change.
+
+### Added
+
+- `sudo sarfeh prices [status | check | update]`, and a Prices line in `sudo sarfeh status`.
+- The central service (`apps/relay`) serves the price catalog: tokens that work on both mirrors, per-installation
+  and per-address limits, and only newer catalogs signed with Pendar's key are kept (deploy/hub).
+
+### Fixed
+
+- Approving a held price update failed: the held rows were stored with a computed field the catalog refused.
+
 ## [0.5.0] — 2026-11-24
 
 What users of the price page asked for: the conditions behind each figure, a record of price changes, and what can

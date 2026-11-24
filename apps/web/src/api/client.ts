@@ -26,6 +26,8 @@ import type {
   Budgets,
   Team,
   SyncRun,
+  PriceServiceStatus,
+  PriceUpdateResult,
 } from "./types";
 
 const TOKEN_KEY = "finops.session";
@@ -205,6 +207,9 @@ export const api = {
   syncRuns: () => get<SyncRun[]>(`${V}/admin/sync-runs`),
   syncProvider: (pid: string) => post<SyncRun | { queued: boolean; task_id: string }>(`${V}/admin/providers/${pid}/sync`),
   approveRun: (runId: string) => post<SyncRun>(`${V}/admin/sync-runs/${runId}/approve`),
+  priceService: () => get<PriceServiceStatus>(`${V}/prices/service`),
+  checkPrices: () => post<PriceServiceStatus>(`${V}/admin/prices/check`),
+  updatePrices: () => post<PriceUpdateResult>(`${V}/admin/prices/update`),
 
   members: () => get<Member[]>(`${V}/members`),
   addMember: (b: { email: string; password: string; name: string; role: string }) => post<Member>(`${V}/members`, b),

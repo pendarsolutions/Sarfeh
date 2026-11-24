@@ -71,3 +71,40 @@ def test_a_sharp_move_waits_for_approval(refresh_prices, tmp_path):
 
     approved = refresh_prices.import_file(state, path, approve={"arvancloud"})
     assert approved["applied"] and "arvancloud" in state["providers"]
+
+
+def test_each_run_signs_the_whole_catalog_and_sends_it_to_every_mirror(refresh_prices, tmp_path):
+    """Installations update from Sarfeh's price service: what the reader publishes there is the whole catalog, signed,
+    with when each provider was read. A mirror that can't be reached doesn't stop the others."""
+    from provider_adapters import generate_signing_key, read_feed
+
+    private, public = generate_signing_key()
+    (tmp_path / "catalog-signing-key").write_text(private + "\n")
+    state = {"schema": 1, "providers": {}}
+    refresh_prices.import_file(state, FILE, approve=set())
+    sent = []
+
+    def send(url, content, signature):
+        if "down" in url:
+            raise ConnectionError("no route")
+        sent.append((url, content, signature))
+        return "stored"
+
+    config = {"key_file": "catalog-signing-key", "hubs": ["https://ir.example", "https://down.example"]}
+    at = datetime(2026, 11, 24, 15, 15, tzinfo=UTC)
+    lines = refresh_prices.publish_catalog(state, at, config, tmp_path, send=send)
+
+    assert lines[0] == "https://ir.example: stored" and lines[1].startswith("https://down.example: failed")
+    url, content, signature = sent[0]
+    assert url == "https://ir.example/v1/prices"
+    generated_at, rows = read_feed(content, signature, public)
+    assert generated_at == at
+    assert len(rows["arvancloud"]) == 50 and "abrha" in rows  # providers never read live come from the seed
+    data = json.loads(content)
+    assert data["providers"]["arvancloud"]["read_on"] == state["providers"]["arvancloud"]["read_on"]
+    assert "read_on" not in data["providers"]["abrha"]
+    assert (tmp_path / "catalog" / "catalog.json").read_bytes() == content  # a copy stays beside the state file
+
+    # read again with the same prices: a new catalog, but the same digests, so installations aren't told "new prices"
+    again = json.loads(refresh_prices.build_feed(refresh_prices.snapshot_from(state, at).items, at.replace(hour=16)))
+    assert again["digest"] == data["digest"] and again["generated_at"] != data["generated_at"]

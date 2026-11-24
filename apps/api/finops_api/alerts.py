@@ -107,7 +107,7 @@ def sync_alert(db: Session, run: PriceSyncRun) -> None:
     elif run.status == "failed":
         if _previous_status(db, run) != "failed":
             notify(f"Price update failed: {pid}", f"{run.error}\nThe last known prices stay active.")
-    elif run.status in ("ok", "warning") and (changes := format_price_changes(run)):
+    elif run.status in ("ok", "warning", "applied_after_review") and (changes := format_price_changes(run)):
         moved = {c["sku"] for c in (run.summary or {}).get("changes", []) if c.get("kind") == "changed"}
         yours = [s.name for s in db.scalars(select(Server).where(Server.provider_id == pid, Server.sku.in_(moved)))]
         affected = f"\n\nYour servers on these plans: {', '.join(yours)}" if yours else ""

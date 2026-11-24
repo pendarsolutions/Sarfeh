@@ -4,6 +4,8 @@ case "$1" in
   api)
     python -m finops_api.cli migrate
     python -m finops_api.cli seed-pricing
+    # the prices that came with this release, when newer than the ones applied (never stops the start)
+    python -m finops_api.cli prices-bundled
     if [ "$FINOPS_ENV" = "dev" ]; then python -m finops_api.cli seed-demo-user; fi
     exec uvicorn finops_api.main:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips='*' \
       --workers "${API_WORKERS:-2}" --no-access-log

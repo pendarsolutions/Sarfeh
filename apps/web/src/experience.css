@@ -704,3 +704,13 @@
   gap: var(--spacing-2) var(--spacing-4);
   margin-block-end: var(--spacing-4);
 }
+
+/* New prices from Sarfeh's price service, for admins, above every page but the Catalog (components/PriceService). */
+.price-notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-2) var(--spacing-4);
+  margin-block-end: var(--spacing-4);
+}

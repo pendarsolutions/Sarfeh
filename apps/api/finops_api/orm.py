@@ -431,6 +431,29 @@ class RelayLink(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
 
 
+# --------------------------------------------------------------------------- Sarfeh's price service
+
+
+class PriceServiceState(Base):
+    """This installation and Sarfeh's price service (one row): its token, what the service last said, and which
+    catalog is applied here."""
+
+    __tablename__ = "price_service"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    token: Mapped[str | None] = mapped_column(String(200))
+    registered_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    #: the mirror that answered last; tried first next time
+    last_url: Mapped[str | None] = mapped_column(String(300))
+    checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    check_error: Mapped[str | None] = mapped_column(Text)
+    #: what the service says its newest catalog is: generated_at, digest, providers (digest, items, read_on)
+    latest: Mapped[dict[str, Any] | None] = mapped_column(JSONType)
+    #: the catalog applied here, the same fields, plus applied_at and by
+    applied: Mapped[dict[str, Any] | None] = mapped_column(JSONType)
+    #: the digest of the newest catalog people were told about, so each is announced once
+    notified_digest: Mapped[str | None] = mapped_column(String(64))
+
+
 # --------------------------------------------------------------------------- ops / security
 
 

@@ -173,6 +173,97 @@ def cmd_catalog_pull(_: argparse.Namespace) -> None:
         print(json.dumps(pull(db)))
 
 
+def _tehran(stamp: object) -> str:
+    from zoneinfo import ZoneInfo
+
+    if not stamp:
+        return "-"
+    when = stamp if isinstance(stamp, datetime) else datetime.fromisoformat(str(stamp))
+    return when.astimezone(ZoneInfo("Asia/Tehran")).strftime("%Y-%m-%d %H:%M")
+
+
+def _provider_names(db) -> dict[str, str]:
+    return {p.id: p.name_en for p in db.scalars(select(ProviderRow))}
+
+
+def _print_price_status(st: dict, names: dict[str, str]) -> None:
+    if st["source"] == "scrape":
+        print("Prices are read from the providers' pages by this server, twice a day (PRICE_SOURCE=scrape).")
+        return
+    if st["source"] == "catalog_url":
+        print(f"Prices come from your own signed catalog at {get_settings().catalog_url}, twice a day.")
+        return
+    print("Prices come from Sarfeh's price service" + (f" ({st['mirror']})" if st.get("mirror") else "") +
+          (", applied as soon as they're out (PRICE_AUTO_UPDATE)." if st["auto_update"] else "."))
+    applied, latest = st.get("applied"), st.get("latest")
+    if applied:
+        print(f"In use here: published {_tehran(applied['generated_at'])}, applied {_tehran(applied['applied_at'])} "
+              f"({applied['by']})")
+    if latest:
+        print(f"Newest:      published {_tehran(latest['generated_at'])}, providers last read {_tehran(latest['read_on'])}")
+    print(f"Last check:  {_tehran(st.get('checked_at'))} (Tehran time)" + (f"; it failed: {st['error']}" if st.get("error") else ""))
+    if st["update_available"]:
+        changed = ", ".join(names.get(p, p) for p in st.get("changed") or [])
+        print(f"New prices are out{' for ' + changed if changed else ''}. Update with: sudo sarfeh prices update")
+    elif latest:
+        print("Up to date.")
+
+
+def cmd_prices_status(args: argparse.Namespace) -> None:
+    from .price_service import status
+
+    with SessionLocal() as db:
+        st, names = status(db), _provider_names(db)
+    if args.json:
+        print(json.dumps(st, default=str, ensure_ascii=False))
+    else:
+        _print_price_status(st, names)
+
+
+def cmd_prices_check(args: argparse.Namespace) -> None:
+    from .price_service import check
+
+    if not get_settings().uses_price_service:
+        sys.exit("this installation doesn't take its prices from Sarfeh's price service (PRICE_SOURCE)")
+    with SessionLocal() as db:
+        st, names = check(db), _provider_names(db)
+    if args.json:
+        print(json.dumps(st, default=str, ensure_ascii=False))
+    else:
+        _print_price_status(st, names)
+    if st.get("error") and not st.get("latest"):
+        sys.exit(1)
+
+
+def cmd_prices_update(_: argparse.Namespace) -> None:
+    from provider_adapters import FeedError
+
+    from .price_service import PriceServiceError, update
+
+    if not get_settings().uses_price_service:
+        sys.exit("this installation doesn't take its prices from Sarfeh's price service (PRICE_SOURCE)")
+    with SessionLocal() as db:
+        try:
+            out = update(db, by="command line")
+        except (PriceServiceError, FeedError) as exc:
+            sys.exit(f"prices weren't updated: {exc}")
+        names = _provider_names(db)
+    changed = ", ".join(names.get(p, p) for p in out["changed"])
+    print(f"Prices published {_tehran(out['generated_at'])} (Tehran time) are in use now." +
+          (f" Changed: {changed}." if changed else " No price changed."))
+
+
+def cmd_prices_bundled(_: argparse.Namespace) -> None:
+    """At every start: the catalog that came with this release, if it's newer. Never stops the start."""
+    from .price_service import apply_bundled
+
+    try:
+        with SessionLocal() as db:
+            print(f"bundled prices: {apply_bundled(db)}")
+    except Exception as exc:  # noqa: BLE001 - the seed's prices are still there; the hourly check catches up
+        print(f"bundled prices not applied: {type(exc).__name__}: {exc}", file=sys.stderr)
+
+
 def cmd_collect_servers(_: argparse.Namespace) -> None:
     from .fleet_service import collect_all
 
@@ -226,6 +317,16 @@ def main() -> None:
     cp.add_argument("--out")
     cp.set_defaults(fn=cmd_catalog_publish)
     sub.add_parser("catalog-pull").set_defaults(fn=cmd_catalog_pull)
+    ps = sub.add_parser("prices-status", help="where prices come from, and whether new ones are out")
+    ps.add_argument("--json", action="store_true")
+    ps.set_defaults(fn=cmd_prices_status)
+    pc = sub.add_parser("prices-check", help="ask Sarfeh's price service now whether new prices are out")
+    pc.add_argument("--json", action="store_true")
+    pc.set_defaults(fn=cmd_prices_check)
+    sub.add_parser("prices-update", help="apply the newest prices from Sarfeh's price service").set_defaults(
+        fn=cmd_prices_update)
+    sub.add_parser("prices-bundled", help="apply the prices that came with this release, if newer").set_defaults(
+        fn=cmd_prices_bundled)
     sub.add_parser("purge-uploads").set_defaults(fn=cmd_purge_uploads)
     args = ap.parse_args()
     args.fn(args)

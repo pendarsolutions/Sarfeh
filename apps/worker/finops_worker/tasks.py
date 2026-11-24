@@ -1,5 +1,5 @@
-"""Celery worker: twice-daily provider price sync (with guardrails), server collection, the monthly cost
-snapshot, and invoice retention purge.
+"""Celery worker: prices (an hourly look at Sarfeh's price service, or the providers read here twice a day), server
+collection, the monthly cost snapshot, and invoice retention purge.
 
 Run:  celery -A finops_worker.tasks worker -B --loglevel=INFO
 """
@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import logging
 import os
+import random
 
 from celery import Celery
 from celery.schedules import crontab
@@ -33,7 +34,13 @@ app.conf.update(
     task_acks_late=True,
     worker_prefetch_multiplier=1,
     beat_schedule={
+        # reads the providers here, when this installation doesn't take its prices from Sarfeh's price service
         "price-sync": {"task": "finops_worker.tasks.sync_all", "schedule": crontab(hour="3,15", minute=15)},
+        # Sarfeh's price service: has it new prices? At a minute of this installation's own, so they don't all ask
+        # at once
+        "price-check": {"task": "finops_worker.tasks.check_prices",
+                        "schedule": crontab(minute=random.Random(os.environ.get("HOSTNAME")).randrange(60)),
+                        "options": {"expires": 1800}},
         "collect-servers": {"task": "finops_worker.tasks.collect_servers", "schedule": crontab(minute="*/5"),
                             "options": {"expires": 240}},
         "server-maintenance": {"task": "finops_worker.tasks.server_maintenance", "schedule": crontab(hour=9, minute=0)},
@@ -62,15 +69,29 @@ def sync_provider(provider_id: str, triggered_by: str = "schedule") -> dict:
 
 @app.task(name="finops_worker.tasks.sync_all")
 def sync_all() -> list[dict]:
-    if get_settings().catalog_url:
+    s = get_settings()
+    if s.catalog_url:
         with SessionLocal() as db:
             return [{"catalog": pull(db)}]
+    if s.uses_price_service:
+        return []  # check_prices brings them
     with SessionLocal() as db:
         ids = [p.id for p in db.scalars(select(ProviderRow))]
     results = [sync_provider(pid, "schedule") for pid in ids]
     with SessionLocal() as db:
         publish_if_configured(db)
     return results
+
+
+@app.task(name="finops_worker.tasks.check_prices")
+def check_prices() -> dict:
+    if not get_settings().uses_price_service:
+        return {}
+    from finops_api.price_service import check
+
+    with SessionLocal() as db:
+        st = check(db)
+    return {"update_available": st["update_available"], "error": st.get("error")}
 
 
 @app.task(name="finops_worker.tasks.purge_uploads")

@@ -13,7 +13,7 @@ from fastapi.responses import JSONResponse
 from . import demo
 from .config import get_settings
 from .platform import configure_logging
-from .routers import analysis, auth, bale, catalog, integrations, inventories, owners, servers, spend
+from .routers import analysis, auth, bale, catalog, integrations, inventories, owners, prices, servers, spend
 
 # Money must never become a binary float on the wire: encode every Decimal as an exact string.
 fastapi.encoders.ENCODERS_BY_TYPE[Decimal] = lambda d: format(d.normalize(), "f")
@@ -49,7 +49,7 @@ def create_app() -> FastAPI:
         return response
 
     for r in (auth.router, catalog.router, inventories.router, analysis.router, integrations.router, servers.router,
-              spend.router, owners.router, bale.router):
+              spend.router, owners.router, bale.router, prices.router):
         app.include_router(r)
     return app
 

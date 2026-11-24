@@ -50,7 +50,9 @@ Set up
   test-alerts [--to EMAIL]   Send a test message through each alert channel that's set up
 
 Run
-  status                     What's running, the version, the address, backups and alerts
+  status                     What's running, the version, the address, backups, alerts and prices
+  prices [status|check|update]
+                             Where prices come from and whether new ones are out; ask now; start using them
   doctor                     Check everything this installation needs, and say how to fix what's wrong
   logs [-f] [--tail N] [SERVICE...]
                              Recent logs (services: $SERVICES)
@@ -232,8 +234,11 @@ FINOPS_JWT_TTL_MINUTES|int|How long a sign-in lasts (default 720)
 FINOPS_LOGIN_RATE_LIMIT_PER_MINUTE|int|Sign-in attempts allowed per address per minute (default 10)
 FINOPS_DEMO_MODE|bool|A public read-only demo with sample data: no sign-in, no changes (only on its own installation)
 FINOPS_COLLECTOR_SOURCE_IP|ip|Server keys then only work from this address
-FINOPS_CATALOG_URL|url|Use a shared signed price catalog instead of scraping
-FINOPS_CATALOG_PUBLIC_KEY|text|The shared catalog's public key
+FINOPS_PRICE_SOURCE|choice:sarfeh/scrape|Where prices come from: sarfeh, Sarfeh's price service (default); scrape, read here from the providers' pages
+FINOPS_PRICE_SERVICE_URLS|text|The price service's mirrors, comma-separated (default: Pendar's, in Iran and outside)
+FINOPS_PRICE_AUTO_UPDATE|bool|Use new prices from the price service as soon as they're out (default false: an admin updates)
+FINOPS_CATALOG_URL|url|A signed price catalog of your own, instead of Sarfeh's price service
+FINOPS_CATALOG_PUBLIC_KEY|text|That catalog's public key (default: Pendar's)
 FINOPS_CATALOG_PUBLISH_DIR|text|Publish a signed catalog: /app/var/catalog
 FINOPS_CATALOG_SIGNING_KEY|secret|Key that signs the published catalog
 FINOPS_DAILY_BACKUP|bool|Back up every night at 03:30, keeping 14 (default true)
@@ -615,7 +620,20 @@ cmd_setup() {
     die "couldn't start. If Docker Hub isn't reachable, use a registry mirror (install.sh --registry-mirror URL) or --bundle"
   wait_healthy
   restart_caddy
+  take_price_token
   summary "$fresh"
+}
+
+# Sarfeh's price service: this installation takes its token now, and looks whether newer prices than the ones that
+# came with this version are out. Nothing stops on it: without a way out, the hourly check tries again.
+take_price_token() {
+  case "$(env_get FINOPS_PRICE_SOURCE)" in scrape) return 0 ;; esac
+  [ -z "$(env_get FINOPS_CATALOG_URL)" ] || return 0
+  if compose exec -T api python -m finops_api.cli prices-check >/dev/null 2>&1; then
+    say "Prices: connected to Sarfeh's price service (see: sudo sarfeh prices)"
+  else
+    warn "Sarfeh's price service couldn't be reached. The prices that came with this version are in use; it tries again every hour."
+  fi
 }
 
 summary() {
@@ -770,6 +788,17 @@ cmd_status() {
   if [ -n "$(env_get FINOPS_SMTP_HOST)" ]; then echo "Email:    $(env_get FINOPS_SMTP_HOST), alerts to $(env_get FINOPS_ALERT_EMAIL_TO)"
   else echo "Email:    not set up (sudo sarfeh config set SMTP_HOST=... ALERT_EMAIL_TO=...)"; fi
   if [ -n "$(env_get FINOPS_BALE_BOT_TOKEN)" ]; then echo "Bale:     chat $(env_get FINOPS_BALE_CHAT_ID)"; else echo "Bale:     not set up"; fi
+  echo
+  compose exec -T api python -m finops_api.cli prices-status 2>/dev/null || echo "Prices:   unknown while the api isn't running"
+}
+
+cmd_prices() {
+  local sub="${1:-status}"
+  [ $# -eq 0 ] || shift
+  case "$sub" in
+    status | check | update) cmd_exec_api "prices-$sub" "$@" ;;
+    *) die "usage: sudo sarfeh prices [status | check | update]" ;;
+  esac
 }
 
 cmd_doctor() {
@@ -1002,6 +1031,7 @@ case "$CMD" in
   restore) need_root; need_installed; [ $# -ge 1 ] || die "usage: sarfeh restore FILE [--yes]"; exec "$DIR/backup.sh" --restore "$@" ;;
   reset-password) cmd_exec_api reset-password "$@" ;;
   test-alerts) cmd_exec_api test-alerts "$@" ;;
+  prices) cmd_prices "$@" ;;
   compose) need_root; need_installed; compose "$@" ;;
   version | --version | -V) cmd_version ;;
   uninstall) cmd_uninstall "$@" ;;

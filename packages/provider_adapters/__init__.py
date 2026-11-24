@@ -11,7 +11,7 @@ from .base import (
     natural_key,
 )
 from .chabokan import ChabokanAdapter
-from .feed import FeedAdapter, FeedError, build_feed, generate_signing_key, read_feed, sign_feed
+from .feed import FeedAdapter, FeedError, build_feed, feed_info, generate_signing_key, read_feed, sign_feed
 from .iranserver import IranServerAdapter
 from .liara import LiaraAdapter
 from .manual import ManualPriceAdapter
@@ -45,5 +45,5 @@ def get_adapter(provider_id: str):
 __all__ = [
     "ADAPTERS", "SECOND_WAVE_STATUS", "AdapterHealth", "ArvanCloudAdapter", "ChabokanAdapter", "FeedAdapter", "FeedError", "InventoryConnector", "IranServerAdapter",
     "LiaraAdapter", "ManualPriceAdapter", "MobinHostAdapter", "ParsPackAdapter", "ParseError", "ProviderAdapter", "RawCatalog", "ServerIrAdapter", "SourceBlockedError",
-    "SyncPlan", "build_feed", "generate_signing_key", "get_adapter", "natural_key", "plan_sync", "read_feed", "sign_feed",
+    "SyncPlan", "build_feed", "feed_info", "generate_signing_key", "get_adapter", "natural_key", "plan_sync", "read_feed", "sign_feed",
 ]

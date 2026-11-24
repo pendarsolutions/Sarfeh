@@ -1,9 +1,10 @@
-"""The relay service: the installation API, and the loop that reads the Bale bot's messages.
+"""Sarfeh's central service, which Pendar runs for every installation: the price service (prices.py), and the shared
+Bale bot's relay with the loop that reads the bot's messages (only when it has a bot token).
 
-    FINOPS_RELAY_BOT_TOKEN=...  FINOPS_RELAY_DB=/data/relay.db  uvicorn finops_relay.main:app
+    FINOPS_HUB_PUBLIC_KEY=...  FINOPS_HUB_TOKEN_SECRET=...  FINOPS_RELAY_BOT_TOKEN=...  uvicorn finops_relay.main:app
 
-Installations authenticate with their id and secret (Authorization: Bearer <id>:<secret>). They may only send to
-chats linked to them, so the relay can't be used to message anyone else.
+For the relay, installations authenticate with their id and secret (Authorization: Bearer <id>:<secret>). They may
+only send to chats linked to them, so the relay can't be used to message anyone else.
 """
 
 from __future__ import annotations
@@ -12,41 +13,26 @@ import asyncio
 import contextlib
 import logging
 import os
-import time
-from collections import defaultdict, deque
+from collections import defaultdict
 from collections.abc import AsyncIterator
 
 import httpx
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from pydantic import BaseModel, Field
 
+from . import prices
+from .limits import Limiter
 from .store import CODE_TTL, Store
 
 log = logging.getLogger("finops.relay")
 BALE_API = os.environ.get("FINOPS_RELAY_BALE_API", "https://tapi.bale.ai")
 MAX_TEXT = 4000
 
-HELP = ("سلام! این ربات گزارش‌های FinOps agent را می‌فرستد.\n"
+HELP = ("سلام! این ربات گزارش‌های صرفه را می‌فرستد.\n"
         "برای وصل شدن، در تنظیمات داشبورد خودتان «گرفتن کد اتصال» را بزنید و کد را این‌طور بفرستید:\n"
         "/start کد\n\n"
-        "Hello! This bot sends FinOps agent reports. To connect, choose “Get a link code” in your dashboard's "
+        "Hello! This bot sends Sarfeh reports. To connect, choose “Get a link code” in your dashboard's "
         "Settings and send: /start CODE")
-
-
-class Limiter:
-    """At most `n` events per `per` seconds for each key."""
-
-    def __init__(self, n: int, per: float):
-        self.n, self.per, self.events = n, per, defaultdict(deque)
-
-    def allow(self, key: str) -> bool:
-        q, now = self.events[key], time.monotonic()
-        while q and now - q[0] > self.per:
-            q.popleft()
-        if len(q) >= self.n:
-            return False
-        q.append(now)
-        return True
 
 
 class Bale:
@@ -155,9 +141,10 @@ async def bale_loop(s: State) -> None:
 
 
 @contextlib.asynccontextmanager
-async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     global state
     state = State()
+    app.state.hub = prices.Hub.from_env()
     if state.bale:
         with contextlib.suppress(Exception):
             state.username = (await state.bale.call("getMe")).get("username")
@@ -169,7 +156,8 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
             task.cancel()
 
 
-app = FastAPI(title="FinOps agent relay", lifespan=lifespan, docs_url=None, redoc_url=None)
+app = FastAPI(title="Sarfeh service", lifespan=lifespan, docs_url=None, redoc_url=None)
+app.include_router(prices.router)
 
 
 def install(authorization: str = Header(default="")) -> str:
@@ -181,8 +169,10 @@ def install(authorization: str = Header(default="")) -> str:
 
 
 @app.get("/health")
-def health():
-    return {"status": "ok", "bot": st().bale is not None, "bot_username": st().username}
+def health(request: Request):
+    meta = request.app.state.hub.meta
+    return {"status": "ok", "bot": st().bale is not None, "bot_username": st().username,
+            "prices": meta["generated_at"] if meta else None}
 
 
 class RegisterIn(BaseModel):

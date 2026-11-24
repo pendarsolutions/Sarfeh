@@ -1,0 +1,55 @@
+# Sarfeh's central service, on each of Pendar's two mirrors: the price service every installation updates from (and
+# the shared Bale bot's relay, if it's given a bot token). Not part of an installation. See deploy/hub/README.md.
+#
+#   cd ~/sarfeh-hub && docker compose up -d
+#
+# .env next to this file: FINOPS_HUB_PUBLIC_KEY, FINOPS_HUB_TOKEN_SECRET (the same on both mirrors), and
+#   in Iran, where Caddy gets the certificate:   COMPOSE_PROFILES=tls  HUB_DOMAIN=sarfeh-api-ir.pendarsolutions.ir
+#   outside, behind the server's edge nginx:     COMPOSE_FILE=compose.yml:compose.edge.yml
+#
+# It runs from the app image (on GitHub's registry, which a server in Iran can reach when Docker Hub can't), with the
+# service's code from the checkout in ./src mounted over the image's copy, so `git pull` and a restart update it.
+name: sarfeh-hub
+
+services:
+  hub:
+    image: ghcr.io/pendarsolutions/finops-agent-app:${FINOPS_VERSION:-0.5.0}
+    container_name: sarfeh-hub
+    command: ["uvicorn", "finops_relay.main:app", "--host", "0.0.0.0", "--port", "8090", "--no-access-log"]
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      FINOPS_HUB_DATA: /app/var/prices
+      FINOPS_RELAY_DB: /app/var/relay.db
+      PYTHONPATH: /app/apps/relay
+    volumes:
+      - ./src/apps/relay:/app/apps/relay:ro
+      - hub-data:/app/var
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8090/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    mem_limit: 256m
+
+  # Only where nothing else serves ports 80 and 443 (the mirror in Iran): COMPOSE_PROFILES=tls in .env
+  caddy:
+    profiles: [tls]
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on: [hub]
+    environment:
+      HUB_DOMAIN: ${HUB_DOMAIN:?set HUB_DOMAIN in .env}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    mem_limit: 128m
+
+volumes:
+  hub-data:
+  caddy-data:
+  caddy-config:

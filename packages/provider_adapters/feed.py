@@ -1,12 +1,18 @@
-"""Signed price catalog: one installation scrapes, signs and publishes; the others download and verify.
+"""Signed price catalog: one reader (Pendar's, for Sarfeh's price service, or an installation of your own) reads the
+providers, signs and publishes; installations download and verify.
 
 Signing is Ed25519 over the exact file bytes, so a mirror or a compromised host can't change a price. Applying a
-feed still goes through the normal guardrails and versioning.
+feed still goes through the normal versioning.
+
+Besides the rows, a feed says what is in it: a digest of all rows and one per provider, each leaving out the read date
+(which changes on every read), so an installation can tell a catalog with new prices from one that only says the same
+prices were read again; and, per provider, when its prices were last read.
 """
 
 from __future__ import annotations
 
 import base64
+import hashlib
 import json
 from datetime import datetime
 from typing import Any
@@ -21,6 +27,8 @@ from .base import AdapterHealth, ParseError, RawCatalog
 
 SCHEMA = 1
 EXCLUDED = {"price_rial", "version_id", "valid_from", "valid_to"}
+#: changes on every read even when nothing else about the row did, so it's left out of the digests
+VOLATILE = {"source_retrieved_at"}
 
 
 class FeedError(ValueError):
@@ -35,10 +43,31 @@ def generate_signing_key() -> tuple[str, str]:
     return base64.b64encode(private).decode(), base64.b64encode(public).decode()
 
 
-def build_feed(items: list[CatalogItem], generated_at: datetime) -> bytes:
+def content_digest(rows: list[dict[str, Any]]) -> str:
+    """The same rows at the same prices give the same digest, whenever they were read."""
+    kept = [{k: v for k, v in r.items() if k not in VOLATILE} for r in rows]
+    return hashlib.sha256(json.dumps(kept, ensure_ascii=False, sort_keys=True).encode()).hexdigest()
+
+
+def build_feed(items: list[CatalogItem], generated_at: datetime, read_on: dict[str, str] | None = None) -> bytes:
+    """`read_on`: per provider, when its prices were last read (providers without one were never read live)."""
     rows = [i.model_dump(mode="json", exclude=EXCLUDED) for i in sorted(items, key=lambda i: i.id)]
-    return json.dumps({"schema": SCHEMA, "generated_at": generated_at.isoformat(), "items": rows},
-                      ensure_ascii=False, sort_keys=True).encode()
+    by_provider: dict[str, list[dict[str, Any]]] = {}
+    for r in rows:
+        by_provider.setdefault(r["provider_id"], []).append(r)
+    providers = {pid: {"digest": content_digest(rs), "items": len(rs),
+                       **({"read_on": read_on[pid]} if read_on and pid in read_on else {})}
+                 for pid, rs in sorted(by_provider.items())}
+    return json.dumps({"schema": SCHEMA, "generated_at": generated_at.isoformat(), "digest": content_digest(rows),
+                       "providers": providers, "items": rows}, ensure_ascii=False, sort_keys=True).encode()
+
+
+def feed_info(content: bytes) -> dict[str, Any]:
+    """What a feed says about itself, read without checking the signature: use it only on a feed already checked
+    (or to show what a file claims)."""
+    data = json.loads(content)
+    return {"generated_at": data.get("generated_at"), "digest": data.get("digest"),
+            "providers": data.get("providers") or {}, "items": len(data.get("items", []))}
 
 
 def sign_feed(content: bytes, private_key_b64: str) -> str:

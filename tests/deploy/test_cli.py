@@ -335,6 +335,25 @@ def test_status_and_doctor(box):
     assert r.returncode == 1 and "worker isn't running" in r.stdout and "9.9.9 is out" in r.stdout
 
 
+def test_prices_from_sarfehs_price_service(box):
+    """Setup takes the installation's token (by checking once); `prices` runs the app's commands; an installation
+    that reads the prices itself doesn't call the service at all."""
+    r = box.ok("setup", "--yes")
+    assert "docker compose exec -T api python -m finops_api.cli prices-check" in box.calls()
+    assert "connected to Sarfeh's price service" in r.stderr
+    for sub, cmd in (((), "prices-status"), (("check",), "prices-check"), (("update",), "prices-update")):
+        box.log.unlink()
+        box.ok("prices", *sub)
+        assert box.calls() == [f"docker compose exec -T api python -m finops_api.cli {cmd}"]
+    assert box.run("prices", "now").returncode == 1
+    box.ok("config", "set", "PRICE_SOURCE=scrape", "PRICE_AUTO_UPDATE=true")
+    assert box.env()["FINOPS_PRICE_SOURCE"] == "scrape"
+    assert box.run("config", "set", "PRICE_SOURCE=somewhere").returncode == 1
+    box.log.unlink()
+    box.ok("setup", "--yes")
+    assert not any("prices-check" in c for c in box.calls())
+
+
 def test_setup_links_sarfeh_and_the_old_name(box):
     # an installation that upgrades itself never runs install.sh again, so setup is what gives it the new name
     shutil.copy(box.cli, box.dir / "finops-agent")

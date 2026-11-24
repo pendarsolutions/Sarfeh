@@ -247,7 +247,8 @@ def approve_quarantined(db: Session, run: PriceSyncRun, reviewer: str) -> PriceS
     at = datetime.now(UTC)
     current = {natural_key(row_to_item(r)): r for r in current_versions(db, run.provider_id)}
     for data in run.pending_items:
-        item = CatalogItem.model_validate(data)
+        # held rows were stored with their computed fields (price_rial), which the model doesn't take back
+        item = CatalogItem.model_validate({k: v for k, v in data.items() if k in CatalogItem.model_fields})
         old = current.get(natural_key(item))
         if old is not None:
             old.valid_to = at
