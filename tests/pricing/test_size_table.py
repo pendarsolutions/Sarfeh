@@ -56,7 +56,9 @@ def test_two_cores_four_gb_and_fifty_gb_of_disk(snapshot):
     # Liara sells no 50 GB disk below its 4 vCPU plan, so its entry is bigger than the size asked for
     assert (by["liara"]["cpu"], by["liara"]["ram_gb"], by["liara"]["disk_gb"]) == ("4", "8", "80")
     assert by["liara"]["times_cheapest"] == "4.8"
-    assert missing == [{"provider_id": "abrha", "reason": "starting_price_only"}]
+    # HostIran sells a plan this size, but its traffic terms aren't published, so its price isn't exact
+    assert missing == [{"provider_id": "hostiran", "reason": "terms_not_stated", "terms": ["traffic_policy"]},
+                       {"provider_id": "abrha", "reason": "starting_price_only"}]
 
 
 def test_vat_is_beside_the_price_never_inside_it(snapshot):

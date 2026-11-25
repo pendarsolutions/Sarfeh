@@ -27,6 +27,7 @@ const PROVIDER_STRIP = [
   ["چابکان", "Chabokan"],
   ["پارس‌پک", "ParsPack"],
   ["مبین‌هاست", "MobinHost"],
+  ["هاست‌ایران", "HostIran"],
   ["ابرها", "Abrha"],
 ];
 

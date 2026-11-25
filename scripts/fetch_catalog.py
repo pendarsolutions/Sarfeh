@@ -71,6 +71,12 @@ def main() -> int:
     (OUT / "catalog.json.sig").write_text(signature + "\n", encoding="ascii")
     shutil.move(tmp, OUT / "catalog.json")
     info = feed_info(content)
+    from pricing_engine import load_seed_snapshot
+
+    lacking = sorted(set(load_seed_snapshot().providers) - set(info["providers"]))
+    if lacking:  # a new installation then has only the seed's rows for them until it updates
+        print(f"warning: the catalog has no rows for {', '.join(lacking)}; has the price reader published since "
+              "they were added?", file=sys.stderr)
     read = sorted(p["read_on"][:10] for p in info["providers"].values() if p.get("read_on"))
     print(json.dumps({"generated_at": info["generated_at"], "items": info["items"],
                       "providers_read": f"{read[0]} to {read[-1]}" if read else None}))

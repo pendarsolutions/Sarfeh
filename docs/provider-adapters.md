@@ -32,6 +32,7 @@ Adapters never invent values: an unstated field stays `None`; an unrecognised pa
 | Chabokan | `ChabokanAdapter` | /products/cloudserver/ | **live** | Reads plan objects embedded in the page, Iranian plans only. Prices had moved up from the seed on 2026-10-31 (NCO-small40-MHD 1,691,006 → 1,758,475). Multi-month prices are stored as attributes, never applied. |
 | ParsPack | `ParsPackAdapter` | /cloud-server | **live** | Reads the calculator table embedded in the page. Its own script charges disk + RAM + CPU per day, which reproduces the page's total exactly. Iranian datacenters and Linux prices only. If datacenters ever differ in price, the sync fails rather than guess. |
 | MobinHost | `MobinHostAdapter` | /economic-vps/, /iran-vds/ | **live** | Reads Iran plan cards from both pages and skips foreign cards. A price unit it doesn't recognise fails the sync. |
+| HostIran | — | /cloud-service/cloud/cloud-info (its price API) | seed only, for now | HostIran asked to be listed and gave us its price API, but the endpoint answers non-browser clients with ArvanCloud's browser check, not JSON. Until it's exempted, the 14 plans come from the table HostIran sent on 2026-11-25 (seed). The table doesn't state traffic terms, so the engine can't price a plan exactly and the price page says so (`terms_not_stated`). |
 | Abrha | — | — | seed only (discovery) | Only a starting price is public. |
 
 Fixtures: real pages saved on 2026-10-04 in `tests/fixtures/providers/*.html.gz`. CI never hits live

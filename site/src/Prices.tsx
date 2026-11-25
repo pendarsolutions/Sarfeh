@@ -45,7 +45,9 @@ interface Condition {
 }
 interface Missing {
   provider_id: string;
-  reason: "starting_price_only" | "nothing_this_size";
+  reason: "starting_price_only" | "nothing_this_size" | "terms_not_stated";
+  /** for terms_not_stated: which terms (traffic_policy, mostly) */
+  terms?: string[];
 }
 interface Size {
   cpu: number;
@@ -119,7 +121,11 @@ function conditionText(c: Condition, t: (k: Key) => string, lang: Lang): string 
   return null;
 }
 
-const MISSING: Record<Missing["reason"], Key> = { starting_price_only: "prMissingStart", nothing_this_size: "prMissingSize" };
+const MISSING: Record<Missing["reason"], Key> = {
+  starting_price_only: "prMissingStart",
+  nothing_this_size: "prMissingSize",
+  terms_not_stated: "prMissingTerms",
+};
 
 const uniq = (xs: number[]) => [...new Set(xs)].sort((a, b) => a - b);
 const fill = (s: string, vars: Record<string, string>) => s.replace(/\{(\w+)\}/g, (_, k: string) => vars[k] ?? "");

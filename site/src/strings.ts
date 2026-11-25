@@ -176,6 +176,7 @@ const S = {
   prOldTitle: ["بیش از {n} روز پیش خوانده شده و ممکن است عوض شده باشد", "Read over {n} days ago; it may have changed"],
   prMissingTitle: ["در این مقایسه نیستند", "Not in this comparison"],
   prMissingStart: ["فقط «شروع قیمت» را منتشر می‌کند، پس قیمت دقیقی برای مقایسه نیست.", "It publishes starting prices only, so there is no exact price to compare."],
+  prMissingTerms: ["پلن این اندازه را دارد، ولی شرایط ترافیکش اعلام نشده، پس قیمت دقیقش حساب نمی‌شود.", "It has a plan this size, but its traffic terms aren't published, so the price can't be worked out exactly."],
   prMissingSize: ["پلنی که این اندازه را پوشش دهد ندارد، یا قیمتش دقیق به دست نمی‌آید.", "It sells no plan that covers this size, or the plan can't be priced exactly."],
   prMethodTitle: ["این قیمت‌ها چطور به دست آمده‌اند", "How these prices are worked out"],
   prMethod1: [

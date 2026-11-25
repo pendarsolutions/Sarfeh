@@ -26,6 +26,8 @@ MEMORY_FOR = {1: (1, 2, 4), 2: (2, 4, 8), 4: (4, 8, 16), 8: (8, 16, 32), 16: (16
 DISKS_GB = (25, 50, 100, 200, 400)
 #: what every size is priced with: one public IPv4 and no traffic, since traffic terms differ too much to fold in
 WORKLOAD = {"public_ipv4": 1, "traffic_gb": 0, "country": "IR"}
+#: the hard constraint a plan fails when a term its price depends on is not published (data/seeds/equivalence_rules.json)
+PRICEABLE = "HC-PRICEABLE"
 #: traffic terms that come from how a provider prices, not from a plan's row
 TRAFFIC_BY_STRATEGY = {"component": "metered", "liara_plan": "metered", "daily_table": "not_published"}
 
@@ -132,6 +134,8 @@ def offers_for(snapshot: CatalogSnapshot, cpu: int, ram: int,
             missing.append({"provider_id": pid, "reason": "starting_price_only"})
             continue
         found: list[dict[str, Any]] = []
+        # terms a plan big enough for the size needs to be priced exactly, and the provider doesn't state
+        unstated: set[str] = set()
         if strategy == "component":
             storage = rules["storage_type_map"]["default"]
             for cls in rules["arvan_candidate_classes"]:
@@ -151,9 +155,14 @@ def offers_for(snapshot: CatalogSnapshot, cpu: int, ram: int,
                 c = compare_resource(src, cand, snapshot, ctx, candidate_row=row)
                 if c.passed_hard_constraints and c.candidate.status == PriceStatus.EXACT:
                     found.append(_offer(pid, "plan", c.candidate, size, pol, row=row))
+                elif all(k.passed for k in c.constraints if k.constraint_id != PRICEABLE):
+                    unstated.update(u.missing_field for u in c.candidate.unavailable)
         if found:
             offers.append(min(found, key=lambda o: (Decimal(o["monthly_toman"]), Decimal(o["cpu"]),
                                                     Decimal(o["ram_gb"]), Decimal(o["disk_gb"]), o["plan"] or "")))
+        elif unstated:
+            # it sells a plan this size, but a term its price depends on (traffic, mostly) isn't published
+            missing.append({"provider_id": pid, "reason": "terms_not_stated", "terms": sorted(unstated)})
         else:
             missing.append({"provider_id": pid, "reason": "nothing_this_size"})
     offers.sort(key=lambda o: (Decimal(o["monthly_toman"]), o["provider_id"]))

@@ -2,7 +2,7 @@
 
 import importlib.util
 import json
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
@@ -91,7 +91,7 @@ def test_each_run_signs_the_whole_catalog_and_sends_it_to_every_mirror(refresh_p
         return "stored"
 
     config = {"key_file": "catalog-signing-key", "hubs": ["https://ir.example", "https://down.example"]}
-    at = datetime(2026, 11, 24, 15, 15, tzinfo=UTC)
+    at = datetime.now(UTC)  # a catalog only holds rows already valid when it is signed
     lines = refresh_prices.publish_catalog(state, at, config, tmp_path, send=send)
 
     assert lines[0] == "https://ir.example: stored" and lines[1].startswith("https://down.example: failed")
@@ -106,5 +106,5 @@ def test_each_run_signs_the_whole_catalog_and_sends_it_to_every_mirror(refresh_p
     assert (tmp_path / "catalog" / "catalog.json").read_bytes() == content  # a copy stays beside the state file
 
     # read again with the same prices: a new catalog, but the same digests, so installations aren't told "new prices"
-    again = json.loads(refresh_prices.build_feed(refresh_prices.snapshot_from(state, at).items, at.replace(hour=16)))
+    again = json.loads(refresh_prices.build_feed(refresh_prices.snapshot_from(state, at).items, at + timedelta(hours=1)))
     assert again["digest"] == data["digest"] and again["generated_at"] != data["generated_at"]

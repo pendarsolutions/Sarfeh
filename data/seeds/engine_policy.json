@@ -84,6 +84,14 @@
       "setup_fee_note": "the price list mentions a setup fee equal to 7 days; a one-time fee isn't in this monthly figure.",
       "setup_fee_days": 7
     },
+    "hostiran": {
+      "strategy": "fixed_sku",
+      "exact_eligible": true,
+      "included_traffic_direction": "unspecified",
+      "overage_price_known": false,
+      "ipv4_included": "unverified",
+      "tax_rule": null
+    },
     "abrha": {
       "strategy": "discovery_only",
       "exact_eligible": false,

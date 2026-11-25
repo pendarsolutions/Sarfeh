@@ -26,7 +26,8 @@ PROVIDER_HINTS = {
     "arvancloud": ["arvancloud", "arvan", "آروان"], "liara": ["liara", "لیارا"],
     "serverir": ["server.ir", "سرور.آی‌آر", "سرور آی آر"], "iranserver": ["iranserver", "ایران سرور", "ایران‌سرور"],
     "chabokan": ["chabokan", "چابکان"], "parspack": ["parspack", "پارس پک", "پارس‌پک"],
-    "mobinhost": ["mobinhost", "مبین هاست", "مبین‌هاست"], "abrha": ["abrha", "ابرها"],
+    "mobinhost": ["mobinhost", "مبین هاست", "مبین‌هاست"], "hostiran": ["hostiran", "هاست ایران", "هاست‌ایران"],
+    "abrha": ["abrha", "ابرها"],
 }
 
 
