@@ -5,6 +5,21 @@ and versions follow [Semantic Versioning](https://semver.org/). Until 1.0, a min
 
 ## [Unreleased]
 
+## [0.6.1] — 2026-11-25
+
+### Added
+
+- **HostIran**, the first provider that asked to be listed: 14 cloud server plans (General Purpose, Memory Optimized
+  and CPU Optimized), from the plan table HostIran sent. Its traffic terms aren't published yet, so the engine
+  doesn't price the plans exactly; once they are, they arrive through Sarfeh's price service, without another
+  release. Its price API comes next, once it answers outside a browser.
+
+### Changed
+
+- The price page says when a provider sells a plan of the size asked for but hasn't published a term its price
+  depends on (traffic, mostly), instead of saying it has nothing that size.
+- The release carries the catalog of 25 November 2026, HostIran included.
+
 ## [0.6.0] — 2026-11-24
 
 One price catalog for every installation: read by Pendar, signed, and served from a mirror in Iran and one outside.

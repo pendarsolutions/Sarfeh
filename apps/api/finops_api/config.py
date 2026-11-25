@@ -8,7 +8,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 ROOT = Path(__file__).resolve().parents[3]
 #: scripts/bump-version.sh sets it
-SARFEH_VERSION = "0.6.0"
+SARFEH_VERSION = "0.6.1"
 
 #: the key Pendar's price reader signs Sarfeh's price catalog with; an installation trusts no other catalog
 SARFEH_CATALOG_PUBLIC_KEY = "FgZ6B1RBtESN+VYQYBxzc4N7dlQF8D96+ExCsIe4ZAw="
