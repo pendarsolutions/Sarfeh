@@ -46,7 +46,7 @@ def test_two_cores_four_gb_and_fifty_gb_of_disk(snapshot):
     offers, missing = offers_for(snapshot, 2, 4, 50)
     by = {o["provider_id"]: o for o in offers}
     assert [o["provider_id"] for o in offers] == ["mobinhost", "chabokan", "serverir", "parspack", "arvancloud",
-                                                  "liara", "iranserver"]
+                                                  "liara", "hostiran", "iranserver"]
     assert (by["mobinhost"]["plan"], by["mobinhost"]["monthly_toman"]) == ("IR-VPS-6GB", "995000")
     assert by["mobinhost"]["included_traffic_gb"] == "100" and by["mobinhost"]["traffic"] == "included_quota"
     # ArvanCloud has no plans: the size is built from its component prices, at its cheapest class
@@ -56,9 +56,12 @@ def test_two_cores_four_gb_and_fifty_gb_of_disk(snapshot):
     # Liara sells no 50 GB disk below its 4 vCPU plan, so its entry is bigger than the size asked for
     assert (by["liara"]["cpu"], by["liara"]["ram_gb"], by["liara"]["disk_gb"]) == ("4", "8", "80")
     assert by["liara"]["times_cheapest"] == "4.8"
-    # HostIran sells a plan this size, but its traffic terms aren't published, so its price isn't exact
-    assert missing == [{"provider_id": "hostiran", "reason": "terms_not_stated", "terms": ["traffic_policy"]},
-                       {"provider_id": "abrha", "reason": "starting_price_only"}]
+    # HostIran doesn't publish its traffic terms: the size has no traffic, so its plan is its price, and the page
+    # says what was left out
+    assert (by["hostiran"]["plan"], by["hostiran"]["monthly_toman"], by["hostiran"]["traffic"]) == (
+        "General Purpose 4", "4938000", "unknown")
+    assert {"id": "traffic_not_stated"} in by["hostiran"]["conditions"]
+    assert missing == [{"provider_id": "abrha", "reason": "starting_price_only"}]
 
 
 def test_vat_is_beside_the_price_never_inside_it(snapshot):
@@ -122,4 +125,6 @@ def test_the_published_file_matches_the_catalog():
     spec = importlib.util.spec_from_file_location("build_price_table", ROOT / "scripts" / "build_price_table.py")
     build = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(build)
-    assert build.OUT.read_text(encoding="utf-8") == build.render(), "run: python scripts/build_price_table.py"
+    # compared as a flag: pytest's diff of two ~300 KB lines takes minutes
+    same = build.OUT.read_text(encoding="utf-8") == build.render()
+    assert same, "run: python scripts/build_price_table.py"

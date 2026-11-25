@@ -78,7 +78,14 @@ interface ChangeEvent {
   at: string;
   provider_id: string;
   since: string | null;
+  /** read | file | added (a provider that joined the page) */
   source: string;
+  /** the date the provider itself puts on its prices, if it states one */
+  price_date?: string | null;
+  /** before this event: the provider's previous change, or since when the prices it replaced were on record */
+  previous?: string | null;
+  previous_kind?: "change" | "first_record" | null;
+  held_days?: number | null;
   counts: { changed: number; new: number; removed: number };
   /** which way the prices went, and by about how much, when they all went one way */
   direction: "up" | "down" | "mixed" | null;
@@ -115,6 +122,7 @@ const DISK_TYPE: Record<string, string> = { ssd: "SSD", hot_ssd: "SSD", nvme: "N
 /** A condition in the reader's language, or nothing for an id this page doesn't know yet. */
 function conditionText(c: Condition, t: (k: Key) => string, lang: Lang): string | null {
   if (c.id === "ipv4_assumed") return t("prCondIpv4Assumed");
+  if (c.id === "traffic_not_stated") return t("prCondTrafficNotStated");
   if (c.id === "ipv4_priced" && c.toman) return fill(t("prCondIpv4Priced"), { amount: formatWhole(c.toman, lang) });
   if (c.id === "thirty_day_plan") return t("prCondThirtyDay");
   if (c.id === "setup_fee" && c.days) return fill(t("prCondSetupFee"), { n: localizeDigits(String(c.days), lang) });
@@ -358,13 +366,17 @@ function EventCard({ e, changes }: { e: ChangeEvent; changes: Changes }) {
   const names = (list: ChangeRow[]) => list.map((r) => `\u2068${r.plan}\u2069`).join(lang === "fa" ? "، " : ", ");
   const listed = (count: number, list: ChangeRow[], allKey: Key, someKey: Key) =>
     count > list.length ? fill(t(someKey), { n: n(count), names: names(list) }) : fill(t(allKey), { names: names(list) });
-  // a read long after the one before it is not one day's news: say which read it is compared with
-  const gapDays = e.since ? (Date.parse(e.at.slice(0, 10)) - Date.parse(e.since)) / 86_400_000 : 0;
+  // what came before this change, so a change after two quiet months doesn't read like one day's news
+  const before =
+    e.previous && e.held_days != null
+      ? fill(t(e.previous_kind === "change" ? "prChPrevChange" : "prChPrevFirst"), { date: day(e.previous, lang), n: n(e.held_days) })
+      : null;
+  const added = e.source === "added";
   const notes = [
-    e.counts.new > 0 && listed(e.counts.new, e.new, "prChNewAll", "prChNewList"),
+    e.counts.new > 0 && listed(e.counts.new, e.new, added ? "prChJoinedAll" : "prChNewAll", added ? "prChJoinedList" : "prChNewList"),
     e.counts.removed > 0 && listed(e.counts.removed, e.removed, "prChRemovedAll", "prChRemovedList"),
     e.counts.changed > e.changed.length && fill(t("prChCut"), { n: n(e.counts.changed - e.changed.length) }),
-    gapDays > 2 && e.since && fill(t("prChSince"), { date: day(e.since, lang) }),
+    e.price_date && fill(t("prChPriceDate"), { date: day(e.price_date, lang) }),
     e.source === "file" && t("prChByHand"),
   ].filter((x): x is string => Boolean(x));
   const headline =
@@ -376,8 +388,10 @@ function EventCard({ e, changes }: { e: ChangeEvent; changes: Changes }) {
       <header className="pr-event-head">
         <h3>{provider ? (lang === "fa" ? provider.name_fa : provider.name_en) : e.provider_id}</h3>
         {headline && <span className={`badge ${e.direction === "up" ? "badge-bad" : e.direction === "down" ? "badge-good" : ""}`}>{headline}</span>}
+        {added && <span className="badge">{t("prChJoined")}</span>}
         <small>{dayInIran(e.at, lang)}</small>
       </header>
+      {before && <p className="pr-event-before">{before}</p>}
       {rows.length > 0 && (
         <ul className="pr-change-list">
           <li className="pr-change pr-change-head" aria-hidden>

@@ -15,7 +15,7 @@ Either service can be left out. A post is a few lines of Persian and a link to t
 from __future__ import annotations
 
 import json
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from decimal import ROUND_HALF_UP, Decimal
 from pathlib import Path
 from typing import Any, Callable
@@ -79,8 +79,22 @@ def event(provider_id: str, before: list[CatalogItem], after: list[CatalogItem],
         return (KINDS.index(r["kind"]) if r["kind"] in KINDS else len(KINDS), Decimal(r["toman"] or "0"))
 
     return {"id": f"{at.isoformat(timespec='seconds')}|{provider_id}", "at": at.isoformat(timespec="seconds"),
-            "provider_id": provider_id, "since": since, "source": source, "changed": sorted(changed, key=by_price),
-            "new": sorted(added, key=by_price), "removed": sorted(removed, key=by_price), "posted": {}}
+            "provider_id": provider_id, "since": since, "source": source, "price_date": _price_date(after),
+            "changed": sorted(changed, key=by_price), "new": sorted(added, key=by_price),
+            "removed": sorted(removed, key=by_price), "posted": {}}
+
+
+def _price_date(rows: list[CatalogItem]) -> str | None:
+    """The date the provider itself puts on its prices, when it states one."""
+    dates = [i.source_price_date for i in rows if i.source_price_date]
+    return max(dates) if dates else None
+
+
+def added(provider_id: str, rows: list[CatalogItem], at: datetime) -> dict[str, Any]:
+    """A provider that joined the price page: every plan of it, as new."""
+    e = event(provider_id, [], rows, at, source="added")
+    assert e is not None
+    return e
 
 
 # --------------------------------------------------------------------------- the file
@@ -132,13 +146,32 @@ def _overall(changed: list[dict[str, Any]]) -> dict[str, Any]:
             "typical_percent": str(typical) if direction != "mixed" and len(moves) > 1 and typical else None}
 
 
+def _history(events: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    """For each event, what came before it: the provider's previous change, or for its first one, since when the
+    prices it replaced had been on record (the read they were compared with); and how many days lie between."""
+    last: dict[str, str] = {}
+    out = {}
+    for e in events:
+        pid, day, key = e["provider_id"], e["at"][:10], e.get("id") or f"{e['at']}|{e['provider_id']}"
+        previous, kind = (last[pid], "change") if pid in last else (e.get("since"), "first_record")
+        if e["source"] == "added":
+            previous, kind = None, None
+        days = (date.fromisoformat(day) - date.fromisoformat(previous[:10])).days if previous else None
+        out[key] = {"previous": previous[:10] if previous else None, "previous_kind": kind, "held_days": days}
+        last[pid] = day
+    return out
+
+
 def published(data: dict[str, Any], providers: dict[str, dict[str, str]]) -> str:
     """The page's copy: the newest events first, long lists cut with the full counts kept. Every price change comes
     with its percent, and every event with its direction and typical move, so the page never does arithmetic on a
     price."""
+    history = _history(data["events"])
     out = []
     for e in reversed(data["events"][-PUBLISHED:]):
         out.append({"at": e["at"], "provider_id": e["provider_id"], "since": e.get("since"), "source": e["source"],
+                    "price_date": e.get("price_date"),
+                    **history[e.get("id") or f"{e['at']}|{e['provider_id']}"],
                     "counts": {k: len(e[k]) for k in ("changed", "new", "removed")}, **_overall(e["changed"]),
                     "changed": [_with_percent(r) for r in e["changed"][:PAGE_LINES]], "new": e["new"][:3],
                     "removed": e["removed"][:3]})
@@ -193,6 +226,8 @@ def message(e: dict[str, Any], name: str) -> str:
         head = f"{name} قیمت {fa(n)} {what} را پایین آورد"
     elif n:
         head = f"{name}: {fa(n)} {what} عوض شد"
+    elif e["source"] == "added":
+        head = f"{name} به صفحه قیمت صرفه اضافه شد، با {fa(len(e['new']))} پلن"
     elif e["new"] and not e["removed"]:
         head = f"{name} {fa(len(e['new']))} پلن جدید اضافه کرد"
     elif e["removed"] and not e["new"]:

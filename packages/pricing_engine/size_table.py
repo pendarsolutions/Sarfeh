@@ -84,6 +84,8 @@ def _conditions(priced: PriceBreakdown, row: CatalogItem | None, pol: dict[str, 
         paid = sum((c.subtotal_toman for c in ipv4 if c.status == LineStatus.PRICED and c.subtotal_toman), Decimal(0))
         if paid:
             out.append({"id": "ipv4_priced", "toman": _serialize(paid)})
+    if any(c.code == "traffic.unstated" for c in priced.components):
+        out.append({"id": "traffic_not_stated"})  # priced with no traffic: the provider doesn't say what it costs
     if row is not None and row.billing_period == "30_days":
         out.append({"id": "thirty_day_plan"})
     if pol.get("setup_fee_days"):
@@ -120,7 +122,7 @@ def _offer(pid: str, kind: str, priced: PriceBreakdown, size: tuple[int, int, in
 def offers_for(snapshot: CatalogSnapshot, cpu: int, ram: int,
                disk: int) -> tuple[list[dict[str, Any]], list[dict[str, str]]]:
     """Each provider's cheapest exact offer covering the size, cheapest first; then the providers with none, and why."""
-    ctx = BillingContext(include_tax=True)
+    ctx = BillingContext(include_tax=True, no_traffic_without_terms=True)
     rules = snapshot.equivalence_rules
     src = Resource(id="size", service_type="compute_vm", cpu_cores=Decimal(cpu), ram_gb=Decimal(ram),
                    storage_gb=Decimal(disk), requires_public_ipv4=True, expected_monthly_download_gb=Decimal(0),

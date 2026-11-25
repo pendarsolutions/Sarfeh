@@ -130,3 +130,27 @@ def test_the_published_list_is_newest_first_and_keeps_counts_when_it_cuts_lines(
     assert (arvan["direction"], arvan["typical_percent"], arvan["changed"][0]["percent"]) == ("up", "20", "20")
     assert (out["events"][0]["direction"], out["events"][0]["counts"]["removed"]) == (None, 1)
 
+
+
+def test_each_change_says_what_came_before_it(rows):
+    """ArvanCloud's prices of 24 November replaced ones on record since 4 October: the page says so, rather than
+    letting a change after two quiet months read like one day's news. A later change names the one before it."""
+    before = rows["arvancloud"]
+    up = [i.model_copy(update={"price_toman": i.price_toman * D("1.2")}) if i.price_toman else i for i in before]
+    up_again = [i.model_copy(update={"price_toman": i.price_toman * D("1.1")}) if i.price_toman else i for i in up]
+    data = {"schema": 1, "events": []}
+    price_feed.add(data, [price_feed.event("arvancloud", before, up, AT, since="2026-10-04", source="file"),
+                          price_feed.event("arvancloud", up, up_again, AT + timedelta(days=3), since="2026-11-26")])
+    later, first = json.loads(price_feed.published(data, {}))["events"]
+    assert (first["previous"], first["previous_kind"], first["held_days"]) == ("2026-10-04", "first_record", 51)
+    assert (later["previous"], later["previous_kind"], later["held_days"]) == ("2026-11-24", "change", 3)
+
+
+def test_a_provider_that_joins_the_page_is_news_of_its_own():
+    """HostIran joined on 25 November with 17 plans, priced by HostIran itself on 11 November."""
+    plans = list(load_seed_snapshot().provider_items("hostiran"))
+    e = price_feed.added("hostiran", plans, AT)
+    assert (e["source"], len(e["new"]), e["changed"], e["price_date"]) == ("added", 17, [], "2026-11-11")
+    assert price_feed.message(e, "هاست‌ایران").startswith("هاست‌ایران به صفحه قیمت صرفه اضافه شد، با ۱۷ پلن")
+    out = json.loads(price_feed.published({"schema": 1, "events": [e]}, {}))["events"][0]
+    assert (out["previous"], out["held_days"], out["price_date"]) == (None, None, "2026-11-11")

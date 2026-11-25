@@ -145,7 +145,9 @@ def _sample_changes(now: datetime) -> str:
              for i in before]
     feed = {"schema": 1, "events": []}
     refresh_prices.price_feed.add(feed, [refresh_prices.price_feed.event(
-        "arvancloud", before, after, now, since="2026-10-04", source="file")])
+        "arvancloud", before, after, now, since="2026-10-04", source="file"),
+        # and a provider joining the page, with its long plan names
+        refresh_prices.price_feed.added("hostiran", list(seed.provider_items("hostiran")), now)])
     names = {pid: {"name_fa": p.name_fa or p.name_en, "name_en": p.name_en} for pid, p in seed.providers.items()}
     return refresh_prices.price_feed.published(feed, names)
 

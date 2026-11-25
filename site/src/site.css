@@ -1461,6 +1461,12 @@ ul.plain {
   font: var(--type-caption);
   color: var(--color-ink-muted);
 }
+/* What came before a change: the previous change, or how long the old prices had been on record. */
+.pr-event-before {
+  margin: 0;
+  font: var(--type-body-small);
+  color: var(--color-ink-muted);
+}
 /* The rows of an event as a table: plan, before, after, change. On a phone a row is two lines. */
 .pr-change-list {
   list-style: none;

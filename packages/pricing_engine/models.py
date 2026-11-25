@@ -152,6 +152,9 @@ class BillingContext(_Model):
     include_tax: bool = False
     as_of: datetime | None = None
     allow_outside_iran: bool = False
+    #: the public price page, which prices every size with no traffic: a plan whose traffic terms aren't published is
+    #: priced as its plan, and the gap is said beside it. Never for a real workload, whose traffic would need them.
+    no_traffic_without_terms: bool = False
 
 
 # --------------------------------------------------------------------------- results

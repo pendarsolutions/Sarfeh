@@ -123,3 +123,16 @@ def test_a_source_saved_from_a_browser_is_read_by_its_own_adapter(refresh_prices
     assert [(r["provider_id"], r["status"], r["applied"]) for r in reports] == [("hostiran", "ok", True)]
     assert len(state["providers"]["hostiran"]["items"]) == 17 and set(state["providers"]) == {"hostiran"}
     assert reports[0].get("event") is None  # the catalog already holds what the API says: nothing moved
+
+
+def test_a_provider_new_to_the_page_is_recorded_once(refresh_prices):
+    """The first run with the record takes everyone on the page as known; a provider that appears after that gets an
+    event of its own, once."""
+    state = {"schema": 1, "providers": {}}
+    feed = {"schema": 1, "events": []}
+    at = datetime.now(UTC)
+    assert refresh_prices.joined(feed, state, at) == [] and "hostiran" in feed["providers_seen"]
+    feed["providers_seen"].remove("hostiran")  # as on the day before HostIran was added
+    events = refresh_prices.joined(feed, state, at)
+    assert [(e["provider_id"], e["source"], len(e["new"])) for e in events] == [("hostiran", "added", 17)]
+    assert refresh_prices.joined(feed, state, at) == []

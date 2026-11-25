@@ -380,7 +380,7 @@ def _price_fixed_sku(b: _Builder, ctx: BillingContext, pol: dict[str, Any]) -> N
     if r.storage_gb is not None and row.storage_gb is not None and r.storage_gb > row.storage_gb:
         b.missing("storage.extra", "price_toman", f"{r.storage_gb} GB requested > {row.storage_gb} GB in plan; "
                   "extra-disk price is not in the seed")
-    _fixed_traffic(b, row, pol)
+    _fixed_traffic(b, row, pol, ctx)
     if r.effective_ipv4_count > 1:
         b.missing("ipv4.extra", "price_toman", f"additional IPv4 price for {row.provider_id} is not in the seed")
     if r.effective_ipv4_count > 0:
@@ -388,9 +388,14 @@ def _price_fixed_sku(b: _Builder, ctx: BillingContext, pol: dict[str, Any]) -> N
                            "(the seed catalog does not state it).")
 
 
-def _fixed_traffic(b: _Builder, row: CatalogItem, pol: dict[str, Any]) -> None:
+def _fixed_traffic(b: _Builder, row: CatalogItem, pol: dict[str, Any], ctx: BillingContext | None = None) -> None:
     r = b.r
     policy = row.attributes.get("traffic_policy", "unknown")
+    if (policy == "unknown" and ctx is not None and ctx.no_traffic_without_terms
+            and r.expected_monthly_download_gb == 0 and r.expected_monthly_upload_gb == 0):
+        b.assumed_included("traffic.unstated", "Traffic: none in this workload",
+                           f"{row.provider_id} {row.sku}: traffic terms aren't published; priced with no traffic.")
+        return
     if policy == "unlimited":
         b.lines.append(ComponentLine(code="traffic", description="Traffic: unlimited per catalog", status=LineStatus.INCLUDED,
                                      subtotal_toman=ZERO, catalog_item_id=row.id, source_url=row.source_url,

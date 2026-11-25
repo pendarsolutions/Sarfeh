@@ -186,6 +186,18 @@ def snapshot_from(state: dict[str, Any], at: datetime) -> CatalogSnapshot:
                            snapshot_at=at)
 
 
+def joined(feed: dict[str, Any], state: dict[str, Any], at: datetime) -> list[dict[str, Any]]:
+    """Providers on the page for the first time, each as an event of its own with every plan. The first run that
+    keeps this record takes everyone already there as known."""
+    snap = snapshot_from(state, at)
+    present = sorted({i.provider_id for i in snap.items} & set(snap.policy["providers"]))
+    seen = feed.get("providers_seen")
+    feed["providers_seen"] = sorted(set(seen or []) | set(present))
+    if seen is None:
+        return []
+    return [price_feed.added(pid, snap.provider_items(pid), at) for pid in present if pid not in seen]
+
+
 def render(state: dict[str, Any], at: datetime) -> str:
     table = size_table(snapshot_from(state, at))
     for size in table["sizes"]:
@@ -261,6 +273,13 @@ def main() -> int:
     feed_path = args.state.with_name("price-changes.json")
     feed = price_feed.load(feed_path)
     seed = load_seed_snapshot()
+    known = feed.get("providers_seen")
+    new_providers = joined(feed, state, datetime.now(UTC))
+    price_feed.add(feed, new_providers)
+    for e in new_providers:
+        print(f"{e['provider_id']:<11} joined the page with {len(e['new'])} plans")
+    if new_providers or known is None:
+        price_feed.save(feed_path, feed)
     if not args.offline:
         if args.price_file:
             reports = [import_file(state, args.price_file, approve=set(args.approve))]
