@@ -108,3 +108,18 @@ def test_each_run_signs_the_whole_catalog_and_sends_it_to_every_mirror(refresh_p
     # read again with the same prices: a new catalog, but the same digests, so installations aren't told "new prices"
     again = json.loads(refresh_prices.build_feed(refresh_prices.snapshot_from(state, at).items, at + timedelta(hours=1)))
     assert again["digest"] == data["digest"] and again["generated_at"] != data["generated_at"]
+
+
+def test_a_source_saved_from_a_browser_is_read_by_its_own_adapter(refresh_prices, tmp_path):
+    """HostIran's price API answers only a browser for now: a copy saved there goes through the same adapter and
+    guardrails as a live read, and the change record says it was read by hand."""
+    import gzip
+
+    saved = tmp_path / "cloud-info.json"
+    saved.write_text(gzip.open(ROOT / "tests" / "fixtures" / "providers" / "hostiran-2026-11-25.json.gz", "rt",
+                               encoding="utf-8").read(), encoding="utf-8")
+    state = {"schema": 1, "providers": {}}
+    reports = refresh_prices.refresh(state, only=set(), approve=set(), timeout_s=1, saved={"hostiran": saved})
+    assert [(r["provider_id"], r["status"], r["applied"]) for r in reports] == [("hostiran", "ok", True)]
+    assert len(state["providers"]["hostiran"]["items"]) == 17 and set(state["providers"]) == {"hostiran"}
+    assert reports[0].get("event") is None  # the catalog already holds what the API says: nothing moved

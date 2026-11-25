@@ -4,6 +4,7 @@
     python scripts/refresh_prices.py ... --approve iranserver     # apply a move the guardrails held for review
     python scripts/refresh_prices.py ... --only liara --only chabokan
     python scripts/refresh_prices.py ... --import data/price-files/arvancloud-2026-11-24.json
+    python scripts/refresh_prices.py ... --saved hostiran=cloud-info.json   # a provider's page saved from a browser
 
 Each provider's page is read with the same adapter and the same guardrails as an installation's price sync
 (packages/provider_adapters/sync.py). What happens to a provider:
@@ -55,6 +56,7 @@ from provider_adapters import (  # noqa: E402
     ADAPTERS,
     ManualPriceAdapter,
     ParseError,
+    RawCatalog,
     build_feed,
     natural_key,
     plan_sync,
@@ -90,8 +92,14 @@ def _fetch(adapter: Any, timeout_s: float) -> tuple[Any, Exception | None]:
         return None, exc
 
 
-def refresh(state: dict[str, Any], *, only: set[str], approve: set[str], timeout_s: float) -> list[dict[str, Any]]:
-    """Read each provider and update `state` in place. Returns one report entry per provider read."""
+def refresh(state: dict[str, Any], *, only: set[str], approve: set[str], timeout_s: float,
+            saved: dict[str, Path] | None = None) -> list[dict[str, Any]]:
+    """Read each provider and update `state` in place. Returns one report entry per provider read.
+
+    `saved`: a provider's source as saved from a browser, read by its own adapter instead of fetching it (for a source
+    behind a browser check). Then only those providers are read."""
+    saved = saved or {}
+    only = set(saved) or only
     seed = load_seed_snapshot()
     reports = []
     for pid, cls in ADAPTERS.items():
@@ -101,7 +109,11 @@ def refresh(state: dict[str, Any], *, only: set[str], approve: set[str], timeout
         kept = state["providers"].get(pid)
         previous = ([CatalogItem.model_validate(i) for i in kept["items"]] if kept
                     else [i for i in seed.items if i.provider_id == pid])
-        raw, error = _fetch(adapter, timeout_s)
+        if pid in saved:
+            raw, error = RawCatalog(pid, adapter.source_url, datetime.now(UTC),
+                                    saved[pid].read_text(encoding="utf-8")), None
+        else:
+            raw, error = _fetch(adapter, timeout_s)
         plan = plan_sync(adapter, raw, previous, parse_error=error)
         entry = {"provider_id": pid, "status": plan.status, "error": plan.error, "warnings": plan.warnings,
                  "changes": plan.summary()["changes"], "applied": False}
@@ -112,7 +124,8 @@ def refresh(state: dict[str, Any], *, only: set[str], approve: set[str], timeout
                 item.id = ids.get(natural_key(item), item.id)  # the same row keeps its identity
             outside = [p for p in previous if (p.service_type, p.product_family) not in adapter.scope]
             since = kept["read_on"][:10] if kept else seed.snapshot_at.date().isoformat()
-            entry["event"] = price_feed.event(pid, previous, outside + fresh, raw.fetched_at, since=since)
+            entry["event"] = price_feed.event(pid, previous, outside + fresh, raw.fetched_at, since=since,
+                                              **({"source": "file"} if pid in saved else {}))
             state["providers"][pid] = {
                 "read_on": raw.fetched_at.isoformat(timespec="seconds"),
                 "source_url": raw.source_url,
@@ -237,6 +250,8 @@ def main() -> int:
     ap.add_argument("--only", action="append", default=[], help="read only this provider (repeatable)")
     ap.add_argument("--approve", action="append", default=[], help="apply a held move for this provider")
     ap.add_argument("--offline", action="store_true", help="read nothing; rebuild the table from the state file")
+    ap.add_argument("--saved", action="append", default=[], metavar="PROVIDER=FILE",
+                    help="read a provider's source from a copy saved in a browser, with its own adapter (repeatable)")
     ap.add_argument("--import", dest="price_file", type=Path, metavar="FILE",
                     help="apply a reviewed price file and read nothing else (for a provider that can't be read)")
     ap.add_argument("--timeout", type=float, default=60.0)
@@ -250,7 +265,14 @@ def main() -> int:
         if args.price_file:
             reports = [import_file(state, args.price_file, approve=set(args.approve))]
         else:
-            reports = refresh(state, only=set(args.only), approve=set(args.approve), timeout_s=args.timeout)
+            saved = {}
+            for spec in args.saved:
+                pid, _, path = spec.partition("=")
+                if pid not in ADAPTERS or not path:
+                    raise SystemExit(f"--saved {spec}: expected PROVIDER=FILE, with one of {', '.join(ADAPTERS)}")
+                saved[pid] = Path(path)
+            reports = refresh(state, only=set(args.only), approve=set(args.approve), timeout_s=args.timeout,
+                              saved=saved)
         _print_report(reports)
         args.state.parent.mkdir(parents=True, exist_ok=True)
         tmp = args.state.with_suffix(".tmp")
