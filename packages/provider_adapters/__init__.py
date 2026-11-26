@@ -20,6 +20,7 @@ from .mobinhost import MobinHostAdapter
 from .parspack import ParsPackAdapter
 from .serverir import ServerIrAdapter
 from .sync import SyncPlan, plan_sync
+from .trusthost import TrustHostAdapter
 
 #: Adapters with live parsers. Abrha publishes only a starting price, so its seed snapshot stays discovery-only
 #: and syncs report 'not_implemented'.
@@ -32,6 +33,7 @@ ADAPTERS: dict[str, type] = {
     "mobinhost": MobinHostAdapter,
     "parspack": ParsPackAdapter,
     "hostiran": HostIranAdapter,
+    "trusthost": TrustHostAdapter,
 }
 
 SECOND_WAVE_STATUS = {
@@ -47,5 +49,5 @@ def get_adapter(provider_id: str):
 __all__ = [
     "ADAPTERS", "SECOND_WAVE_STATUS", "AdapterHealth", "ArvanCloudAdapter", "ChabokanAdapter", "FeedAdapter", "FeedError", "HostIranAdapter", "InventoryConnector", "IranServerAdapter",
     "LiaraAdapter", "ManualPriceAdapter", "MobinHostAdapter", "ParsPackAdapter", "ParseError", "ProviderAdapter", "RawCatalog", "ServerIrAdapter", "SourceBlockedError",
-    "SyncPlan", "build_feed", "feed_info", "generate_signing_key", "get_adapter", "natural_key", "plan_sync", "read_feed", "sign_feed",
+    "SyncPlan", "TrustHostAdapter", "build_feed", "feed_info", "generate_signing_key", "get_adapter", "natural_key", "plan_sync", "read_feed", "sign_feed",
 ]

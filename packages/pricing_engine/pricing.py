@@ -408,6 +408,10 @@ def _fixed_traffic(b: _Builder, row: CatalogItem, pol: dict[str, Any], ctx: Bill
         b.assume(f"{row.provider_id} {row.sku}: download is unlimited but rate-limited to "
                  f"{row.attributes.get('rate_limit_mbps')} Mbps.")
         return
+    if policy == "included_quota" and pol.get("included_traffic_direction") == "upload":
+        # only traffic entering the server counts against the quota; traffic leaving it is free
+        _within_quota(b, row, b.require("traffic.upload", "expected_monthly_upload_gb"))
+        return
     download = b.require("traffic.download", "expected_monthly_download_gb")
     if policy == "metered_download":
         rate = row.attributes.get("download_toman_per_gb")
@@ -439,18 +443,30 @@ def _fixed_traffic(b: _Builder, row: CatalogItem, pol: dict[str, Any], ctx: Bill
             used = None if download is None or upload is None else download + upload
             b.assume(f"{row.provider_id}: catalog does not state which direction the included traffic covers; "
                      "download + upload is compared against the quota (conservative).")
-        if used is None:
-            return
-        if used > row.included_traffic_gb:
-            b.missing("traffic.overage", "overage_price", f"{used} GB/month exceeds the {row.included_traffic_gb} GB "
-                      f"included in {row.sku}; {row.provider_id} overage price is not in the seed", row.source_url)
-        else:
-            b.lines.append(ComponentLine(code="traffic", description=f"Traffic within included {row.included_traffic_gb} GB",
-                                         status=LineStatus.INCLUDED, quantity=used, unit="gb", subtotal_toman=ZERO,
-                                         catalog_item_id=row.id, source_url=row.source_url,
-                                         price_date=row.source_price_date, retrieved_at=row.source_retrieved_at))
+        _within_quota(b, row, used)
         return
     b.missing("traffic", "traffic_policy", f"{row.provider_id} {row.sku}: traffic terms are not in the seed catalog")
+
+
+def _within_quota(b: _Builder, row: CatalogItem, used: Decimal | None) -> None:
+    """Traffic against a plan's included quota. Beyond it, the provider's published per-GB rate if the row has one
+    (attribute ``overage_toman_per_gb``); otherwise the overage is unpriced."""
+    if used is None:
+        return
+    quota = row.included_traffic_gb
+    if used <= quota:
+        b.lines.append(ComponentLine(code="traffic", description=f"Traffic within included {quota} GB",
+                                     status=LineStatus.INCLUDED, quantity=used, unit="gb", subtotal_toman=ZERO,
+                                     catalog_item_id=row.id, source_url=row.source_url,
+                                     price_date=row.source_price_date, retrieved_at=row.source_retrieved_at))
+        return
+    rate = row.attributes.get("overage_toman_per_gb")
+    if rate is None:
+        b.missing("traffic.overage", "overage_price", f"{used} GB/month exceeds the {quota} GB "
+                  f"included in {row.sku}; {row.provider_id} overage price is not in the seed", row.source_url)
+        return
+    b.priced("traffic.overage", f"Traffic beyond the included {quota} GB", row, (used - quota) * b.r.quantity,
+             Decimal(str(rate)), "gb", note="overage rate from the provider's price source")
 
 
 def smallest_size_at_least(snapshot: CatalogSnapshot, provider_id: str, service_type: str, attr: str,

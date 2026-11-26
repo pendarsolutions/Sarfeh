@@ -7,7 +7,7 @@
 export const SERIES_SLOTS = 8;
 
 /** Provider -> slot, by the product's provider priority. Unknown providers fold into the neutral "other". */
-const PROVIDER_ORDER = ["arvancloud", "liara", "serverir", "iranserver", "chabokan", "parspack", "mobinhost", "hostiran", "abrha"];
+const PROVIDER_ORDER = ["arvancloud", "liara", "serverir", "iranserver", "chabokan", "parspack", "mobinhost", "hostiran", "trusthost", "abrha"];
 const ENV_ORDER = ["production", "staging", "dev", "test", "ci", "qa"];
 
 export type SeriesColor = { slot: number | null; css: string };

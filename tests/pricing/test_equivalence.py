@@ -66,7 +66,8 @@ def test_quota_overflow_candidate_rejected_not_estimated(snapshot):
 
 def test_low_fit_is_needs_human_review(snapshot):
     res = find_equivalents(web_prod(), snapshot)
-    big = [c for c in res.candidates if c.candidate_label == "Liara IAAS-URANUS"]
+    # TrustHost's memory plan doubles the RAM asked for (8 GB for 4): a poor fit, so a person decides
+    big = [c for c in res.candidates if c.candidate_label == "TrustHost فراخ ۱"]
     assert big and big[0].confidence == "NEEDS_HUMAN_REVIEW"
 
 

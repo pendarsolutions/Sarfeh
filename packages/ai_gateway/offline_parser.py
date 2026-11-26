@@ -21,7 +21,8 @@ PROVIDERS = {
     "arvancloud": ["آروان", "arvan"], "liara": ["لیارا", "liara"], "serverir": ["server.ir", "سرور.آی", "سرور آی آر"],
     "iranserver": ["ایران سرور", "ایران‌سرور", "iranserver"], "chabokan": ["چابکان", "chabokan"],
     "parspack": ["پارس پک", "پارس‌پک", "parspack"], "mobinhost": ["مبین هاست", "مبین‌هاست", "mobinhost"],
-    "hostiran": ["هاست ایران", "هاست‌ایران", "hostiran"], "abrha": ["ابرها", "abrha"],
+    "hostiran": ["هاست ایران", "هاست‌ایران", "hostiran"],
+    "trusthost": ["تراست هاست", "تراست‌هاست", "trusthost"], "abrha": ["ابرها", "abrha"],
 }
 ENVIRONMENTS = {
     "production": ["production", "prod", "پروداکشن", "عملیاتی", "اصلی"],

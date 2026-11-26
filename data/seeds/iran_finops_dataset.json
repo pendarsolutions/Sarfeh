@@ -8,8 +8,8 @@
     "scope": "Iran-first public infrastructure pricing seed for deterministic FinOps calculations",
     "important": "Public websites change. Never treat this snapshot as live pricing. Production must run provider-specific sync jobs and keep price history.",
     "coverage": {
-      "providers": 9,
-      "catalog_items": 190,
+      "providers": 10,
+      "catalog_items": 211,
       "service_types": [
         "compute_component",
         "compute_vm",
@@ -234,6 +234,27 @@
       "recommended_mvp_priority": 9,
       "integration_strategy": "store only official starting-price snapshot until full plan source is available",
       "notes": "Do not extrapolate component prices from the starting-price card."
+    },
+    {
+      "provider_id": "trusthost",
+      "name_en": "TrustHost",
+      "name_fa": "تراست‌هاست",
+      "website": "https://trusthost.co/",
+      "official_pricing_url": "https://my.trusthost.co/feeds/server-prices.php",
+      "country": "IR",
+      "provider_type": [
+        "vps",
+        "cloud_vm"
+      ],
+      "pricing_model": "fixed_sku",
+      "public_catalog_quality": "high",
+      "api_status": "not_verified",
+      "automation_surfaces": [
+        "price_feed"
+      ],
+      "recommended_mvp_priority": 9,
+      "integration_strategy": "its price feed (/feeds/server-prices.php), read from its billing system: the Iran cloud server plans of the Fanap Tehran datacenter",
+      "notes": "TrustHost asked to be listed and published the feed. Each plan includes a monthly quota of traffic entering the server; traffic leaving it is free; beyond the quota a published per-GB rate. Prices exclude 10% VAT. The same plans are on https://trusthost.co/server/."
     }
   ],
   "catalog_items": [
@@ -7887,6 +7908,1413 @@
       "notes": "Official calculator table. The daily price is the source; monthly is 30 days.",
       "attributes": {},
       "price_rial": 8385900
+    },
+    {
+      "id": "d559ee334406120f",
+      "provider_id": "trusthost",
+      "service_type": "compute_vm",
+      "pricing_model": "fixed_sku",
+      "product_family": "general_purpose",
+      "sku": "جرقه",
+      "name": "جرقه",
+      "region_country": "IR",
+      "region": "Iran",
+      "datacenter": "Fanap Tehran",
+      "resource_class": null,
+      "cpu_cores": "1",
+      "cpu_unit": "vCPU",
+      "cpu_shared": null,
+      "ram_gb": "2",
+      "storage_gb": "50",
+      "storage_type": "SSD",
+      "gpu_model": null,
+      "gpu_count": null,
+      "included_traffic_gb": "100",
+      "traffic_direction": null,
+      "bandwidth": null,
+      "billing_period": "month",
+      "price_toman": "495360",
+      "hourly_price_toman": null,
+      "daily_price_toman": null,
+      "price_rial": 4953600,
+      "unit": "plan_month",
+      "tier_min": null,
+      "tier_max": null,
+      "tier_unit": null,
+      "availability": "available",
+      "source_url": "https://my.trusthost.co/feeds/server-prices.php",
+      "source_retrieved_at": "2026-11-26",
+      "source_price_date": "2026-11-26",
+      "confidence": "high",
+      "tax_included": false,
+      "notes": "inbound 100GB/month included, outbound free; beyond the quota 900 Toman/GB; invoices add 10% VAT.",
+      "attributes": {
+        "whmcs_pid": 2,
+        "catalog_updated_at": "2026-09-23 10:51:16",
+        "family_fa": "پلن‌های عمومی",
+        "datacenter_fa": "فناپ تهران",
+        "port_gbps": 10,
+        "order_url": "https://my.trusthost.co/cart.php?a=add&pid=2",
+        "term_prices_toman": {
+          "monthly": "495360",
+          "quarterly": "1486080"
+        },
+        "overage_toman_per_gb": "900",
+        "overage_volume_rates": [
+          {
+            "min_gb": 20000,
+            "toman_per_gb": "880"
+          },
+          {
+            "min_gb": 50000,
+            "toman_per_gb": "860"
+          },
+          {
+            "min_gb": 100000,
+            "toman_per_gb": "850"
+          }
+        ]
+      }
+    },
+    {
+      "id": "17168fcf39c605ba",
+      "provider_id": "trusthost",
+      "service_type": "compute_vm",
+      "pricing_model": "fixed_sku",
+      "product_family": "general_purpose",
+      "sku": "آغاز",
+      "name": "آغاز",
+      "region_country": "IR",
+      "region": "Iran",
+      "datacenter": "Fanap Tehran",
+      "resource_class": null,
+      "cpu_cores": "2",
+      "cpu_unit": "vCPU",
+      "cpu_shared": null,
+      "ram_gb": "4",
+      "storage_gb": "80",
+      "storage_type": "SSD",
+      "gpu_model": null,
+      "gpu_count": null,
+      "included_traffic_gb": "200",
+      "traffic_direction": null,
+      "bandwidth": null,
+      "billing_period": "month",
+      "price_toman": "737280",
+      "hourly_price_toman": null,
+      "daily_price_toman": null,
+      "price_rial": 7372800,
+      "unit": "plan_month",
+      "tier_min": null,
+      "tier_max": null,
+      "tier_unit": null,
+      "availability": "available",
+      "source_url": "https://my.trusthost.co/feeds/server-prices.php",
+      "source_retrieved_at": "2026-11-26",
+      "source_price_date": "2026-11-26",
+      "confidence": "high",
+      "tax_included": false,
+      "notes": "inbound 200GB/month included, outbound free; beyond the quota 900 Toman/GB; invoices add 10% VAT.",
+      "attributes": {
+        "whmcs_pid": 3,
+        "catalog_updated_at": "2026-09-23 10:51:16",
+        "family_fa": "پلن‌های عمومی",
+        "datacenter_fa": "فناپ تهران",
+        "port_gbps": 10,
+        "order_url": "https://my.trusthost.co/cart.php?a=add&pid=3",
+        "term_prices_toman": {
+          "monthly": "737280",
+          "quarterly": "2211840"
+        },
+        "overage_toman_per_gb": "900",
+        "overage_volume_rates": [
+          {
+            "min_gb": 20000,
+            "toman_per_gb": "880"
+          },
+          {
+            "min_gb": 50000,
+            "toman_per_gb": "860"
+          },
+          {
+            "min_gb": 100000,
+            "toman_per_gb": "850"
+          }
+        ]
+      }
+    },
+    {
+      "id": "f0550f988a2da488",
+      "provider_id": "trusthost",
+      "service_type": "compute_vm",
+      "pricing_model": "fixed_sku",
+      "product_family": "general_purpose",
+      "sku": "رشد",
+      "name": "رشد",
+      "region_country": "IR",
+      "region": "Iran",
+      "datacenter": "Fanap Tehran",
+      "resource_class": null,
+      "cpu_cores": "4",
+      "cpu_unit": "vCPU",
+      "cpu_shared": null,
+      "ram_gb": "8",
+      "storage_gb": "120",
+      "storage_type": "SSD",
+      "gpu_model": null,
+      "gpu_count": null,
+      "included_traffic_gb": "400",
+      "traffic_direction": null,
+      "bandwidth": null,
+      "billing_period": "month",
+      "price_toman": "1238400",
+      "hourly_price_toman": null,
+      "daily_price_toman": null,
+      "price_rial": 12384000,
+      "unit": "plan_month",
+      "tier_min": null,
+      "tier_max": null,
+      "tier_unit": null,
+      "availability": "available",
+      "source_url": "https://my.trusthost.co/feeds/server-prices.php",
+      "source_retrieved_at": "2026-11-26",
+      "source_price_date": "2026-11-26",
+      "confidence": "high",
+      "tax_included": false,
+      "notes": "inbound 400GB/month included, outbound free; beyond the quota 900 Toman/GB; invoices add 10% VAT.",
+      "attributes": {
+        "whmcs_pid": 4,
+        "catalog_updated_at": "2026-09-23 10:51:16",
+        "family_fa": "پلن‌های عمومی",
+        "datacenter_fa": "فناپ تهران",
+        "port_gbps": 10,
+        "order_url": "https://my.trusthost.co/cart.php?a=add&pid=4",
+        "term_prices_toman": {
+          "monthly": "1238400",
+          "quarterly": "3715200"
+        },
+        "overage_toman_per_gb": "900",
+        "overage_volume_rates": [
+          {
+            "min_gb": 20000,
+            "toman_per_gb": "880"
+          },
+          {
+            "min_gb": 50000,
+            "toman_per_gb": "860"
+          },
+          {
+            "min_gb": 100000,
+            "toman_per_gb": "850"
+          }
+        ]
+      }
+    },
+    {
+      "id": "3a21c2a832de8250",
+      "provider_id": "trusthost",
+      "service_type": "compute_vm",
+      "pricing_model": "fixed_sku",
+      "product_family": "general_purpose",
+      "sku": "اوج",
+      "name": "اوج",
+      "region_country": "IR",
+      "region": "Iran",
+      "datacenter": "Fanap Tehran",
+      "resource_class": null,
+      "cpu_cores": "6",
+      "cpu_unit": "vCPU",
+      "cpu_shared": null,
+      "ram_gb": "12",
+      "storage_gb": "160",
+      "storage_type": "SSD",
+      "gpu_model": null,
+      "gpu_count": null,
+      "included_traffic_gb": "600",
+      "traffic_direction": null,
+      "bandwidth": null,
+      "billing_period": "month",
+      "price_toman": "1722240",
+      "hourly_price_toman": null,
+      "daily_price_toman": null,
+      "price_rial": 17222400,
+      "unit": "plan_month",
+      "tier_min": null,
+      "tier_max": null,
+      "tier_unit": null,
+      "availability": "available",
+      "source_url": "https://my.trusthost.co/feeds/server-prices.php",
+      "source_retrieved_at": "2026-11-26",
+      "source_price_date": "2026-11-26",
+      "confidence": "high",
+      "tax_included": false,
+      "notes": "inbound 600GB/month included, outbound free; beyond the quota 900 Toman/GB; invoices add 10% VAT.",
+      "attributes": {
+        "whmcs_pid": 5,
+        "catalog_updated_at": "2026-09-23 10:51:16",
+        "family_fa": "پلن‌های عمومی",
+        "datacenter_fa": "فناپ تهران",
+        "port_gbps": 10,
+        "order_url": "https://my.trusthost.co/cart.php?a=add&pid=5",
+        "term_prices_toman": {
+          "monthly": "1722240",
+          "quarterly": "5166720"
+        },
+        "overage_toman_per_gb": "900",
+        "overage_volume_rates": [
+          {
+            "min_gb": 20000,
+            "toman_per_gb": "880"
+          },
+          {
+            "min_gb": 50000,
+            "toman_per_gb": "860"
+          },
+          {
+            "min_gb": 100000,
+            "toman_per_gb": "850"
+          }
+        ]
+      }
+    },
+    {
+      "id": "b46b07638c799df0",
+      "provider_id": "trusthost",
+      "service_type": "compute_vm",
+      "pricing_model": "fixed_sku",
+      "product_family": "general_purpose",
+      "sku": "توان",
+      "name": "توان",
+      "region_country": "IR",
+      "region": "Iran",
+      "datacenter": "Fanap Tehran",
+      "resource_class": null,
+      "cpu_cores": "8",
+      "cpu_unit": "vCPU",
+      "cpu_shared": null,
+      "ram_gb": "16",
+      "storage_gb": "200",
+      "storage_type": "SSD",
+      "gpu_model": null,
+      "gpu_count": null,
+      "included_traffic_gb": "800",
+      "traffic_direction": null,
+      "bandwidth": null,
+      "billing_period": "month",
+      "price_toman": "2206080",
+      "hourly_price_toman": null,
+      "daily_price_toman": null,
+      "price_rial": 22060800,
+      "unit": "plan_month",
+      "tier_min": null,
+      "tier_max": null,
+      "tier_unit": null,
+      "availability": "available",
+      "source_url": "https://my.trusthost.co/feeds/server-prices.php",
+      "source_retrieved_at": "2026-11-26",
+      "source_price_date": "2026-11-26",
+      "confidence": "high",
+      "tax_included": false,
+      "notes": "inbound 800GB/month included, outbound free; beyond the quota 900 Toman/GB; invoices add 10% VAT.",
+      "attributes": {
+        "whmcs_pid": 6,
+        "catalog_updated_at": "2026-09-23 10:51:16",
+        "family_fa": "پلن‌های عمومی",
+        "datacenter_fa": "فناپ تهران",
+        "port_gbps": 10,
+        "order_url": "https://my.trusthost.co/cart.php?a=add&pid=6",
+        "term_prices_toman": {
+          "monthly": "2206080",
+          "quarterly": "6618240"
+        },
+        "overage_toman_per_gb": "900",
+        "overage_volume_rates": [
+          {
+            "min_gb": 20000,
+            "toman_per_gb": "880"
+          },
+          {
+            "min_gb": 50000,
+            "toman_per_gb": "860"
+          },
+          {
+            "min_gb": 100000,
+            "toman_per_gb": "850"
+          }
+        ]
+      }
+    },
+    {
+      "id": "2295f03af3bc330e",
+      "provider_id": "trusthost",
+      "service_type": "compute_vm",
+      "pricing_model": "fixed_sku",
+      "product_family": "general_purpose",
+      "sku": "راهبرد",
+      "name": "راهبرد",
+      "region_country": "IR",
+      "region": "Iran",
+      "datacenter": "Fanap Tehran",
+      "resource_class": null,
+      "cpu_cores": "12",
+      "cpu_unit": "vCPU",
+      "cpu_shared": null,
+      "ram_gb": "24",
+      "storage_gb": "300",
+      "storage_type": "SSD",
+      "gpu_model": null,
+      "gpu_count": null,
+      "included_traffic_gb": "1000",
+      "traffic_direction": null,
+      "bandwidth": null,
+      "billing_period": "month",
+      "price_toman": "3185280",
+      "hourly_price_toman": null,
+      "daily_price_toman": null,
+      "price_rial": 31852800,
+      "unit": "plan_month",
+      "tier_min": null,
+      "tier_max": null,
+      "tier_unit": null,
+      "availability": "available",
+      "source_url": "https://my.trusthost.co/feeds/server-prices.php",
+      "source_retrieved_at": "2026-11-26",
+      "source_price_date": "2026-11-26",
+      "confidence": "high",
+      "tax_included": false,
+      "notes": "inbound 1000GB/month included, outbound free; beyond the quota 900 Toman/GB; invoices add 10% VAT.",
+      "attributes": {
+        "whmcs_pid": 7,
+        "catalog_updated_at": "2026-09-23 10:51:16",
+        "family_fa": "پلن‌های عمومی",
+        "datacenter_fa": "فناپ تهران",
+        "port_gbps": 10,
+        "order_url": "https://my.trusthost.co/cart.php?a=add&pid=7",
+        "term_prices_toman": {
+          "monthly": "3185280",
+          "quarterly": "9555840"
+        },
+        "overage_toman_per_gb": "900",
+        "overage_volume_rates": [
+          {
+            "min_gb": 20000,
+            "toman_per_gb": "880"
+          },
+          {
+            "min_gb": 50000,
+            "toman_per_gb": "860"
+          },
+          {
+            "min_gb": 100000,
+            "toman_per_gb": "850"
+          }
+        ]
+      }
+    },
+    {
+      "id": "cd412cd52747929c",
+      "provider_id": "trusthost",
+      "service_type": "compute_vm",
+      "pricing_model": "fixed_sku",
+      "product_family": "compute_optimized",
+      "sku": "پرداز ۱",
+      "name": "پرداز ۱",
+      "region_country": "IR",
+      "region": "Iran",
+      "datacenter": "Fanap Tehran",
+      "resource_class": null,
+      "cpu_cores": "4",
+      "cpu_unit": "vCPU",
+      "cpu_shared": null,
+      "ram_gb": "4",
+      "storage_gb": "80",
+      "storage_type": "SSD",
+      "gpu_model": null,
+      "gpu_count": null,
+      "included_traffic_gb": "200",
+      "traffic_direction": null,
+      "bandwidth": null,
+      "billing_period": "month",
+      "price_toman": "826000",
+      "hourly_price_toman": null,
+      "daily_price_toman": null,
+      "price_rial": 8260000,
+      "unit": "plan_month",
+      "tier_min": null,
+      "tier_max": null,
+      "tier_unit": null,
+      "availability": "available",
+      "source_url": "https://my.trusthost.co/feeds/server-prices.php",
+      "source_retrieved_at": "2026-11-26",
+      "source_price_date": "2026-11-26",
+      "confidence": "high",
+      "tax_included": false,
+      "notes": "inbound 200GB/month included, outbound free; beyond the quota 900 Toman/GB; invoices add 10% VAT.",
+      "attributes": {
+        "whmcs_pid": 8,
+        "catalog_updated_at": "2026-09-23 10:51:16",
+        "family_fa": "پلن‌های پردازشی",
+        "datacenter_fa": "فناپ تهران",
+        "port_gbps": 10,
+        "order_url": "https://my.trusthost.co/cart.php?a=add&pid=8",
+        "term_prices_toman": {
+          "monthly": "826000",
+          "quarterly": "2478000"
+        },
+        "overage_toman_per_gb": "900",
+        "overage_volume_rates": [
+          {
+            "min_gb": 20000,
+            "toman_per_gb": "880"
+          },
+          {
+            "min_gb": 50000,
+            "toman_per_gb": "860"
+          },
+          {
+            "min_gb": 100000,
+            "toman_per_gb": "850"
+          }
+        ]
+      }
+    },
+    {
+      "id": "95d367ae6d86c6ee",
+      "provider_id": "trusthost",
+      "service_type": "compute_vm",
+      "pricing_model": "fixed_sku",
+      "product_family": "compute_optimized",
+      "sku": "پرداز ۲",
+      "name": "پرداز ۲",
+      "region_country": "IR",
+      "region": "Iran",
+      "datacenter": "Fanap Tehran",
+      "resource_class": null,
+      "cpu_cores": "8",
+      "cpu_unit": "vCPU",
+      "cpu_shared": null,
+      "ram_gb": "8",
+      "storage_gb": "120",
+      "storage_type": "SSD",
+      "gpu_model": null,
+      "gpu_count": null,
+      "included_traffic_gb": "400",
+      "traffic_direction": null,
+      "bandwidth": null,
+      "billing_period": "month",
+      "price_toman": "1458000",
+      "hourly_price_toman": null,
+      "daily_price_toman": null,
+      "price_rial": 14580000,
+      "unit": "plan_month",
+      "tier_min": null,
+      "tier_max": null,
+      "tier_unit": null,
+      "availability": "available",
+      "source_url": "https://my.trusthost.co/feeds/server-prices.php",
+      "source_retrieved_at": "2026-11-26",
+      "source_price_date": "2026-11-26",
+      "confidence": "high",
+      "tax_included": false,
+      "notes": "inbound 400GB/month included, outbound free; beyond the quota 900 Toman/GB; invoices add 10% VAT.",
+      "attributes": {
+        "whmcs_pid": 9,
+        "catalog_updated_at": "2026-09-23 10:51:16",
+        "family_fa": "پلن‌های پردازشی",
+        "datacenter_fa": "فناپ تهران",
+        "port_gbps": 10,
+        "order_url": "https://my.trusthost.co/cart.php?a=add&pid=9",
+        "term_prices_toman": {
+          "monthly": "1458000",
+          "quarterly": "4374000"
+        },
+        "overage_toman_per_gb": "900",
+        "overage_volume_rates": [
+          {
+            "min_gb": 20000,
+            "toman_per_gb": "880"
+          },
+          {
+            "min_gb": 50000,
+            "toman_per_gb": "860"
+          },
+          {
+            "min_gb": 100000,
+            "toman_per_gb": "850"
+          }
+        ]
+      }
+    },
+    {
+      "id": "85f28ff4ac4c0229",
+      "provider_id": "trusthost",
+      "service_type": "compute_vm",
+      "pricing_model": "fixed_sku",
+      "product_family": "compute_optimized",
+      "sku": "پرداز ۳",
+      "name": "پرداز ۳",
+      "region_country": "IR",
+      "region": "Iran",
+      "datacenter": "Fanap Tehran",
+      "resource_class": null,
+      "cpu_cores": "12",
+      "cpu_unit": "vCPU",
+      "cpu_shared": null,
+      "ram_gb": "16",
+      "storage_gb": "180",
+      "storage_type": "SSD",
+      "gpu_model": null,
+      "gpu_count": null,
+      "included_traffic_gb": "600",
+      "traffic_direction": null,
+      "bandwidth": null,
+      "billing_period": "month",
+      "price_toman": "2306000",
+      "hourly_price_toman": null,
+      "daily_price_toman": null,
+      "price_rial": 23060000,
+      "unit": "plan_month",
+      "tier_min": null,
+      "tier_max": null,
+      "tier_unit": null,
+      "availability": "available",
+      "source_url": "https://my.trusthost.co/feeds/server-prices.php",
+      "source_retrieved_at": "2026-11-26",
+      "source_price_date": "2026-11-26",
+      "confidence": "high",
+      "tax_included": false,
+      "notes": "inbound 600GB/month included, outbound free; beyond the quota 900 Toman/GB; invoices add 10% VAT.",
+      "attributes": {
+        "whmcs_pid": 10,
+        "catalog_updated_at": "2026-09-23 10:51:16",
+        "family_fa": "پلن‌های پردازشی",
+        "datacenter_fa": "فناپ تهران",
+        "port_gbps": 10,
+        "order_url": "https://my.trusthost.co/cart.php?a=add&pid=10",
+        "term_prices_toman": {
+          "monthly": "2306000",
+          "quarterly": "6918000"
+        },
+        "overage_toman_per_gb": "900",
+        "overage_volume_rates": [
+          {
+            "min_gb": 20000,
+            "toman_per_gb": "880"
+          },
+          {
+            "min_gb": 50000,
+            "toman_per_gb": "860"
+          },
+          {
+            "min_gb": 100000,
+            "toman_per_gb": "850"
+          }
+        ]
+      }
+    },
+    {
+      "id": "7631a407042e9596",
+      "provider_id": "trusthost",
+      "service_type": "compute_vm",
+      "pricing_model": "fixed_sku",
+      "product_family": "compute_optimized",
+      "sku": "پرداز ۴",
+      "name": "پرداز ۴",
+      "region_country": "IR",
+      "region": "Iran",
+      "datacenter": "Fanap Tehran",
+      "resource_class": null,
+      "cpu_cores": "16",
+      "cpu_unit": "vCPU",
+      "cpu_shared": null,
+      "ram_gb": "24",
+      "storage_gb": "250",
+      "storage_type": "SSD",
+      "gpu_model": null,
+      "gpu_count": null,
+      "included_traffic_gb": "800",
+      "traffic_direction": null,
+      "bandwidth": null,
+      "billing_period": "month",
+      "price_toman": "3160000",
+      "hourly_price_toman": null,
+      "daily_price_toman": null,
+      "price_rial": 31600000,
+      "unit": "plan_month",
+      "tier_min": null,
+      "tier_max": null,
+      "tier_unit": null,
+      "availability": "available",
+      "source_url": "https://my.trusthost.co/feeds/server-prices.php",
+      "source_retrieved_at": "2026-11-26",
+      "source_price_date": "2026-11-26",
+      "confidence": "high",
+      "tax_included": false,
+      "notes": "inbound 800GB/month included, outbound free; beyond the quota 900 Toman/GB; invoices add 10% VAT.",
+      "attributes": {
+        "whmcs_pid": 11,
+        "catalog_updated_at": "2026-09-23 10:51:16",
+        "family_fa": "پلن‌های پردازشی",
+        "datacenter_fa": "فناپ تهران",
+        "port_gbps": 10,
+        "order_url": "https://my.trusthost.co/cart.php?a=add&pid=11",
+        "term_prices_toman": {
+          "monthly": "3160000",
+          "quarterly": "9480000"
+        },
+        "overage_toman_per_gb": "900",
+        "overage_volume_rates": [
+          {
+            "min_gb": 20000,
+            "toman_per_gb": "880"
+          },
+          {
+            "min_gb": 50000,
+            "toman_per_gb": "860"
+          },
+          {
+            "min_gb": 100000,
+            "toman_per_gb": "850"
+          }
+        ]
+      }
+    },
+    {
+      "id": "5f583dd5bfbb8f05",
+      "provider_id": "trusthost",
+      "service_type": "compute_vm",
+      "pricing_model": "fixed_sku",
+      "product_family": "compute_optimized",
+      "sku": "پرداز ۵",
+      "name": "پرداز ۵",
+      "region_country": "IR",
+      "region": "Iran",
+      "datacenter": "Fanap Tehran",
+      "resource_class": null,
+      "cpu_cores": "24",
+      "cpu_unit": "vCPU",
+      "cpu_shared": null,
+      "ram_gb": "32",
+      "storage_gb": "350",
+      "storage_type": "SSD",
+      "gpu_model": null,
+      "gpu_count": null,
+      "included_traffic_gb": "1000",
+      "traffic_direction": null,
+      "bandwidth": null,
+      "billing_period": "month",
+      "price_toman": "4236000",
+      "hourly_price_toman": null,
+      "daily_price_toman": null,
+      "price_rial": 42360000,
+      "unit": "plan_month",
+      "tier_min": null,
+      "tier_max": null,
+      "tier_unit": null,
+      "availability": "available",
+      "source_url": "https://my.trusthost.co/feeds/server-prices.php",
+      "source_retrieved_at": "2026-11-26",
+      "source_price_date": "2026-11-26",
+      "confidence": "high",
+      "tax_included": false,
+      "notes": "inbound 1000GB/month included, outbound free; beyond the quota 900 Toman/GB; invoices add 10% VAT.",
+      "attributes": {
+        "whmcs_pid": 12,
+        "catalog_updated_at": "2026-09-23 10:51:16",
+        "family_fa": "پلن‌های پردازشی",
+        "datacenter_fa": "فناپ تهران",
+        "port_gbps": 10,
+        "order_url": "https://my.trusthost.co/cart.php?a=add&pid=12",
+        "term_prices_toman": {
+          "monthly": "4236000",
+          "quarterly": "12708000"
+        },
+        "overage_toman_per_gb": "900",
+        "overage_volume_rates": [
+          {
+            "min_gb": 20000,
+            "toman_per_gb": "880"
+          },
+          {
+            "min_gb": 50000,
+            "toman_per_gb": "860"
+          },
+          {
+            "min_gb": 100000,
+            "toman_per_gb": "850"
+          }
+        ]
+      }
+    },
+    {
+      "id": "e0cd0121497a1270",
+      "provider_id": "trusthost",
+      "service_type": "compute_vm",
+      "pricing_model": "fixed_sku",
+      "product_family": "memory_optimized",
+      "sku": "فراخ ۱",
+      "name": "فراخ ۱",
+      "region_country": "IR",
+      "region": "Iran",
+      "datacenter": "Fanap Tehran",
+      "resource_class": null,
+      "cpu_cores": "2",
+      "cpu_unit": "vCPU",
+      "cpu_shared": null,
+      "ram_gb": "8",
+      "storage_gb": "80",
+      "storage_type": "SSD",
+      "gpu_model": null,
+      "gpu_count": null,
+      "included_traffic_gb": "100",
+      "traffic_direction": null,
+      "bandwidth": null,
+      "billing_period": "month",
+      "price_toman": "835200",
+      "hourly_price_toman": null,
+      "daily_price_toman": null,
+      "price_rial": 8352000,
+      "unit": "plan_month",
+      "tier_min": null,
+      "tier_max": null,
+      "tier_unit": null,
+      "availability": "available",
+      "source_url": "https://my.trusthost.co/feeds/server-prices.php",
+      "source_retrieved_at": "2026-11-26",
+      "source_price_date": "2026-11-26",
+      "confidence": "high",
+      "tax_included": false,
+      "notes": "inbound 100GB/month included, outbound free; beyond the quota 900 Toman/GB; invoices add 10% VAT.",
+      "attributes": {
+        "whmcs_pid": 13,
+        "catalog_updated_at": "2026-09-23 10:51:16",
+        "family_fa": "پلن‌های رم‌محور",
+        "datacenter_fa": "فناپ تهران",
+        "port_gbps": 10,
+        "order_url": "https://my.trusthost.co/cart.php?a=add&pid=13",
+        "term_prices_toman": {
+          "monthly": "835200",
+          "quarterly": "2505600"
+        },
+        "overage_toman_per_gb": "900",
+        "overage_volume_rates": [
+          {
+            "min_gb": 20000,
+            "toman_per_gb": "880"
+          },
+          {
+            "min_gb": 50000,
+            "toman_per_gb": "860"
+          },
+          {
+            "min_gb": 100000,
+            "toman_per_gb": "850"
+          }
+        ]
+      }
+    },
+    {
+      "id": "e1a5164f25b2f03e",
+      "provider_id": "trusthost",
+      "service_type": "compute_vm",
+      "pricing_model": "fixed_sku",
+      "product_family": "memory_optimized",
+      "sku": "فراخ ۲",
+      "name": "فراخ ۲",
+      "region_country": "IR",
+      "region": "Iran",
+      "datacenter": "Fanap Tehran",
+      "resource_class": null,
+      "cpu_cores": "4",
+      "cpu_unit": "vCPU",
+      "cpu_shared": null,
+      "ram_gb": "16",
+      "storage_gb": "150",
+      "storage_type": "SSD",
+      "gpu_model": null,
+      "gpu_count": null,
+      "included_traffic_gb": "200",
+      "traffic_direction": null,
+      "bandwidth": null,
+      "billing_period": "month",
+      "price_toman": "1463040",
+      "hourly_price_toman": null,
+      "daily_price_toman": null,
+      "price_rial": 14630400,
+      "unit": "plan_month",
+      "tier_min": null,
+      "tier_max": null,
+      "tier_unit": null,
+      "availability": "available",
+      "source_url": "https://my.trusthost.co/feeds/server-prices.php",
+      "source_retrieved_at": "2026-11-26",
+      "source_price_date": "2026-11-26",
+      "confidence": "high",
+      "tax_included": false,
+      "notes": "inbound 200GB/month included, outbound free; beyond the quota 900 Toman/GB; invoices add 10% VAT.",
+      "attributes": {
+        "whmcs_pid": 14,
+        "catalog_updated_at": "2026-09-23 10:51:16",
+        "family_fa": "پلن‌های رم‌محور",
+        "datacenter_fa": "فناپ تهران",
+        "port_gbps": 10,
+        "order_url": "https://my.trusthost.co/cart.php?a=add&pid=14",
+        "term_prices_toman": {
+          "monthly": "1463040",
+          "quarterly": "4389120"
+        },
+        "overage_toman_per_gb": "900",
+        "overage_volume_rates": [
+          {
+            "min_gb": 20000,
+            "toman_per_gb": "880"
+          },
+          {
+            "min_gb": 50000,
+            "toman_per_gb": "860"
+          },
+          {
+            "min_gb": 100000,
+            "toman_per_gb": "850"
+          }
+        ]
+      }
+    },
+    {
+      "id": "29e02eedb16625d6",
+      "provider_id": "trusthost",
+      "service_type": "compute_vm",
+      "pricing_model": "fixed_sku",
+      "product_family": "memory_optimized",
+      "sku": "فراخ ۳",
+      "name": "فراخ ۳",
+      "region_country": "IR",
+      "region": "Iran",
+      "datacenter": "Fanap Tehran",
+      "resource_class": null,
+      "cpu_cores": "6",
+      "cpu_unit": "vCPU",
+      "cpu_shared": null,
+      "ram_gb": "32",
+      "storage_gb": "250",
+      "storage_type": "SSD",
+      "gpu_model": null,
+      "gpu_count": null,
+      "included_traffic_gb": "400",
+      "traffic_direction": null,
+      "bandwidth": null,
+      "billing_period": "month",
+      "price_toman": "2551680",
+      "hourly_price_toman": null,
+      "daily_price_toman": null,
+      "price_rial": 25516800,
+      "unit": "plan_month",
+      "tier_min": null,
+      "tier_max": null,
+      "tier_unit": null,
+      "availability": "available",
+      "source_url": "https://my.trusthost.co/feeds/server-prices.php",
+      "source_retrieved_at": "2026-11-26",
+      "source_price_date": "2026-11-26",
+      "confidence": "high",
+      "tax_included": false,
+      "notes": "inbound 400GB/month included, outbound free; beyond the quota 900 Toman/GB; invoices add 10% VAT.",
+      "attributes": {
+        "whmcs_pid": 15,
+        "catalog_updated_at": "2026-09-23 10:51:16",
+        "family_fa": "پلن‌های رم‌محور",
+        "datacenter_fa": "فناپ تهران",
+        "port_gbps": 10,
+        "order_url": "https://my.trusthost.co/cart.php?a=add&pid=15",
+        "term_prices_toman": {
+          "monthly": "2551680",
+          "quarterly": "7655040"
+        },
+        "overage_toman_per_gb": "900",
+        "overage_volume_rates": [
+          {
+            "min_gb": 20000,
+            "toman_per_gb": "880"
+          },
+          {
+            "min_gb": 50000,
+            "toman_per_gb": "860"
+          },
+          {
+            "min_gb": 100000,
+            "toman_per_gb": "850"
+          }
+        ]
+      }
+    },
+    {
+      "id": "a18c5d0cf28960b0",
+      "provider_id": "trusthost",
+      "service_type": "compute_vm",
+      "pricing_model": "fixed_sku",
+      "product_family": "memory_optimized",
+      "sku": "فراخ ۴",
+      "name": "فراخ ۴",
+      "region_country": "IR",
+      "region": "Iran",
+      "datacenter": "Fanap Tehran",
+      "resource_class": null,
+      "cpu_cores": "8",
+      "cpu_unit": "vCPU",
+      "cpu_shared": null,
+      "ram_gb": "64",
+      "storage_gb": "400",
+      "storage_type": "SSD",
+      "gpu_model": null,
+      "gpu_count": null,
+      "included_traffic_gb": "600",
+      "traffic_direction": null,
+      "bandwidth": null,
+      "billing_period": "month",
+      "price_toman": "4475520",
+      "hourly_price_toman": null,
+      "daily_price_toman": null,
+      "price_rial": 44755200,
+      "unit": "plan_month",
+      "tier_min": null,
+      "tier_max": null,
+      "tier_unit": null,
+      "availability": "available",
+      "source_url": "https://my.trusthost.co/feeds/server-prices.php",
+      "source_retrieved_at": "2026-11-26",
+      "source_price_date": "2026-11-26",
+      "confidence": "high",
+      "tax_included": false,
+      "notes": "inbound 600GB/month included, outbound free; beyond the quota 900 Toman/GB; invoices add 10% VAT.",
+      "attributes": {
+        "whmcs_pid": 16,
+        "catalog_updated_at": "2026-09-23 10:51:16",
+        "family_fa": "پلن‌های رم‌محور",
+        "datacenter_fa": "فناپ تهران",
+        "port_gbps": 10,
+        "order_url": "https://my.trusthost.co/cart.php?a=add&pid=16",
+        "term_prices_toman": {
+          "monthly": "4475520",
+          "quarterly": "13426560"
+        },
+        "overage_toman_per_gb": "900",
+        "overage_volume_rates": [
+          {
+            "min_gb": 20000,
+            "toman_per_gb": "880"
+          },
+          {
+            "min_gb": 50000,
+            "toman_per_gb": "860"
+          },
+          {
+            "min_gb": 100000,
+            "toman_per_gb": "850"
+          }
+        ]
+      }
+    },
+    {
+      "id": "764c26da1e150010",
+      "provider_id": "trusthost",
+      "service_type": "compute_vm",
+      "pricing_model": "fixed_sku",
+      "product_family": "memory_optimized",
+      "sku": "فراخ ۵",
+      "name": "فراخ ۵",
+      "region_country": "IR",
+      "region": "Iran",
+      "datacenter": "Fanap Tehran",
+      "resource_class": null,
+      "cpu_cores": "12",
+      "cpu_unit": "vCPU",
+      "cpu_shared": null,
+      "ram_gb": "96",
+      "storage_gb": "600",
+      "storage_type": "SSD",
+      "gpu_model": null,
+      "gpu_count": null,
+      "included_traffic_gb": "800",
+      "traffic_direction": null,
+      "bandwidth": null,
+      "billing_period": "month",
+      "price_toman": "6704640",
+      "hourly_price_toman": null,
+      "daily_price_toman": null,
+      "price_rial": 67046400,
+      "unit": "plan_month",
+      "tier_min": null,
+      "tier_max": null,
+      "tier_unit": null,
+      "availability": "available",
+      "source_url": "https://my.trusthost.co/feeds/server-prices.php",
+      "source_retrieved_at": "2026-11-26",
+      "source_price_date": "2026-11-26",
+      "confidence": "high",
+      "tax_included": false,
+      "notes": "inbound 800GB/month included, outbound free; beyond the quota 900 Toman/GB; invoices add 10% VAT.",
+      "attributes": {
+        "whmcs_pid": 17,
+        "catalog_updated_at": "2026-09-23 10:51:16",
+        "family_fa": "پلن‌های رم‌محور",
+        "datacenter_fa": "فناپ تهران",
+        "port_gbps": 10,
+        "order_url": "https://my.trusthost.co/cart.php?a=add&pid=17",
+        "term_prices_toman": {
+          "monthly": "6704640",
+          "quarterly": "20113920"
+        },
+        "overage_toman_per_gb": "900",
+        "overage_volume_rates": [
+          {
+            "min_gb": 20000,
+            "toman_per_gb": "880"
+          },
+          {
+            "min_gb": 50000,
+            "toman_per_gb": "860"
+          },
+          {
+            "min_gb": 100000,
+            "toman_per_gb": "850"
+          }
+        ]
+      }
+    },
+    {
+      "id": "6af8822280885416",
+      "provider_id": "trusthost",
+      "service_type": "compute_vm",
+      "pricing_model": "fixed_sku",
+      "product_family": "memory_optimized",
+      "sku": "فراخ ۶",
+      "name": "فراخ ۶",
+      "region_country": "IR",
+      "region": "Iran",
+      "datacenter": "Fanap Tehran",
+      "resource_class": null,
+      "cpu_cores": "16",
+      "cpu_unit": "vCPU",
+      "cpu_shared": null,
+      "ram_gb": "128",
+      "storage_gb": "800",
+      "storage_type": "SSD",
+      "gpu_model": null,
+      "gpu_count": null,
+      "included_traffic_gb": "1000",
+      "traffic_direction": null,
+      "bandwidth": null,
+      "billing_period": "month",
+      "price_toman": "9037440",
+      "hourly_price_toman": null,
+      "daily_price_toman": null,
+      "price_rial": 90374400,
+      "unit": "plan_month",
+      "tier_min": null,
+      "tier_max": null,
+      "tier_unit": null,
+      "availability": "available",
+      "source_url": "https://my.trusthost.co/feeds/server-prices.php",
+      "source_retrieved_at": "2026-11-26",
+      "source_price_date": "2026-11-26",
+      "confidence": "high",
+      "tax_included": false,
+      "notes": "inbound 1000GB/month included, outbound free; beyond the quota 900 Toman/GB; invoices add 10% VAT.",
+      "attributes": {
+        "whmcs_pid": 18,
+        "catalog_updated_at": "2026-09-23 10:51:16",
+        "family_fa": "پلن‌های رم‌محور",
+        "datacenter_fa": "فناپ تهران",
+        "port_gbps": 10,
+        "order_url": "https://my.trusthost.co/cart.php?a=add&pid=18",
+        "term_prices_toman": {
+          "monthly": "9037440",
+          "quarterly": "27112320"
+        },
+        "overage_toman_per_gb": "900",
+        "overage_volume_rates": [
+          {
+            "min_gb": 20000,
+            "toman_per_gb": "880"
+          },
+          {
+            "min_gb": 50000,
+            "toman_per_gb": "860"
+          },
+          {
+            "min_gb": 100000,
+            "toman_per_gb": "850"
+          }
+        ]
+      }
+    },
+    {
+      "id": "ca6ba7c7ab1410b9",
+      "provider_id": "trusthost",
+      "service_type": "compute_vm",
+      "pricing_model": "fixed_sku",
+      "product_family": "storage_optimized",
+      "sku": "انبار ۱",
+      "name": "انبار ۱",
+      "region_country": "IR",
+      "region": "Iran",
+      "datacenter": "Fanap Tehran",
+      "resource_class": null,
+      "cpu_cores": "2",
+      "cpu_unit": "vCPU",
+      "cpu_shared": null,
+      "ram_gb": "4",
+      "storage_gb": "250",
+      "storage_type": "SSD",
+      "gpu_model": null,
+      "gpu_count": null,
+      "included_traffic_gb": "200",
+      "traffic_direction": null,
+      "bandwidth": null,
+      "billing_period": "month",
+      "price_toman": "794880",
+      "hourly_price_toman": null,
+      "daily_price_toman": null,
+      "price_rial": 7948800,
+      "unit": "plan_month",
+      "tier_min": null,
+      "tier_max": null,
+      "tier_unit": null,
+      "availability": "available",
+      "source_url": "https://my.trusthost.co/feeds/server-prices.php",
+      "source_retrieved_at": "2026-11-26",
+      "source_price_date": "2026-11-26",
+      "confidence": "high",
+      "tax_included": false,
+      "notes": "inbound 200GB/month included, outbound free; beyond the quota 900 Toman/GB; invoices add 10% VAT.",
+      "attributes": {
+        "whmcs_pid": 19,
+        "catalog_updated_at": "2026-09-23 10:51:16",
+        "family_fa": "پلن‌های ذخیره‌سازی",
+        "datacenter_fa": "فناپ تهران",
+        "port_gbps": 10,
+        "order_url": "https://my.trusthost.co/cart.php?a=add&pid=19",
+        "term_prices_toman": {
+          "monthly": "794880",
+          "quarterly": "2384640"
+        },
+        "overage_toman_per_gb": "900",
+        "overage_volume_rates": [
+          {
+            "min_gb": 20000,
+            "toman_per_gb": "880"
+          },
+          {
+            "min_gb": 50000,
+            "toman_per_gb": "860"
+          },
+          {
+            "min_gb": 100000,
+            "toman_per_gb": "850"
+          }
+        ]
+      }
+    },
+    {
+      "id": "7a155d7ec9bf9c6c",
+      "provider_id": "trusthost",
+      "service_type": "compute_vm",
+      "pricing_model": "fixed_sku",
+      "product_family": "storage_optimized",
+      "sku": "انبار ۲",
+      "name": "انبار ۲",
+      "region_country": "IR",
+      "region": "Iran",
+      "datacenter": "Fanap Tehran",
+      "resource_class": null,
+      "cpu_cores": "4",
+      "cpu_unit": "vCPU",
+      "cpu_shared": null,
+      "ram_gb": "8",
+      "storage_gb": "500",
+      "storage_type": "SSD",
+      "gpu_model": null,
+      "gpu_count": null,
+      "included_traffic_gb": "400",
+      "traffic_direction": null,
+      "bandwidth": null,
+      "billing_period": "month",
+      "price_toman": "1382400",
+      "hourly_price_toman": null,
+      "daily_price_toman": null,
+      "price_rial": 13824000,
+      "unit": "plan_month",
+      "tier_min": null,
+      "tier_max": null,
+      "tier_unit": null,
+      "availability": "available",
+      "source_url": "https://my.trusthost.co/feeds/server-prices.php",
+      "source_retrieved_at": "2026-11-26",
+      "source_price_date": "2026-11-26",
+      "confidence": "high",
+      "tax_included": false,
+      "notes": "inbound 400GB/month included, outbound free; beyond the quota 900 Toman/GB; invoices add 10% VAT.",
+      "attributes": {
+        "whmcs_pid": 20,
+        "catalog_updated_at": "2026-09-23 10:51:16",
+        "family_fa": "پلن‌های ذخیره‌سازی",
+        "datacenter_fa": "فناپ تهران",
+        "port_gbps": 10,
+        "order_url": "https://my.trusthost.co/cart.php?a=add&pid=20",
+        "term_prices_toman": {
+          "monthly": "1382400",
+          "quarterly": "4147200"
+        },
+        "overage_toman_per_gb": "900",
+        "overage_volume_rates": [
+          {
+            "min_gb": 20000,
+            "toman_per_gb": "880"
+          },
+          {
+            "min_gb": 50000,
+            "toman_per_gb": "860"
+          },
+          {
+            "min_gb": 100000,
+            "toman_per_gb": "850"
+          }
+        ]
+      }
+    },
+    {
+      "id": "d44c8ee5f7952570",
+      "provider_id": "trusthost",
+      "service_type": "compute_vm",
+      "pricing_model": "fixed_sku",
+      "product_family": "storage_optimized",
+      "sku": "انبار ۳",
+      "name": "انبار ۳",
+      "region_country": "IR",
+      "region": "Iran",
+      "datacenter": "Fanap Tehran",
+      "resource_class": null,
+      "cpu_cores": "8",
+      "cpu_unit": "vCPU",
+      "cpu_shared": null,
+      "ram_gb": "16",
+      "storage_gb": "1024",
+      "storage_type": "SSD",
+      "gpu_model": null,
+      "gpu_count": null,
+      "included_traffic_gb": "600",
+      "traffic_direction": null,
+      "bandwidth": null,
+      "billing_period": "month",
+      "price_toman": "2511360",
+      "hourly_price_toman": null,
+      "daily_price_toman": null,
+      "price_rial": 25113600,
+      "unit": "plan_month",
+      "tier_min": null,
+      "tier_max": null,
+      "tier_unit": null,
+      "availability": "available",
+      "source_url": "https://my.trusthost.co/feeds/server-prices.php",
+      "source_retrieved_at": "2026-11-26",
+      "source_price_date": "2026-11-26",
+      "confidence": "high",
+      "tax_included": false,
+      "notes": "inbound 600GB/month included, outbound free; beyond the quota 900 Toman/GB; invoices add 10% VAT.",
+      "attributes": {
+        "whmcs_pid": 21,
+        "catalog_updated_at": "2026-09-23 10:51:16",
+        "family_fa": "پلن‌های ذخیره‌سازی",
+        "datacenter_fa": "فناپ تهران",
+        "port_gbps": 10,
+        "order_url": "https://my.trusthost.co/cart.php?a=add&pid=21",
+        "term_prices_toman": {
+          "monthly": "2511360",
+          "quarterly": "7534080"
+        },
+        "overage_toman_per_gb": "900",
+        "overage_volume_rates": [
+          {
+            "min_gb": 20000,
+            "toman_per_gb": "880"
+          },
+          {
+            "min_gb": 50000,
+            "toman_per_gb": "860"
+          },
+          {
+            "min_gb": 100000,
+            "toman_per_gb": "850"
+          }
+        ]
+      }
+    },
+    {
+      "id": "1bbd6463dd355d7f",
+      "provider_id": "trusthost",
+      "service_type": "compute_vm",
+      "pricing_model": "fixed_sku",
+      "product_family": "storage_optimized",
+      "sku": "انبار ۴",
+      "name": "انبار ۴",
+      "region_country": "IR",
+      "region": "Iran",
+      "datacenter": "Fanap Tehran",
+      "resource_class": null,
+      "cpu_cores": "12",
+      "cpu_unit": "vCPU",
+      "cpu_shared": null,
+      "ram_gb": "32",
+      "storage_gb": "2048",
+      "storage_type": "SSD",
+      "gpu_model": null,
+      "gpu_count": null,
+      "included_traffic_gb": "1000",
+      "traffic_direction": null,
+      "bandwidth": null,
+      "billing_period": "month",
+      "price_toman": "4613760",
+      "hourly_price_toman": null,
+      "daily_price_toman": null,
+      "price_rial": 46137600,
+      "unit": "plan_month",
+      "tier_min": null,
+      "tier_max": null,
+      "tier_unit": null,
+      "availability": "available",
+      "source_url": "https://my.trusthost.co/feeds/server-prices.php",
+      "source_retrieved_at": "2026-11-26",
+      "source_price_date": "2026-11-26",
+      "confidence": "high",
+      "tax_included": false,
+      "notes": "inbound 1000GB/month included, outbound free; beyond the quota 900 Toman/GB; invoices add 10% VAT.",
+      "attributes": {
+        "whmcs_pid": 22,
+        "catalog_updated_at": "2026-09-23 10:51:16",
+        "family_fa": "پلن‌های ذخیره‌سازی",
+        "datacenter_fa": "فناپ تهران",
+        "port_gbps": 10,
+        "order_url": "https://my.trusthost.co/cart.php?a=add&pid=22",
+        "term_prices_toman": {
+          "monthly": "4613760",
+          "quarterly": "13841280"
+        },
+        "overage_toman_per_gb": "900",
+        "overage_volume_rates": [
+          {
+            "min_gb": 20000,
+            "toman_per_gb": "880"
+          },
+          {
+            "min_gb": 50000,
+            "toman_per_gb": "860"
+          },
+          {
+            "min_gb": 100000,
+            "toman_per_gb": "850"
+          }
+        ]
+      }
     }
   ],
   "billing_rules": [
@@ -7973,6 +9401,18 @@
       },
       "source_url": "https://www.arvancloud.ir/fa/pricing/all",
       "retrieved_at": "2026-10-04"
+    },
+    {
+      "rule_id": "trusthost-vat",
+      "provider_id": "trusthost",
+      "scope": "invoice",
+      "rule_type": "tax",
+      "status": "active",
+      "logic": {
+        "vat_percent": 10
+      },
+      "source_url": "https://my.trusthost.co/feeds/server-prices.php",
+      "retrieved_at": "2026-11-26"
     }
   ]
 }
