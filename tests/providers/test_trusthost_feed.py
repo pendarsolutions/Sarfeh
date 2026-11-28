@@ -23,10 +23,10 @@ def raw(data: dict | str) -> RawCatalog:
     return RawCatalog("trusthost", TrustHostAdapter.source_url, AT, content, content_type="application/json")
 
 
-def test_the_21_plans_of_the_tehran_datacenters():
+def test_the_25_plans_of_the_tehran_datacenters():
     items = TrustHostAdapter().normalize_catalog(raw(feed()))
     by = {i.sku: i for i in items}
-    assert len(items) == 21
+    assert len(items) == 25
     assert {i.product_family for i in items} == {"general_purpose", "compute_optimized", "memory_optimized",
                                                  "storage_optimized"}
     j = by["جرقه"]

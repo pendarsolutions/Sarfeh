@@ -13,9 +13,9 @@ def jaraghe(download: str, upload: str, quantity: int = 1, ipv4: bool = False) -
                     requires_public_ipv4=ipv4)
 
 
-def test_the_seed_holds_the_21_plans(snapshot):
+def test_the_seed_holds_the_25_plans(snapshot):
     rows = [i for i in snapshot.items if i.provider_id == "trusthost"]
-    assert len(rows) == 21
+    assert len(rows) == 25
     assert all(r.included_traffic_gb and r.attributes["overage_toman_per_gb"] == "900" for r in rows)
 
 

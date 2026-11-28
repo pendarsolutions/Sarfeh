@@ -3,7 +3,7 @@
     https://my.trusthost.co/feeds/server-prices.php
 
 TrustHost asked to be listed and published this feed. It is read straight from TrustHost's billing system (WHMCS), so
-the prices are the ones it invoices; https://trusthost.co/server/ shows the same table. It holds the 21 plans of the
+the prices are the ones it invoices; https://trusthost.co/server/ shows the same table. It holds the 25 plans of the
 Tehran datacenters in four families: general purpose, compute, memory and storage.
 
 Traffic: each plan includes a monthly quota of traffic entering the server (Sarfeh's "upload"); traffic leaving the
