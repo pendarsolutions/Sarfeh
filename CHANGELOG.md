@@ -5,6 +5,14 @@ and versions follow [Semantic Versioning](https://semver.org/). Until 1.0, a min
 
 ## [Unreleased]
 
+### Added
+
+- **HostIran's other Iranian clusters**: 124 plans from its price API instead of the 17 of its Beheshti professional
+  cluster: the enterprise (G9) and economy (G8) clusters, enterprise with economy disks, enterprise plus with NVMe,
+  and the professional cluster with NVMe in Beheshti, Mashhad and Ahwaz. Each plan's name says its cluster, so the
+  price page shows HostIran's cheapest plan for a size from any of them. Its offers carry the cluster, and the
+  hardware generation only where HostIran's API states it.
+
 ## [0.6.1] — 2026-11-25
 
 ### Added

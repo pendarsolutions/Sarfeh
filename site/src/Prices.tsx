@@ -25,10 +25,15 @@ interface Offer {
   ram_gb: string;
   disk_gb: string;
   cpu_shared: boolean | null;
+  /** ssd, hot_ssd, nvme, hdd or hybrid (HDD + SSD) */
   disk_type: string | null;
   traffic: string;
   included_traffic_gb: string | null;
   datacenter: string | null;
+  /** the provider's own name for the cluster (its service level) the plan is on, in its own words; older tables have none */
+  cluster?: string | null;
+  /** the hardware generation, when the provider states it: G9, G8 */
+  generation?: string | null;
   source_url: string | null;
   read_on: string | null;
   /** what a reader should know about the figure, by id; older tables have none */
@@ -119,6 +124,8 @@ const TRAFFIC: Record<string, Key> = {
   metered_download: "prTrafficMetered",
 };
 const DISK_TYPE: Record<string, string> = { ssd: "SSD", hot_ssd: "SSD", nvme: "NVMe", hdd: "HDD" };
+/** a disk type that a Latin label alone doesn't explain, in the reader's language */
+const DISK_TYPE_WORDS: Partial<Record<string, Key>> = { hybrid: "prDiskHybrid" };
 /** A condition in the reader's language, or nothing for an id this page doesn't know yet. */
 function conditionText(c: Condition, t: (k: Key) => string, lang: Lang): string | null {
   if (c.id === "ipv4_assumed") return t("prCondIpv4Assumed");
@@ -203,7 +210,9 @@ function OfferRow({ offer, rank, size, table }: { offer: Offer; rank: number; si
   const bigger = Number(offer.cpu) > size.cpu || Number(offer.ram_gb) > size.ram_gb || Number(offer.disk_gb) > size.disk_gb;
   const plan =
     offer.kind === "components" ? fill(t("prBuilt"), { cls: offer.plan ?? "" }) : offer.kind === "by_size" ? t("prBySize") : (offer.plan_name ?? offer.plan ?? "");
-  const diskType = offer.disk_type ? DISK_TYPE[offer.disk_type] : undefined;
+  // a type this page doesn't know yet leaves just the word "disk"
+  const diskWords = offer.disk_type ? DISK_TYPE_WORDS[offer.disk_type] : undefined;
+  const diskType = offer.disk_type ? (DISK_TYPE[offer.disk_type] ?? (diskWords && t(diskWords))) : undefined;
   const trafficKey = TRAFFIC[offer.traffic] ?? "prTrafficUnknown";
   const times = n(offer.times_cheapest).replace(".", lang === "fa" ? "٫" : ".");
   const conditions = (offer.conditions ?? []).map((c) => conditionText(c, t, lang)).filter((text): text is string => text !== null);
@@ -244,6 +253,21 @@ function OfferRow({ offer, rank, size, table }: { offer: Offer; rank: number; si
             <li>
               {t("prDatacenter")}: <bdi>{offer.datacenter}</bdi>
             </li>
+          )}
+          {/* which of a provider's service levels the plan is on, so newer hardware next to another provider's older
+              hardware says so; the cluster's name stays as the provider writes it, on the English page too. A no-break
+              space keeps "generation" and "G9" on one line. */}
+          {offer.cluster ? (
+            <li className="pr-level">
+              {t("prServiceLevel")}: <bdi>{offer.cluster}</bdi>
+              {offer.generation && <> · {t("prGeneration")}{"\u00a0"}<bdi>{offer.generation}</bdi></>}
+            </li>
+          ) : (
+            offer.generation && (
+              <li className="pr-level">
+                {t("prHardwareGeneration")}: <bdi>{offer.generation}</bdi>
+              </li>
+            )
           )}
         </ul>
         {conditions.length > 0 && (

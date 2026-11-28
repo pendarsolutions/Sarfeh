@@ -121,8 +121,20 @@ def test_a_source_saved_from_a_browser_is_read_by_its_own_adapter(refresh_prices
     state = {"schema": 1, "providers": {}}
     reports = refresh_prices.refresh(state, only=set(), approve=set(), timeout_s=1, saved={"hostiran": saved})
     assert [(r["provider_id"], r["status"], r["applied"]) for r in reports] == [("hostiran", "ok", True)]
-    assert len(state["providers"]["hostiran"]["items"]) == 17 and set(state["providers"]) == {"hostiran"}
+    assert len(state["providers"]["hostiran"]["items"]) == 124 and set(state["providers"]) == {"hostiran"}
     assert reports[0].get("event") is None  # the catalog already holds what the API says: nothing moved
+
+    # a state that still holds the 17 plans first read (one cluster) gets the other clusters' plans as new, and keeps
+    # those 17 as the same rows, rather than recording them removed and added again
+    first = [i.model_copy(update={"attributes": {"traffic_policy": "unknown"}})
+             for i in refresh_prices.load_seed_snapshot().provider_items("hostiran") if i.sku == i.name]
+    state = {"schema": 1, "providers": {"hostiran": {"read_on": "2026-11-25T12:00:00+00:00", "source_url": "",
+                                                     "items": [refresh_prices._dump(i) for i in first]}}}
+    reports = refresh_prices.refresh(state, only=set(), approve=set(), timeout_s=1, saved={"hostiran": saved})
+    e = reports[0]["event"]
+    assert (reports[0]["status"], len(first), len(e["new"]), e["changed"], e["removed"]) == ("ok", 17, 107, [], [])
+    kept = {i["id"] for i in state["providers"]["hostiran"]["items"]}
+    assert {i.id for i in first} <= kept and len(kept) == 124
 
 
 def test_a_provider_new_to_the_page_is_recorded_once(refresh_prices):
@@ -134,5 +146,5 @@ def test_a_provider_new_to_the_page_is_recorded_once(refresh_prices):
     assert refresh_prices.joined(feed, state, at) == [] and "hostiran" in feed["providers_seen"]
     feed["providers_seen"].remove("hostiran")  # as on the day before HostIran was added
     events = refresh_prices.joined(feed, state, at)
-    assert [(e["provider_id"], e["source"], len(e["new"])) for e in events] == [("hostiran", "added", 17)]
+    assert [(e["provider_id"], e["source"], len(e["new"])) for e in events] == [("hostiran", "added", 124)]
     assert refresh_prices.joined(feed, state, at) == []

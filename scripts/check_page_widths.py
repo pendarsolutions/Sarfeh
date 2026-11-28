@@ -36,7 +36,8 @@ import refresh_prices  # noqa: E402
 
 WIDTHS = (320, 360)
 PAGES = ("/", "/?lang=en", "/prices/?cpu=2&ram=4&disk=50", "/prices/?cpu=2&ram=4&disk=50&lang=en",
-         "/prices/?cpu=16&ram=64&disk=400", "/prices/?view=changes", "/prices/?view=changes&lang=en")
+         "/prices/?cpu=16&ram=64&disk=400", "/prices/?cpu=16&ram=64&disk=400&lang=en", "/prices/?view=changes",
+         "/prices/?view=changes&lang=en")
 BROWSERS = ("google-chrome", "chromium", "chromium-browser", "microsoft-edge",
             r"C:\Program Files\Google\Chrome\Application\chrome.exe",
             r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",

@@ -97,7 +97,10 @@ def _offer(pid: str, kind: str, priced: PriceBreakdown, size: tuple[int, int, in
            row: CatalogItem | None = None, plan: str | None = None) -> dict[str, Any]:
     strategy = pol["strategy"]
     cpu, ram, disk = (row.cpu_cores, row.ram_gb, row.storage_gb) if row else map(Decimal, size)
-    policy = TRAFFIC_BY_STRATEGY.get(strategy) or (row.attributes.get("traffic_policy") if row else None) or "unknown"
+    attrs = row.attributes if row else {}
+    policy = TRAFFIC_BY_STRATEGY.get(strategy) or attrs.get("traffic_policy") or "unknown"
+    # a row whose storage type isn't set (it is part of the row's identity) may still say its disk class
+    disk_type = (row.storage_type or attrs.get("disk_class")) if row else None
     return {
         "provider_id": pid,
         "kind": kind,  # plan | components | by_size
@@ -109,10 +112,13 @@ def _offer(pid: str, kind: str, priced: PriceBreakdown, size: tuple[int, int, in
         "ram_gb": _serialize(ram),
         "disk_gb": _serialize(disk),
         "cpu_shared": row.cpu_shared if row else None,
-        "disk_type": row.storage_type.lower() if row and row.storage_type else None,
+        "disk_type": disk_type.lower() if disk_type else None,
         "traffic": policy,
         "included_traffic_gb": _serialize(row.included_traffic_gb) if row and policy == "included_quota" else None,
         "datacenter": row.datacenter if row else None,
+        # which of a provider's clusters the plan is in, and its hardware generation, where the provider states them
+        "cluster": attrs.get("cluster"),
+        "generation": attrs.get("generation"),
         **_source(priced, row),
         "conditions": _conditions(priced, row, pol),
         "notes": list(priced.assumptions),

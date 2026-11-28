@@ -37,6 +37,7 @@ def test_an_offer_covers_the_size_and_the_cheapest_comes_first(table):
             assert Decimal(o["cpu"]) >= s["cpu"] and Decimal(o["ram_gb"]) >= s["ram_gb"]
             assert Decimal(o["disk_gb"]) >= s["disk_gb"]
             assert o["source_url"] and o["read_on"], o  # every price can be checked against its page
+            assert {"cluster", "generation", "disk_type", "datacenter"} <= set(o)  # what the page reads, always there
         assert s["offers"][0]["times_cheapest"] == "1.0"
         ranked = {o["provider_id"] for o in s["offers"]} | {m["provider_id"] for m in s["missing"]}
         assert ranked == set(table["providers"])  # every provider is either ranked or explained
@@ -45,8 +46,8 @@ def test_an_offer_covers_the_size_and_the_cheapest_comes_first(table):
 def test_two_cores_four_gb_and_fifty_gb_of_disk(snapshot):
     offers, missing = offers_for(snapshot, 2, 4, 50)
     by = {o["provider_id"]: o for o in offers}
-    assert [o["provider_id"] for o in offers] == ["trusthost", "mobinhost", "chabokan", "serverir", "parspack",
-                                                  "arvancloud", "liara", "hostiran", "iranserver"]
+    assert [o["provider_id"] for o in offers] == ["trusthost", "mobinhost", "chabokan", "serverir", "hostiran",
+                                                  "parspack", "arvancloud", "liara", "iranserver"]
     # TrustHost's quota is traffic entering the server; the size has none, so the plan is its price
     assert (by["trusthost"]["plan"], by["trusthost"]["monthly_toman"], by["trusthost"]["included_traffic_gb"]) == (
         "آغاز", "737280", "200")
@@ -60,10 +61,14 @@ def test_two_cores_four_gb_and_fifty_gb_of_disk(snapshot):
     assert (by["liara"]["cpu"], by["liara"]["ram_gb"], by["liara"]["disk_gb"]) == ("4", "8", "80")
     assert by["liara"]["times_cheapest"] == "6.5"  # 4,800,000 against TrustHost's 737,280
     # HostIran doesn't publish its traffic terms: the size has no traffic, so its plan is its price, and the page
-    # says what was left out
+    # says what was left out. Its cheapest plan this size is in its economy cluster, and the offer says so.
     assert (by["hostiran"]["plan"], by["hostiran"]["monthly_toman"], by["hostiran"]["traffic"]) == (
-        "General Purpose 4", "4938000", "unknown")
+        "Cost-Optimized 4 (Economy)", "1770000", "unknown")
+    assert (by["hostiran"]["cluster"], by["hostiran"]["generation"], by["hostiran"]["disk_type"]) == (
+        "کلاستر اقتصادی", "G8", "ssd")
     assert {"id": "traffic_not_stated"} in by["hostiran"]["conditions"]
+    # a provider that doesn't name its clusters, or an offer built from component prices or by size, names none
+    assert all((by[p]["cluster"], by[p]["generation"]) == (None, None) for p in ("mobinhost", "arvancloud", "parspack"))
     assert missing == [{"provider_id": "abrha", "reason": "starting_price_only"}]
 
 

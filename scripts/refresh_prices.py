@@ -110,8 +110,9 @@ def refresh(state: dict[str, Any], *, only: set[str], approve: set[str], timeout
         previous = ([CatalogItem.model_validate(i) for i in kept["items"]] if kept
                     else [i for i in seed.items if i.provider_id == pid])
         if pid in saved:
-            raw, error = RawCatalog(pid, adapter.source_url, datetime.now(UTC),
-                                    saved[pid].read_text(encoding="utf-8")), None
+            # read when the copy was saved, not when it is applied: a copy from last week isn't today's read
+            taken = datetime.fromtimestamp(saved[pid].stat().st_mtime, UTC)
+            raw, error = RawCatalog(pid, adapter.source_url, taken, saved[pid].read_text(encoding="utf-8")), None
         else:
             raw, error = _fetch(adapter, timeout_s)
         plan = plan_sync(adapter, raw, previous, parse_error=error)

@@ -147,10 +147,10 @@ def test_each_change_says_what_came_before_it(rows):
 
 
 def test_a_provider_that_joins_the_page_is_news_of_its_own():
-    """HostIran joined on 25 November with 17 plans, priced by HostIran itself on 11 November."""
+    """HostIran, with the 124 plans of its Iranian clusters, priced by HostIran itself on 11 November."""
     plans = list(load_seed_snapshot().provider_items("hostiran"))
     e = price_feed.added("hostiran", plans, AT)
-    assert (e["source"], len(e["new"]), e["changed"], e["price_date"]) == ("added", 17, [], "2026-11-11")
-    assert price_feed.message(e, "هاست‌ایران").startswith("هاست‌ایران به صفحه قیمت صرفه اضافه شد، با ۱۷ پلن")
+    assert (e["source"], len(e["new"]), e["changed"], e["price_date"]) == ("added", 124, [], "2026-11-11")
+    assert price_feed.message(e, "هاست‌ایران").startswith("هاست‌ایران به صفحه قیمت صرفه اضافه شد، با ۱۲۴ پلن")
     out = json.loads(price_feed.published({"schema": 1, "events": [e]}, {}))["events"][0]
     assert (out["previous"], out["held_days"], out["price_date"]) == (None, None, "2026-11-11")

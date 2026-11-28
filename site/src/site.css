@@ -1389,8 +1389,11 @@ ul.plain {
 .pr-scope {
   margin: 0;
 }
-/* a model name is one long Latin string inside Persian text: it wraps where it must */
-.pr-cpu-model {
+/* a model name is one long Latin string inside Persian text, and a plan's or a cluster's name is the provider's own
+   text, of any length: each wraps where it must rather than widen the card, and the page, on a phone */
+.pr-cpu-model,
+.pr-plan,
+.pr-level {
   overflow-wrap: anywhere;
 }
 /* Two parts of the price page, as tabs: the comparison, and the record of price changes. */
@@ -1552,13 +1555,15 @@ ul.plain {
   gap: var(--spacing-1);
   text-align: end;
 }
+/* The figure never breaks; its unit ("Toman a month") may drop to the next line, or a large price on a narrow
+   phone widens the whole page. */
 .pr-price {
   font: var(--type-heading-medium);
-  white-space: nowrap;
 }
 .pr-price small {
   font: var(--type-body-small);
   color: var(--color-ink-muted);
+  white-space: nowrap;
 }
 .pr-source {
   grid-column: 2 / -1;

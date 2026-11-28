@@ -106,6 +106,9 @@ const S = {
   prGb: ["گیگابایت", "GB"],
   prMemory: ["حافظه", "memory"],
   prDisk: ["دیسک", "disk"],
+  // a disk type, after the size: "60 GB Hybrid (HDD + SSD)"; the others are their Latin label (SSD, NVMe, HDD).
+  // No-break spaces inside the brackets: Latin split over two lines of Persian text comes out with its brackets jumbled.
+  prDiskHybrid: ["هیبرید (HDD\u00a0+\u00a0SSD)", "Hybrid (HDD\u00a0+\u00a0SSD)"],
   prCpuShared: ["پردازنده اشتراکی", "Shared CPU"],
   prCpuDedicated: ["پردازنده اختصاصی", "Dedicated CPU"],
   prCpuUnknown: ["اشتراکی یا اختصاصی بودن پردازنده: اعلام نشده", "Shared or dedicated CPU: not stated"],
@@ -175,6 +178,11 @@ const S = {
   prTrafficMetered: ["ترافیک جدا حساب می‌شود", "Traffic is billed separately"],
   prTrafficUnknown: ["شرایط ترافیک منتشر نشده", "Traffic terms aren't published"],
   prDatacenter: ["مرکز داده", "Datacenter"],
+  // the cluster a plan is on, by the provider's own name for it, then its hardware generation if stated:
+  // "Service level: کلاستر سازمانی · generation G9"; with no cluster, the generation alone: "Hardware generation: G9"
+  prServiceLevel: ["سطح سرویس", "Service level"],
+  prGeneration: ["نسل", "generation"],
+  prHardwareGeneration: ["نسل سخت‌افزار", "Hardware generation"],
   prSource: ["منبع قیمت", "Price source"],
   prReadOn: ["خوانده‌شده در {date}", "read on {date}"],
   // a badge, so a word or two (it must fit on a phone); the date is beside it, the reason in its tooltip
