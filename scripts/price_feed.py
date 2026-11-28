@@ -228,8 +228,8 @@ def message(e: dict[str, Any], name: str) -> str:
         head = f"{name}: {fa(n)} {what} عوض شد"
     elif e["source"] == "added":
         head = f"{name} به صفحه قیمت صرفه اضافه شد، با {fa(len(e['new']))} پلن"
-    elif e["new"] and not e["removed"]:
-        head = f"{name} {fa(len(e['new']))} پلن جدید اضافه کرد"
+    elif e["new"] and not e["removed"]:  # new to the page: launched by the provider or newly read by Sarfeh
+        head = f"{name}: {fa(len(e['new']))} پلن تازه به صفحه قیمت آمد"
     elif e["removed"] and not e["new"]:
         head = f"{name} {fa(len(e['removed']))} پلن را برداشت"
     else:
@@ -239,13 +239,13 @@ def message(e: dict[str, Any], name: str) -> str:
         lines.append(f"و {fa(n - LINES)} {what} دیگر")
     extra = []  # the counts the first line didn't already give
     if e["new"] and (n or e["removed"]):
-        extra.append(f"{fa(len(e['new']))} پلن جدید")
+        extra.append(f"{fa(len(e['new']))} پلن تازه به صفحه آمد")
     if e["removed"] and (n or e["new"]):
         extra.append(f"{fa(len(e['removed']))} پلن حذف شد")
     if extra:
         lines.append(" · ".join(extra))
     if e["source"] == "file":
-        lines.append("(قیمت‌ها دستی از صفحه رسمی خوانده شده)")
+        lines.append("(قیمت‌ها دستی از منبع رسمی ارائه‌دهنده خوانده شده)")
     return "\n".join(lines + ["", PAGE])
 
 

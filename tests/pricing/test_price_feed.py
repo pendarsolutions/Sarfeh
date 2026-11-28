@@ -66,7 +66,7 @@ def test_component_prices_are_rates_and_cpu_comes_before_storage(rows):
     e = price_feed.event("arvancloud", before, after, AT, source="file")
     lines = price_feed.message(e, "ابر آروان").splitlines()
     assert "تعرفه را بالا برد" in lines[0] and lines[1].startswith("IR-CPU-BASIC: از ۲۱۰٬۰۰۰ به ۲۵۲٬۰۰۰ تومان (۲۰٪ گران‌تر)")
-    assert any("تعرفه دیگر" in l for l in lines) and "(قیمت‌ها دستی از صفحه رسمی خوانده شده)" in lines
+    assert any("تعرفه دیگر" in l for l in lines) and "(قیمت‌ها دستی از منبع رسمی ارائه‌دهنده خوانده شده)" in lines
 
 
 class Sent:
