@@ -96,9 +96,10 @@
       "strategy": "fixed_sku",
       "exact_eligible": true,
       "included_traffic_direction": "upload",
+      "outbound_traffic": "free",
       "included_traffic_note": "The quota counts traffic entering the server (Sarfeh's upload); traffic leaving it is free. Beyond the quota, the per-GB rate in TrustHost's price feed (overage_toman_per_gb).",
       "overage_price_known": true,
-      "ipv4_included": "unverified",
+      "ipv4_included": "stated_in_catalog",
       "tax_rule": "trusthost-vat"
     },
     "abrha": {

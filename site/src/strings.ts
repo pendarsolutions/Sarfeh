@@ -118,6 +118,7 @@ const S = {
   // conditions of an offer (packages/pricing_engine/size_table.py: _conditions), by id
   prCondTrafficNotStated: ["بدون ترافیک حساب شده؛ ارائه‌دهنده شرایط ترافیک را منتشر نکرده", "Priced without traffic: the provider hasn't published its traffic terms"],
   prCondIpv4Assumed: ["یک IPv4 جزو پلن فرض شده؛ ارائه‌دهنده صریح ننوشته", "One IPv4 is assumed to come with the plan; the provider doesn't say"],
+  prCondIpv4Included: ["یک IPv4 رایگان همراه پلن", "One IPv4 included with the plan at no cost"],
   prCondIpv4Priced: ["شامل {amount} تومان برای یک IPv4", "Includes {amount} Toman for one IPv4"],
   prCondThirtyDay: ["قیمت برای ۳۰ روز است، نه ماه تقویمی", "The price is for 30 days, not a calendar month"],
   prCondSetupFee: [
@@ -173,6 +174,11 @@ const S = {
   prChByHand: ["دستی از منبع رسمی ارائه‌دهنده خوانده شده", "read by hand from the provider's official source"],
   prChData: ["دریافت همه تغییرات (JSON)", "Download all changes (JSON)"],
   prTrafficQuota: ["{n} گیگابایت ترافیک در ماه", "{n} GB of traffic a month"],
+  prTrafficQuotaIn: ["{n} گیگابایت ترافیک دریافتی در ماه", "{n} GB of incoming traffic a month"],
+  prTrafficQuotaInOutFree: [
+    "{n} گیگابایت ترافیک دریافتی در ماه؛ ترافیک ارسالی رایگان",
+    "{n} GB of incoming traffic a month; outgoing traffic is free",
+  ],
   prTrafficFair: ["ترافیک نامحدود با مصرف منصفانه", "Unlimited traffic, fair use"],
   prTrafficUnlimited: ["ترافیک نامحدود", "Unlimited traffic"],
   prTrafficLimited: ["ترافیک نامحدود با سرعت محدود", "Unlimited traffic at a limited speed"],

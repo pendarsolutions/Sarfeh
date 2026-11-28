@@ -253,8 +253,8 @@
         "price_feed"
       ],
       "recommended_mvp_priority": 9,
-      "integration_strategy": "its price feed (/feeds/server-prices.php), read from its billing system: the Iran cloud server plans of the Fanap Tehran datacenter",
-      "notes": "TrustHost asked to be listed and published the feed. Each plan includes a monthly quota of traffic entering the server; traffic leaving it is free; beyond the quota a published per-GB rate. Prices exclude 10% VAT. The same plans are on https://trusthost.co/server/."
+      "integration_strategy": "its price feed (/feeds/server-prices.php), read from its billing system: the Iran cloud server plans of its Tehran datacenters (Fanap and Respina)",
+      "notes": "TrustHost asked to be listed and published the feed. Each plan includes a monthly quota of traffic entering the server; traffic leaving it is free; beyond the quota a published per-GB rate. Shared vCPUs; one public IPv4 included with each plan. Prices exclude 10% VAT. The same plans are on https://trusthost.co/server/."
     }
   ],
   "catalog_items": [
@@ -12734,11 +12734,11 @@
       "name": "جرقه",
       "region_country": "IR",
       "region": "Iran",
-      "datacenter": "Fanap Tehran",
+      "datacenter": "Fanap Tehran, Respina Tehran",
       "resource_class": null,
       "cpu_cores": "1",
       "cpu_unit": "vCPU",
-      "cpu_shared": null,
+      "cpu_shared": true,
       "ram_gb": "2",
       "storage_gb": "50",
       "storage_type": "SSD",
@@ -12767,7 +12767,11 @@
         "whmcs_pid": 2,
         "catalog_updated_at": "2026-09-23 10:51:16",
         "family_fa": "پلن‌های عمومی",
-        "datacenter_fa": "فناپ تهران",
+        "datacenter_fa": "فناپ تهران، رسپینا تهران",
+        "datacenters_fa": [
+          "فناپ تهران",
+          "رسپینا تهران"
+        ],
         "port_gbps": 10,
         "order_url": "https://my.trusthost.co/cart.php?a=add&pid=2",
         "term_prices_toman": {
@@ -12788,7 +12792,8 @@
             "min_gb": 100000,
             "toman_per_gb": "850"
           }
-        ]
+        ],
+        "ipv4_included": 1
       }
     },
     {
@@ -12801,11 +12806,11 @@
       "name": "آغاز",
       "region_country": "IR",
       "region": "Iran",
-      "datacenter": "Fanap Tehran",
+      "datacenter": "Fanap Tehran, Respina Tehran",
       "resource_class": null,
       "cpu_cores": "2",
       "cpu_unit": "vCPU",
-      "cpu_shared": null,
+      "cpu_shared": true,
       "ram_gb": "4",
       "storage_gb": "80",
       "storage_type": "SSD",
@@ -12834,7 +12839,11 @@
         "whmcs_pid": 3,
         "catalog_updated_at": "2026-09-23 10:51:16",
         "family_fa": "پلن‌های عمومی",
-        "datacenter_fa": "فناپ تهران",
+        "datacenter_fa": "فناپ تهران، رسپینا تهران",
+        "datacenters_fa": [
+          "فناپ تهران",
+          "رسپینا تهران"
+        ],
         "port_gbps": 10,
         "order_url": "https://my.trusthost.co/cart.php?a=add&pid=3",
         "term_prices_toman": {
@@ -12855,7 +12864,8 @@
             "min_gb": 100000,
             "toman_per_gb": "850"
           }
-        ]
+        ],
+        "ipv4_included": 1
       }
     },
     {
@@ -12868,11 +12878,11 @@
       "name": "رشد",
       "region_country": "IR",
       "region": "Iran",
-      "datacenter": "Fanap Tehran",
+      "datacenter": "Fanap Tehran, Respina Tehran",
       "resource_class": null,
       "cpu_cores": "4",
       "cpu_unit": "vCPU",
-      "cpu_shared": null,
+      "cpu_shared": true,
       "ram_gb": "8",
       "storage_gb": "120",
       "storage_type": "SSD",
@@ -12901,7 +12911,11 @@
         "whmcs_pid": 4,
         "catalog_updated_at": "2026-09-23 10:51:16",
         "family_fa": "پلن‌های عمومی",
-        "datacenter_fa": "فناپ تهران",
+        "datacenter_fa": "فناپ تهران، رسپینا تهران",
+        "datacenters_fa": [
+          "فناپ تهران",
+          "رسپینا تهران"
+        ],
         "port_gbps": 10,
         "order_url": "https://my.trusthost.co/cart.php?a=add&pid=4",
         "term_prices_toman": {
@@ -12922,7 +12936,8 @@
             "min_gb": 100000,
             "toman_per_gb": "850"
           }
-        ]
+        ],
+        "ipv4_included": 1
       }
     },
     {
@@ -12935,11 +12950,11 @@
       "name": "اوج",
       "region_country": "IR",
       "region": "Iran",
-      "datacenter": "Fanap Tehran",
+      "datacenter": "Fanap Tehran, Respina Tehran",
       "resource_class": null,
       "cpu_cores": "6",
       "cpu_unit": "vCPU",
-      "cpu_shared": null,
+      "cpu_shared": true,
       "ram_gb": "12",
       "storage_gb": "160",
       "storage_type": "SSD",
@@ -12968,7 +12983,11 @@
         "whmcs_pid": 5,
         "catalog_updated_at": "2026-09-23 10:51:16",
         "family_fa": "پلن‌های عمومی",
-        "datacenter_fa": "فناپ تهران",
+        "datacenter_fa": "فناپ تهران، رسپینا تهران",
+        "datacenters_fa": [
+          "فناپ تهران",
+          "رسپینا تهران"
+        ],
         "port_gbps": 10,
         "order_url": "https://my.trusthost.co/cart.php?a=add&pid=5",
         "term_prices_toman": {
@@ -12989,7 +13008,8 @@
             "min_gb": 100000,
             "toman_per_gb": "850"
           }
-        ]
+        ],
+        "ipv4_included": 1
       }
     },
     {
@@ -13002,11 +13022,11 @@
       "name": "توان",
       "region_country": "IR",
       "region": "Iran",
-      "datacenter": "Fanap Tehran",
+      "datacenter": "Fanap Tehran, Respina Tehran",
       "resource_class": null,
       "cpu_cores": "8",
       "cpu_unit": "vCPU",
-      "cpu_shared": null,
+      "cpu_shared": true,
       "ram_gb": "16",
       "storage_gb": "200",
       "storage_type": "SSD",
@@ -13035,7 +13055,11 @@
         "whmcs_pid": 6,
         "catalog_updated_at": "2026-09-23 10:51:16",
         "family_fa": "پلن‌های عمومی",
-        "datacenter_fa": "فناپ تهران",
+        "datacenter_fa": "فناپ تهران، رسپینا تهران",
+        "datacenters_fa": [
+          "فناپ تهران",
+          "رسپینا تهران"
+        ],
         "port_gbps": 10,
         "order_url": "https://my.trusthost.co/cart.php?a=add&pid=6",
         "term_prices_toman": {
@@ -13056,7 +13080,8 @@
             "min_gb": 100000,
             "toman_per_gb": "850"
           }
-        ]
+        ],
+        "ipv4_included": 1
       }
     },
     {
@@ -13069,11 +13094,11 @@
       "name": "راهبرد",
       "region_country": "IR",
       "region": "Iran",
-      "datacenter": "Fanap Tehran",
+      "datacenter": "Fanap Tehran, Respina Tehran",
       "resource_class": null,
       "cpu_cores": "12",
       "cpu_unit": "vCPU",
-      "cpu_shared": null,
+      "cpu_shared": true,
       "ram_gb": "24",
       "storage_gb": "300",
       "storage_type": "SSD",
@@ -13102,7 +13127,11 @@
         "whmcs_pid": 7,
         "catalog_updated_at": "2026-09-23 10:51:16",
         "family_fa": "پلن‌های عمومی",
-        "datacenter_fa": "فناپ تهران",
+        "datacenter_fa": "فناپ تهران، رسپینا تهران",
+        "datacenters_fa": [
+          "فناپ تهران",
+          "رسپینا تهران"
+        ],
         "port_gbps": 10,
         "order_url": "https://my.trusthost.co/cart.php?a=add&pid=7",
         "term_prices_toman": {
@@ -13123,7 +13152,8 @@
             "min_gb": 100000,
             "toman_per_gb": "850"
           }
-        ]
+        ],
+        "ipv4_included": 1
       }
     },
     {
@@ -13136,11 +13166,11 @@
       "name": "پرداز ۱",
       "region_country": "IR",
       "region": "Iran",
-      "datacenter": "Fanap Tehran",
+      "datacenter": "Fanap Tehran, Respina Tehran",
       "resource_class": null,
       "cpu_cores": "4",
       "cpu_unit": "vCPU",
-      "cpu_shared": null,
+      "cpu_shared": true,
       "ram_gb": "4",
       "storage_gb": "80",
       "storage_type": "SSD",
@@ -13169,7 +13199,11 @@
         "whmcs_pid": 8,
         "catalog_updated_at": "2026-09-23 10:51:16",
         "family_fa": "پلن‌های پردازشی",
-        "datacenter_fa": "فناپ تهران",
+        "datacenter_fa": "فناپ تهران، رسپینا تهران",
+        "datacenters_fa": [
+          "فناپ تهران",
+          "رسپینا تهران"
+        ],
         "port_gbps": 10,
         "order_url": "https://my.trusthost.co/cart.php?a=add&pid=8",
         "term_prices_toman": {
@@ -13190,7 +13224,8 @@
             "min_gb": 100000,
             "toman_per_gb": "850"
           }
-        ]
+        ],
+        "ipv4_included": 1
       }
     },
     {
@@ -13203,11 +13238,11 @@
       "name": "پرداز ۲",
       "region_country": "IR",
       "region": "Iran",
-      "datacenter": "Fanap Tehran",
+      "datacenter": "Fanap Tehran, Respina Tehran",
       "resource_class": null,
       "cpu_cores": "8",
       "cpu_unit": "vCPU",
-      "cpu_shared": null,
+      "cpu_shared": true,
       "ram_gb": "8",
       "storage_gb": "120",
       "storage_type": "SSD",
@@ -13236,7 +13271,11 @@
         "whmcs_pid": 9,
         "catalog_updated_at": "2026-09-23 10:51:16",
         "family_fa": "پلن‌های پردازشی",
-        "datacenter_fa": "فناپ تهران",
+        "datacenter_fa": "فناپ تهران، رسپینا تهران",
+        "datacenters_fa": [
+          "فناپ تهران",
+          "رسپینا تهران"
+        ],
         "port_gbps": 10,
         "order_url": "https://my.trusthost.co/cart.php?a=add&pid=9",
         "term_prices_toman": {
@@ -13257,7 +13296,8 @@
             "min_gb": 100000,
             "toman_per_gb": "850"
           }
-        ]
+        ],
+        "ipv4_included": 1
       }
     },
     {
@@ -13270,11 +13310,11 @@
       "name": "پرداز ۳",
       "region_country": "IR",
       "region": "Iran",
-      "datacenter": "Fanap Tehran",
+      "datacenter": "Fanap Tehran, Respina Tehran",
       "resource_class": null,
       "cpu_cores": "12",
       "cpu_unit": "vCPU",
-      "cpu_shared": null,
+      "cpu_shared": true,
       "ram_gb": "16",
       "storage_gb": "180",
       "storage_type": "SSD",
@@ -13303,7 +13343,11 @@
         "whmcs_pid": 10,
         "catalog_updated_at": "2026-09-23 10:51:16",
         "family_fa": "پلن‌های پردازشی",
-        "datacenter_fa": "فناپ تهران",
+        "datacenter_fa": "فناپ تهران، رسپینا تهران",
+        "datacenters_fa": [
+          "فناپ تهران",
+          "رسپینا تهران"
+        ],
         "port_gbps": 10,
         "order_url": "https://my.trusthost.co/cart.php?a=add&pid=10",
         "term_prices_toman": {
@@ -13324,7 +13368,8 @@
             "min_gb": 100000,
             "toman_per_gb": "850"
           }
-        ]
+        ],
+        "ipv4_included": 1
       }
     },
     {
@@ -13337,11 +13382,11 @@
       "name": "پرداز ۴",
       "region_country": "IR",
       "region": "Iran",
-      "datacenter": "Fanap Tehran",
+      "datacenter": "Fanap Tehran, Respina Tehran",
       "resource_class": null,
       "cpu_cores": "16",
       "cpu_unit": "vCPU",
-      "cpu_shared": null,
+      "cpu_shared": true,
       "ram_gb": "24",
       "storage_gb": "250",
       "storage_type": "SSD",
@@ -13370,7 +13415,11 @@
         "whmcs_pid": 11,
         "catalog_updated_at": "2026-09-23 10:51:16",
         "family_fa": "پلن‌های پردازشی",
-        "datacenter_fa": "فناپ تهران",
+        "datacenter_fa": "فناپ تهران، رسپینا تهران",
+        "datacenters_fa": [
+          "فناپ تهران",
+          "رسپینا تهران"
+        ],
         "port_gbps": 10,
         "order_url": "https://my.trusthost.co/cart.php?a=add&pid=11",
         "term_prices_toman": {
@@ -13391,7 +13440,8 @@
             "min_gb": 100000,
             "toman_per_gb": "850"
           }
-        ]
+        ],
+        "ipv4_included": 1
       }
     },
     {
@@ -13404,11 +13454,11 @@
       "name": "پرداز ۵",
       "region_country": "IR",
       "region": "Iran",
-      "datacenter": "Fanap Tehran",
+      "datacenter": "Fanap Tehran, Respina Tehran",
       "resource_class": null,
       "cpu_cores": "24",
       "cpu_unit": "vCPU",
-      "cpu_shared": null,
+      "cpu_shared": true,
       "ram_gb": "32",
       "storage_gb": "350",
       "storage_type": "SSD",
@@ -13437,7 +13487,11 @@
         "whmcs_pid": 12,
         "catalog_updated_at": "2026-09-23 10:51:16",
         "family_fa": "پلن‌های پردازشی",
-        "datacenter_fa": "فناپ تهران",
+        "datacenter_fa": "فناپ تهران، رسپینا تهران",
+        "datacenters_fa": [
+          "فناپ تهران",
+          "رسپینا تهران"
+        ],
         "port_gbps": 10,
         "order_url": "https://my.trusthost.co/cart.php?a=add&pid=12",
         "term_prices_toman": {
@@ -13458,7 +13512,8 @@
             "min_gb": 100000,
             "toman_per_gb": "850"
           }
-        ]
+        ],
+        "ipv4_included": 1
       }
     },
     {
@@ -13471,11 +13526,11 @@
       "name": "فراخ ۱",
       "region_country": "IR",
       "region": "Iran",
-      "datacenter": "Fanap Tehran",
+      "datacenter": "Fanap Tehran, Respina Tehran",
       "resource_class": null,
       "cpu_cores": "2",
       "cpu_unit": "vCPU",
-      "cpu_shared": null,
+      "cpu_shared": true,
       "ram_gb": "8",
       "storage_gb": "80",
       "storage_type": "SSD",
@@ -13504,7 +13559,11 @@
         "whmcs_pid": 13,
         "catalog_updated_at": "2026-09-23 10:51:16",
         "family_fa": "پلن‌های رم‌محور",
-        "datacenter_fa": "فناپ تهران",
+        "datacenter_fa": "فناپ تهران، رسپینا تهران",
+        "datacenters_fa": [
+          "فناپ تهران",
+          "رسپینا تهران"
+        ],
         "port_gbps": 10,
         "order_url": "https://my.trusthost.co/cart.php?a=add&pid=13",
         "term_prices_toman": {
@@ -13525,7 +13584,8 @@
             "min_gb": 100000,
             "toman_per_gb": "850"
           }
-        ]
+        ],
+        "ipv4_included": 1
       }
     },
     {
@@ -13538,11 +13598,11 @@
       "name": "فراخ ۲",
       "region_country": "IR",
       "region": "Iran",
-      "datacenter": "Fanap Tehran",
+      "datacenter": "Fanap Tehran, Respina Tehran",
       "resource_class": null,
       "cpu_cores": "4",
       "cpu_unit": "vCPU",
-      "cpu_shared": null,
+      "cpu_shared": true,
       "ram_gb": "16",
       "storage_gb": "150",
       "storage_type": "SSD",
@@ -13571,7 +13631,11 @@
         "whmcs_pid": 14,
         "catalog_updated_at": "2026-09-23 10:51:16",
         "family_fa": "پلن‌های رم‌محور",
-        "datacenter_fa": "فناپ تهران",
+        "datacenter_fa": "فناپ تهران، رسپینا تهران",
+        "datacenters_fa": [
+          "فناپ تهران",
+          "رسپینا تهران"
+        ],
         "port_gbps": 10,
         "order_url": "https://my.trusthost.co/cart.php?a=add&pid=14",
         "term_prices_toman": {
@@ -13592,7 +13656,8 @@
             "min_gb": 100000,
             "toman_per_gb": "850"
           }
-        ]
+        ],
+        "ipv4_included": 1
       }
     },
     {
@@ -13605,11 +13670,11 @@
       "name": "فراخ ۳",
       "region_country": "IR",
       "region": "Iran",
-      "datacenter": "Fanap Tehran",
+      "datacenter": "Fanap Tehran, Respina Tehran",
       "resource_class": null,
       "cpu_cores": "6",
       "cpu_unit": "vCPU",
-      "cpu_shared": null,
+      "cpu_shared": true,
       "ram_gb": "32",
       "storage_gb": "250",
       "storage_type": "SSD",
@@ -13638,7 +13703,11 @@
         "whmcs_pid": 15,
         "catalog_updated_at": "2026-09-23 10:51:16",
         "family_fa": "پلن‌های رم‌محور",
-        "datacenter_fa": "فناپ تهران",
+        "datacenter_fa": "فناپ تهران، رسپینا تهران",
+        "datacenters_fa": [
+          "فناپ تهران",
+          "رسپینا تهران"
+        ],
         "port_gbps": 10,
         "order_url": "https://my.trusthost.co/cart.php?a=add&pid=15",
         "term_prices_toman": {
@@ -13659,7 +13728,8 @@
             "min_gb": 100000,
             "toman_per_gb": "850"
           }
-        ]
+        ],
+        "ipv4_included": 1
       }
     },
     {
@@ -13672,11 +13742,11 @@
       "name": "فراخ ۴",
       "region_country": "IR",
       "region": "Iran",
-      "datacenter": "Fanap Tehran",
+      "datacenter": "Fanap Tehran, Respina Tehran",
       "resource_class": null,
       "cpu_cores": "8",
       "cpu_unit": "vCPU",
-      "cpu_shared": null,
+      "cpu_shared": true,
       "ram_gb": "64",
       "storage_gb": "400",
       "storage_type": "SSD",
@@ -13705,7 +13775,11 @@
         "whmcs_pid": 16,
         "catalog_updated_at": "2026-09-23 10:51:16",
         "family_fa": "پلن‌های رم‌محور",
-        "datacenter_fa": "فناپ تهران",
+        "datacenter_fa": "فناپ تهران، رسپینا تهران",
+        "datacenters_fa": [
+          "فناپ تهران",
+          "رسپینا تهران"
+        ],
         "port_gbps": 10,
         "order_url": "https://my.trusthost.co/cart.php?a=add&pid=16",
         "term_prices_toman": {
@@ -13726,7 +13800,8 @@
             "min_gb": 100000,
             "toman_per_gb": "850"
           }
-        ]
+        ],
+        "ipv4_included": 1
       }
     },
     {
@@ -13739,11 +13814,11 @@
       "name": "فراخ ۵",
       "region_country": "IR",
       "region": "Iran",
-      "datacenter": "Fanap Tehran",
+      "datacenter": "Fanap Tehran, Respina Tehran",
       "resource_class": null,
       "cpu_cores": "12",
       "cpu_unit": "vCPU",
-      "cpu_shared": null,
+      "cpu_shared": true,
       "ram_gb": "96",
       "storage_gb": "600",
       "storage_type": "SSD",
@@ -13772,7 +13847,11 @@
         "whmcs_pid": 17,
         "catalog_updated_at": "2026-09-23 10:51:16",
         "family_fa": "پلن‌های رم‌محور",
-        "datacenter_fa": "فناپ تهران",
+        "datacenter_fa": "فناپ تهران، رسپینا تهران",
+        "datacenters_fa": [
+          "فناپ تهران",
+          "رسپینا تهران"
+        ],
         "port_gbps": 10,
         "order_url": "https://my.trusthost.co/cart.php?a=add&pid=17",
         "term_prices_toman": {
@@ -13793,7 +13872,8 @@
             "min_gb": 100000,
             "toman_per_gb": "850"
           }
-        ]
+        ],
+        "ipv4_included": 1
       }
     },
     {
@@ -13806,11 +13886,11 @@
       "name": "فراخ ۶",
       "region_country": "IR",
       "region": "Iran",
-      "datacenter": "Fanap Tehran",
+      "datacenter": "Fanap Tehran, Respina Tehran",
       "resource_class": null,
       "cpu_cores": "16",
       "cpu_unit": "vCPU",
-      "cpu_shared": null,
+      "cpu_shared": true,
       "ram_gb": "128",
       "storage_gb": "800",
       "storage_type": "SSD",
@@ -13839,7 +13919,11 @@
         "whmcs_pid": 18,
         "catalog_updated_at": "2026-09-23 10:51:16",
         "family_fa": "پلن‌های رم‌محور",
-        "datacenter_fa": "فناپ تهران",
+        "datacenter_fa": "فناپ تهران، رسپینا تهران",
+        "datacenters_fa": [
+          "فناپ تهران",
+          "رسپینا تهران"
+        ],
         "port_gbps": 10,
         "order_url": "https://my.trusthost.co/cart.php?a=add&pid=18",
         "term_prices_toman": {
@@ -13860,7 +13944,8 @@
             "min_gb": 100000,
             "toman_per_gb": "850"
           }
-        ]
+        ],
+        "ipv4_included": 1
       }
     },
     {
@@ -13873,11 +13958,11 @@
       "name": "انبار ۱",
       "region_country": "IR",
       "region": "Iran",
-      "datacenter": "Fanap Tehran",
+      "datacenter": "Fanap Tehran, Respina Tehran",
       "resource_class": null,
       "cpu_cores": "2",
       "cpu_unit": "vCPU",
-      "cpu_shared": null,
+      "cpu_shared": true,
       "ram_gb": "4",
       "storage_gb": "250",
       "storage_type": "SSD",
@@ -13906,7 +13991,11 @@
         "whmcs_pid": 19,
         "catalog_updated_at": "2026-09-23 10:51:16",
         "family_fa": "پلن‌های ذخیره‌سازی",
-        "datacenter_fa": "فناپ تهران",
+        "datacenter_fa": "فناپ تهران، رسپینا تهران",
+        "datacenters_fa": [
+          "فناپ تهران",
+          "رسپینا تهران"
+        ],
         "port_gbps": 10,
         "order_url": "https://my.trusthost.co/cart.php?a=add&pid=19",
         "term_prices_toman": {
@@ -13927,7 +14016,8 @@
             "min_gb": 100000,
             "toman_per_gb": "850"
           }
-        ]
+        ],
+        "ipv4_included": 1
       }
     },
     {
@@ -13940,11 +14030,11 @@
       "name": "انبار ۲",
       "region_country": "IR",
       "region": "Iran",
-      "datacenter": "Fanap Tehran",
+      "datacenter": "Fanap Tehran, Respina Tehran",
       "resource_class": null,
       "cpu_cores": "4",
       "cpu_unit": "vCPU",
-      "cpu_shared": null,
+      "cpu_shared": true,
       "ram_gb": "8",
       "storage_gb": "500",
       "storage_type": "SSD",
@@ -13973,7 +14063,11 @@
         "whmcs_pid": 20,
         "catalog_updated_at": "2026-09-23 10:51:16",
         "family_fa": "پلن‌های ذخیره‌سازی",
-        "datacenter_fa": "فناپ تهران",
+        "datacenter_fa": "فناپ تهران، رسپینا تهران",
+        "datacenters_fa": [
+          "فناپ تهران",
+          "رسپینا تهران"
+        ],
         "port_gbps": 10,
         "order_url": "https://my.trusthost.co/cart.php?a=add&pid=20",
         "term_prices_toman": {
@@ -13994,7 +14088,8 @@
             "min_gb": 100000,
             "toman_per_gb": "850"
           }
-        ]
+        ],
+        "ipv4_included": 1
       }
     },
     {
@@ -14007,11 +14102,11 @@
       "name": "انبار ۳",
       "region_country": "IR",
       "region": "Iran",
-      "datacenter": "Fanap Tehran",
+      "datacenter": "Fanap Tehran, Respina Tehran",
       "resource_class": null,
       "cpu_cores": "8",
       "cpu_unit": "vCPU",
-      "cpu_shared": null,
+      "cpu_shared": true,
       "ram_gb": "16",
       "storage_gb": "1024",
       "storage_type": "SSD",
@@ -14040,7 +14135,11 @@
         "whmcs_pid": 21,
         "catalog_updated_at": "2026-09-23 10:51:16",
         "family_fa": "پلن‌های ذخیره‌سازی",
-        "datacenter_fa": "فناپ تهران",
+        "datacenter_fa": "فناپ تهران، رسپینا تهران",
+        "datacenters_fa": [
+          "فناپ تهران",
+          "رسپینا تهران"
+        ],
         "port_gbps": 10,
         "order_url": "https://my.trusthost.co/cart.php?a=add&pid=21",
         "term_prices_toman": {
@@ -14061,7 +14160,8 @@
             "min_gb": 100000,
             "toman_per_gb": "850"
           }
-        ]
+        ],
+        "ipv4_included": 1
       }
     },
     {
@@ -14074,11 +14174,11 @@
       "name": "انبار ۴",
       "region_country": "IR",
       "region": "Iran",
-      "datacenter": "Fanap Tehran",
+      "datacenter": "Fanap Tehran, Respina Tehran",
       "resource_class": null,
       "cpu_cores": "12",
       "cpu_unit": "vCPU",
-      "cpu_shared": null,
+      "cpu_shared": true,
       "ram_gb": "32",
       "storage_gb": "2048",
       "storage_type": "SSD",
@@ -14107,7 +14207,11 @@
         "whmcs_pid": 22,
         "catalog_updated_at": "2026-09-23 10:51:16",
         "family_fa": "پلن‌های ذخیره‌سازی",
-        "datacenter_fa": "فناپ تهران",
+        "datacenter_fa": "فناپ تهران، رسپینا تهران",
+        "datacenters_fa": [
+          "فناپ تهران",
+          "رسپینا تهران"
+        ],
         "port_gbps": 10,
         "order_url": "https://my.trusthost.co/cart.php?a=add&pid=22",
         "term_prices_toman": {
@@ -14128,7 +14232,296 @@
             "min_gb": 100000,
             "toman_per_gb": "850"
           }
-        ]
+        ],
+        "ipv4_included": 1
+      }
+    },
+    {
+      "id": "3dfbe2c03793a548",
+      "provider_id": "trusthost",
+      "service_type": "compute_vm",
+      "pricing_model": "fixed_sku",
+      "product_family": "general_purpose",
+      "sku": "اخگر",
+      "name": "اخگر",
+      "region_country": "IR",
+      "region": "Iran",
+      "datacenter": "Fanap Tehran, Respina Tehran",
+      "resource_class": null,
+      "cpu_cores": "1",
+      "cpu_unit": "vCPU",
+      "cpu_shared": true,
+      "ram_gb": "1",
+      "storage_gb": "25",
+      "storage_type": "SSD",
+      "gpu_model": null,
+      "gpu_count": null,
+      "included_traffic_gb": "100",
+      "traffic_direction": null,
+      "bandwidth": null,
+      "billing_period": "month",
+      "price_toman": "387000",
+      "hourly_price_toman": null,
+      "daily_price_toman": null,
+      "price_rial": 3870000,
+      "unit": "plan_month",
+      "tier_min": null,
+      "tier_max": null,
+      "tier_unit": null,
+      "availability": "available",
+      "source_url": "https://my.trusthost.co/feeds/server-prices.php",
+      "source_retrieved_at": "2026-11-28",
+      "source_price_date": "2026-11-28",
+      "confidence": "high",
+      "tax_included": false,
+      "notes": "inbound 100GB/month included, outbound free; beyond the quota 900 Toman/GB; invoices add 10% VAT.",
+      "attributes": {
+        "whmcs_pid": 538,
+        "catalog_updated_at": "2026-11-28 16:27:08",
+        "family_fa": "پلن‌های عمومی",
+        "datacenter_fa": "فناپ تهران، رسپینا تهران",
+        "datacenters_fa": [
+          "فناپ تهران",
+          "رسپینا تهران"
+        ],
+        "port_gbps": 10,
+        "order_url": "https://my.trusthost.co/cart.php?a=add&pid=538",
+        "term_prices_toman": {
+          "monthly": "387000",
+          "quarterly": "1161000"
+        },
+        "overage_toman_per_gb": "900",
+        "overage_volume_rates": [
+          {
+            "min_gb": 20000,
+            "toman_per_gb": "880"
+          },
+          {
+            "min_gb": 50000,
+            "toman_per_gb": "860"
+          },
+          {
+            "min_gb": 100000,
+            "toman_per_gb": "850"
+          }
+        ],
+        "ipv4_included": 1
+      }
+    },
+    {
+      "id": "52008ffaec5ee8bc",
+      "provider_id": "trusthost",
+      "service_type": "compute_vm",
+      "pricing_model": "fixed_sku",
+      "product_family": "general_purpose",
+      "sku": "سکان",
+      "name": "سکان",
+      "region_country": "IR",
+      "region": "Iran",
+      "datacenter": "Fanap Tehran, Respina Tehran",
+      "resource_class": null,
+      "cpu_cores": "16",
+      "cpu_unit": "vCPU",
+      "cpu_shared": true,
+      "ram_gb": "32",
+      "storage_gb": "400",
+      "storage_type": "SSD",
+      "gpu_model": null,
+      "gpu_count": null,
+      "included_traffic_gb": "1000",
+      "traffic_direction": null,
+      "bandwidth": null,
+      "billing_period": "month",
+      "price_toman": "3858000",
+      "hourly_price_toman": null,
+      "daily_price_toman": null,
+      "price_rial": 38580000,
+      "unit": "plan_month",
+      "tier_min": null,
+      "tier_max": null,
+      "tier_unit": null,
+      "availability": "available",
+      "source_url": "https://my.trusthost.co/feeds/server-prices.php",
+      "source_retrieved_at": "2026-11-28",
+      "source_price_date": "2026-11-28",
+      "confidence": "high",
+      "tax_included": false,
+      "notes": "inbound 1000GB/month included, outbound free; beyond the quota 900 Toman/GB; invoices add 10% VAT.",
+      "attributes": {
+        "whmcs_pid": 540,
+        "catalog_updated_at": "2026-11-28 16:27:08",
+        "family_fa": "پلن‌های عمومی",
+        "datacenter_fa": "فناپ تهران، رسپینا تهران",
+        "datacenters_fa": [
+          "فناپ تهران",
+          "رسپینا تهران"
+        ],
+        "port_gbps": 10,
+        "order_url": "https://my.trusthost.co/cart.php?a=add&pid=540",
+        "term_prices_toman": {
+          "monthly": "3858000",
+          "quarterly": "11574000"
+        },
+        "overage_toman_per_gb": "900",
+        "overage_volume_rates": [
+          {
+            "min_gb": 20000,
+            "toman_per_gb": "880"
+          },
+          {
+            "min_gb": 50000,
+            "toman_per_gb": "860"
+          },
+          {
+            "min_gb": 100000,
+            "toman_per_gb": "850"
+          }
+        ],
+        "ipv4_included": 1
+      }
+    },
+    {
+      "id": "f6d5196f1b61a345",
+      "provider_id": "trusthost",
+      "service_type": "compute_vm",
+      "pricing_model": "fixed_sku",
+      "product_family": "memory_optimized",
+      "sku": "فراخ ۳+",
+      "name": "فراخ ۳+",
+      "region_country": "IR",
+      "region": "Iran",
+      "datacenter": "Fanap Tehran, Respina Tehran",
+      "resource_class": null,
+      "cpu_cores": "8",
+      "cpu_unit": "vCPU",
+      "cpu_shared": true,
+      "ram_gb": "32",
+      "storage_gb": "300",
+      "storage_type": "SSD",
+      "gpu_model": null,
+      "gpu_count": null,
+      "included_traffic_gb": "600",
+      "traffic_direction": null,
+      "bandwidth": null,
+      "billing_period": "month",
+      "price_toman": "2990000",
+      "hourly_price_toman": null,
+      "daily_price_toman": null,
+      "price_rial": 29900000,
+      "unit": "plan_month",
+      "tier_min": null,
+      "tier_max": null,
+      "tier_unit": null,
+      "availability": "available",
+      "source_url": "https://my.trusthost.co/feeds/server-prices.php",
+      "source_retrieved_at": "2026-11-28",
+      "source_price_date": "2026-11-28",
+      "confidence": "high",
+      "tax_included": false,
+      "notes": "inbound 600GB/month included, outbound free; beyond the quota 900 Toman/GB; invoices add 10% VAT.",
+      "attributes": {
+        "whmcs_pid": 542,
+        "catalog_updated_at": "2026-11-28 16:27:08",
+        "family_fa": "پلن‌های رم‌محور",
+        "datacenter_fa": "فناپ تهران، رسپینا تهران",
+        "datacenters_fa": [
+          "فناپ تهران",
+          "رسپینا تهران"
+        ],
+        "port_gbps": 10,
+        "order_url": "https://my.trusthost.co/cart.php?a=add&pid=542",
+        "term_prices_toman": {
+          "monthly": "2990000",
+          "quarterly": "8970000"
+        },
+        "overage_toman_per_gb": "900",
+        "overage_volume_rates": [
+          {
+            "min_gb": 20000,
+            "toman_per_gb": "880"
+          },
+          {
+            "min_gb": 50000,
+            "toman_per_gb": "860"
+          },
+          {
+            "min_gb": 100000,
+            "toman_per_gb": "850"
+          }
+        ],
+        "ipv4_included": 1
+      }
+    },
+    {
+      "id": "254004dd2f7a059d",
+      "provider_id": "trusthost",
+      "service_type": "compute_vm",
+      "pricing_model": "fixed_sku",
+      "product_family": "memory_optimized",
+      "sku": "فراخ ۵+",
+      "name": "فراخ ۵+",
+      "region_country": "IR",
+      "region": "Iran",
+      "datacenter": "Fanap Tehran, Respina Tehran",
+      "resource_class": null,
+      "cpu_cores": "16",
+      "cpu_unit": "vCPU",
+      "cpu_shared": true,
+      "ram_gb": "64",
+      "storage_gb": "500",
+      "storage_type": "SSD",
+      "gpu_model": null,
+      "gpu_count": null,
+      "included_traffic_gb": "800",
+      "traffic_direction": null,
+      "bandwidth": null,
+      "billing_period": "month",
+      "price_toman": "5350000",
+      "hourly_price_toman": null,
+      "daily_price_toman": null,
+      "price_rial": 53500000,
+      "unit": "plan_month",
+      "tier_min": null,
+      "tier_max": null,
+      "tier_unit": null,
+      "availability": "available",
+      "source_url": "https://my.trusthost.co/feeds/server-prices.php",
+      "source_retrieved_at": "2026-11-28",
+      "source_price_date": "2026-11-28",
+      "confidence": "high",
+      "tax_included": false,
+      "notes": "inbound 800GB/month included, outbound free; beyond the quota 900 Toman/GB; invoices add 10% VAT.",
+      "attributes": {
+        "whmcs_pid": 544,
+        "catalog_updated_at": "2026-11-28 16:27:08",
+        "family_fa": "پلن‌های رم‌محور",
+        "datacenter_fa": "فناپ تهران، رسپینا تهران",
+        "datacenters_fa": [
+          "فناپ تهران",
+          "رسپینا تهران"
+        ],
+        "port_gbps": 10,
+        "order_url": "https://my.trusthost.co/cart.php?a=add&pid=544",
+        "term_prices_toman": {
+          "monthly": "5350000",
+          "quarterly": "16050000"
+        },
+        "overage_toman_per_gb": "900",
+        "overage_volume_rates": [
+          {
+            "min_gb": 20000,
+            "toman_per_gb": "880"
+          },
+          {
+            "min_gb": 50000,
+            "toman_per_gb": "860"
+          },
+          {
+            "min_gb": 100000,
+            "toman_per_gb": "850"
+          }
+        ],
+        "ipv4_included": 1
       }
     }
   ],

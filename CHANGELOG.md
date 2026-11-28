@@ -7,6 +7,14 @@ and versions follow [Semantic Versioning](https://semver.org/). Until 1.0, a min
 
 ### Added
 
+- **TrustHost: both datacenters, shared vCPUs and an included IPv4**, as its price feed now states: each plan can be
+  ordered in Fanap and Respina (Tehran), its vCPUs are shared, and one public IPv4 comes with it at no cost. A plan
+  row with `ipv4_included` prices that address as an included line instead of assuming it, and the price page says
+  "One IPv4 included with the plan at no cost". A quota of incoming traffic with free outgoing traffic now reads that
+  way on the price page ("200 GB of incoming traffic a month; outgoing traffic is free"), from the offer's new
+  `included_traffic_direction` and `outbound_traffic_free`.
+- **TrustHost's four new plans**: اخگر (1 vCPU / 1 GB / 25 GB), سکان (16 / 32 / 400), فراخ ۳+ (8 / 32 / 300) and
+  فراخ ۵+ (16 / 64 / 500), 25 plans in all, from the feed as served on 2026-11-28.
 - **HostIran's other Iranian clusters**: 124 plans from its price API instead of the 17 of its Beheshti professional
   cluster: the enterprise (G9) and economy (G8) clusters, enterprise with economy disks, enterprise plus with NVMe,
   and the professional cluster with NVMe in Beheshti, Mashhad and Ahwaz. Each plan's name says its cluster, so the

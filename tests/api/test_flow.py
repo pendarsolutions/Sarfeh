@@ -12,7 +12,7 @@ FIX = Path(__file__).resolve().parents[1] / "fixtures" / "providers"
 def test_health(client):
     assert client.get("/health/live").json() == {"status": "ok"}
     r = client.get("/health/ready")
-    assert r.status_code == 200 and r.json()["checks"]["catalog_items"] == 318
+    assert r.status_code == 200 and r.json()["checks"]["catalog_items"] == 322
 
 
 def test_auth_required(client):
@@ -26,12 +26,12 @@ def test_seed_is_idempotent(api_env):
 
     with SessionLocal() as db:
         stats = seed_pricing(db, get_settings().seed_dir)
-    assert stats["items_inserted"] == 0 and stats["items_unchanged"] == 318
+    assert stats["items_inserted"] == 0 and stats["items_unchanged"] == 322
 
 
 def test_catalog_has_source_metadata_and_money_as_strings(client, auth):
     items = client.get("/api/v1/catalog", headers=auth).json()
-    assert len(items) == 318
+    assert len(items) == 322
     for i in items:
         assert i["source_url"] and i["source_retrieved_at"]
         if i["price_toman"] is not None:

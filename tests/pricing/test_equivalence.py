@@ -65,10 +65,12 @@ def test_quota_overflow_candidate_rejected_not_estimated(snapshot):
 
 
 def test_low_fit_is_needs_human_review(snapshot):
-    res = find_equivalents(web_prod(), snapshot)
-    # TrustHost's memory plan doubles the RAM asked for (8 GB for 4): a poor fit, so a person decides
-    big = [c for c in res.candidates if c.candidate_label == "TrustHost فراخ ۱"]
-    assert big and big[0].confidence == "NEEDS_HUMAN_REVIEW"
+    # TrustHost's second memory plan has twice the vCPUs and four times the RAM asked for (4 and 16 GB for 2 and 4):
+    # a poor fit, so a person decides. (Its first memory plan, 8 GB, now scores medium: its CPU class is stated.)
+    cand = make(id="web", provider_id="trusthost", sku="فراخ ۲", quantity="2", expected_monthly_download_gb="150",
+                expected_monthly_upload_gb="20", requires_public_ipv4=True)
+    c = compare_resource(web_prod(), cand, snapshot)
+    assert c.passed_hard_constraints and c.confidence == "NEEDS_HUMAN_REVIEW"
 
 
 def test_iran_only_by_default(snapshot):

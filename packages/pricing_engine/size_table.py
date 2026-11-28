@@ -84,6 +84,8 @@ def _conditions(priced: PriceBreakdown, row: CatalogItem | None, pol: dict[str, 
         paid = sum((c.subtotal_toman for c in ipv4 if c.status == LineStatus.PRICED and c.subtotal_toman), Decimal(0))
         if paid:
             out.append({"id": "ipv4_priced", "toman": _serialize(paid)})
+        elif any(c.status == LineStatus.INCLUDED for c in ipv4):
+            out.append({"id": "ipv4_included"})  # the provider states an address comes with the plan at no cost
     if any(c.code == "traffic.unstated" for c in priced.components):
         out.append({"id": "traffic_not_stated"})  # priced with no traffic: the provider doesn't say what it costs
     if row is not None and row.billing_period == "30_days":
@@ -115,6 +117,9 @@ def _offer(pid: str, kind: str, priced: PriceBreakdown, size: tuple[int, int, in
         "disk_type": disk_type.lower() if disk_type else None,
         "traffic": policy,
         "included_traffic_gb": _serialize(row.included_traffic_gb) if row and policy == "included_quota" else None,
+        # which way the quota counts (upload: traffic entering the server), and whether traffic the other way is free
+        "included_traffic_direction": pol.get("included_traffic_direction") if policy == "included_quota" else None,
+        "outbound_traffic_free": True if policy == "included_quota" and pol.get("outbound_traffic") == "free" else None,
         "datacenter": row.datacenter if row else None,
         # which of a provider's clusters the plan is in, and its hardware generation, where the provider states them
         "cluster": attrs.get("cluster"),
