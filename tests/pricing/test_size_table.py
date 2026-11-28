@@ -45,8 +45,11 @@ def test_an_offer_covers_the_size_and_the_cheapest_comes_first(table):
 def test_two_cores_four_gb_and_fifty_gb_of_disk(snapshot):
     offers, missing = offers_for(snapshot, 2, 4, 50)
     by = {o["provider_id"]: o for o in offers}
-    assert [o["provider_id"] for o in offers] == ["mobinhost", "chabokan", "serverir", "parspack", "arvancloud",
-                                                  "liara", "hostiran", "iranserver"]
+    assert [o["provider_id"] for o in offers] == ["trusthost", "mobinhost", "chabokan", "serverir", "parspack",
+                                                  "arvancloud", "liara", "hostiran", "iranserver"]
+    # TrustHost's quota is traffic entering the server; the size has none, so the plan is its price
+    assert (by["trusthost"]["plan"], by["trusthost"]["monthly_toman"], by["trusthost"]["included_traffic_gb"]) == (
+        "آغاز", "737280", "200")
     assert (by["mobinhost"]["plan"], by["mobinhost"]["monthly_toman"]) == ("IR-VPS-6GB", "995000")
     assert by["mobinhost"]["included_traffic_gb"] == "100" and by["mobinhost"]["traffic"] == "included_quota"
     # ArvanCloud has no plans: the size is built from its component prices, at its cheapest class
@@ -55,7 +58,7 @@ def test_two_cores_four_gb_and_fifty_gb_of_disk(snapshot):
     assert (by["parspack"]["kind"], by["parspack"]["monthly_toman"]) == ("by_size", "1885950")
     # Liara sells no 50 GB disk below its 4 vCPU plan, so its entry is bigger than the size asked for
     assert (by["liara"]["cpu"], by["liara"]["ram_gb"], by["liara"]["disk_gb"]) == ("4", "8", "80")
-    assert by["liara"]["times_cheapest"] == "4.8"
+    assert by["liara"]["times_cheapest"] == "6.5"  # 4,800,000 against TrustHost's 737,280
     # HostIran doesn't publish its traffic terms: the size has no traffic, so its plan is its price, and the page
     # says what was left out
     assert (by["hostiran"]["plan"], by["hostiran"]["monthly_toman"], by["hostiran"]["traffic"]) == (
@@ -67,9 +70,10 @@ def test_two_cores_four_gb_and_fifty_gb_of_disk(snapshot):
 def test_vat_is_beside_the_price_never_inside_it(snapshot):
     offers, _ = offers_for(snapshot, 2, 4, 50)
     by = {o["provider_id"]: o for o in offers}
-    # Server.ir is the only provider whose page states its VAT: 10% of 1,690,000
+    # Server.ir and TrustHost are the providers whose sources state their VAT: 10% of 1,690,000 and of 737,280
     assert (by["serverir"]["monthly_toman"], by["serverir"]["vat_toman"]) == ("1690000", "169000")
-    assert all(o["vat_toman"] is None for pid, o in by.items() if pid != "serverir")
+    assert (by["trusthost"]["monthly_toman"], by["trusthost"]["vat_toman"]) == ("737280", "73728")
+    assert all(o["vat_toman"] is None for pid, o in by.items() if pid not in ("serverir", "trusthost"))
 
 
 def test_what_a_figure_assumes_or_leaves_out_is_said_with_it(snapshot):

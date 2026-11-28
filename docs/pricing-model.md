@@ -46,15 +46,16 @@ Line statuses: `priced`, `included` (catalog explicitly says 0 / unlimited), `as
 - 720 h/month: Liara publishes both rates and only 720 h reconciles them
   (2,048 × 720 = 1,474,560 ≈ 1,475,000; 277 × 720 = 199,440 ≈ 200,000).
 
-### `fixed_sku` — Server.ir, IranServer, MobinHost, Chabokan
+### `fixed_sku` — Server.ir, IranServer, MobinHost, Chabokan, HostIran, TrustHost
 - Base = plan monthly price × quantity. Chabokan 30-day plans = monthly (assumption recorded).
 - Disk above the plan's disk → `PRICE_UNAVAILABLE` (extra-disk prices not in seed).
 - Traffic by `traffic_policy` (derived at normalization from structured fields + official notes):
-  `included_quota` (Server.ir counts download only; others download+upload, conservative) — overage
-  is `PRICE_UNAVAILABLE` because no overage price is published; `fair_use` (50 GB/day × 30);
+  `included_quota` (Server.ir counts download only; TrustHost upload only, since its quota is traffic entering the
+  server; others download+upload, conservative) — overage is priced at the row's `overage_toman_per_gb` where the
+  provider publishes one (TrustHost), and is `PRICE_UNAVAILABLE` otherwise; `fair_use` (50 GB/day × 30);
   `unlimited`; `unlimited_rate_limited` (8 Mbps, assumption); `metered_download` (rate from the
   official plan description, e.g. 1,600 Toman/GB on Server.ir IRFH since the 2026-10-04 live sync).
-- Tax only when the provider has an **active** tax rule: Server.ir `serverir-vat` 10%, emitted as a
+- Tax only when the provider has an **active** tax rule: Server.ir `serverir-vat` and TrustHost `trusthost-vat` 10%, emitted as a
   separate `tax.vat` line when `include_tax=true`, never folded into the base price.
 - Sold-out plans can still be priced as the *current* plan (flagged) but never as a candidate.
 - Term discounts (`serverir-discounts`, `needs_checkout_verification`) are never applied; REC-004

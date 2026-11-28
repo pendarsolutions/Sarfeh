@@ -27,6 +27,7 @@ PROVIDER_HINTS = {
     "serverir": ["server.ir", "سرور.آی‌آر", "سرور آی آر"], "iranserver": ["iranserver", "ایران سرور", "ایران‌سرور"],
     "chabokan": ["chabokan", "چابکان"], "parspack": ["parspack", "پارس پک", "پارس‌پک"],
     "mobinhost": ["mobinhost", "مبین هاست", "مبین‌هاست"], "hostiran": ["hostiran", "هاست ایران", "هاست‌ایران"],
+    "trusthost": ["trusthost", "تراست هاست", "تراست‌هاست"],
     "abrha": ["abrha", "ابرها"],
 }
 

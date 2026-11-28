@@ -74,11 +74,11 @@ def test_rec002_high_usage_no_downsize(snapshot):
 
 def test_rec003_migration_payback(recs):
     [r] = by(recs, "REC-003", "web-prod")
-    # Server.ir IRAT3024 x2 (3500000) -> Chabokan economic-tehran x2 (2520000)
-    assert r.monthly_saving_toman == D(980000)
+    # Server.ir IRAT3024 x2 (3500000) -> TrustHost Aghaz x2 (1474560); its 20 GB of upload is inside the 200 GB quota
+    assert r.monthly_saving_toman == D(2025440)
     # 2 engineer-days x 2 instances x 4000000
     assert r.one_time_migration_cost_toman == D(16000000)
-    assert r.payback_months == D("16.33")
+    assert r.payback_months == D("7.90")
     assert r.evidence["constraints"] and all(c["passed"] for c in r.evidence["constraints"])
     assert r.evidence["differences"]
 
@@ -122,6 +122,6 @@ def test_every_actionable_has_evidence_and_dates(recs):
 def test_summary_does_not_double_count(snapshot, sample_resources, recs):
     q = price_inventory(sample_resources, snapshot)
     s = summarize(recs, q.total_toman, snapshot)
-    # best per resource: ci-runner 2283839 (REC-003) + staging 2080000 (REC-003) + web-prod 980000
-    assert s["avoidable_monthly_toman"] == D(2283839) + D(2080000) + D(980000)
+    # best per resource, each a move to TrustHost (REC-003): ci-runner 3860799 + staging 2137720 + web-prod 2025440
+    assert s["avoidable_monthly_toman"] == D(3860799) + D(2137720) + D(2025440)
     assert len(s["counted_recommendation_keys"]) == 3

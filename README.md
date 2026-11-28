@@ -157,6 +157,7 @@ flowchart LR
 | MobinHost | ✅ Exact | ✅ Scraper |
 | ParsPack | ✅ Exact, priced from a server's specs | ✅ Scraper |
 | HostIran | ⚠️ Plans and prices, but its traffic terms aren't published yet, so they can't be priced exactly | ⚠️ Its price API, which answers only browsers for now, so a copy saved from one is applied |
+| TrustHost | ✅ Exact, including traffic beyond the plan | ✅ Its price feed, read from its billing system |
 | Abrha | ℹ️ Starting price only, never used for savings | ❌ |
 
 Scrapers check official pages twice a day. If a page can't be read, or prices move too sharply, nothing is
