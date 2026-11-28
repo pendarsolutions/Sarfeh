@@ -7,9 +7,10 @@ from pricing_engine.models import BillingContext, LineStatus, PriceStatus
 from pricing_engine.pricing import price_resource
 
 
-def jaraghe(download: str, upload: str, quantity: int = 1) -> Resource:
+def jaraghe(download: str, upload: str, quantity: int = 1, ipv4: bool = False) -> Resource:
     return Resource(id="r", service_type="compute_vm", provider_id="trusthost", sku="جرقه", quantity=quantity,
-                    expected_monthly_download_gb=D(download), expected_monthly_upload_gb=D(upload))
+                    expected_monthly_download_gb=D(download), expected_monthly_upload_gb=D(upload),
+                    requires_public_ipv4=ipv4)
 
 
 def test_the_seed_holds_the_21_plans(snapshot):
@@ -33,6 +34,21 @@ def test_traffic_entering_beyond_the_quota_is_priced_at_the_published_rate(snaps
     over = next(c for c in p.components if c.code == "traffic.overage")
     assert (over.quantity, over.unit_price_toman, over.subtotal_toman) == (100, 900, 90000)
     assert p.monthly_total_toman == D(495360) * 2 + D(90000)
+
+
+def test_the_stated_ipv4_is_included_at_no_cost(snapshot):
+    p = price_resource(jaraghe(download="0", upload="0", quantity=2, ipv4=True), snapshot)
+    assert p.status == PriceStatus.EXACT
+    ip = next(c for c in p.components if c.code == "ipv4")
+    assert (ip.status, ip.quantity, ip.subtotal_toman) == (LineStatus.INCLUDED, 2, 0)
+    assert not any("IPv4 assumed" in a for a in p.assumptions)
+
+
+def test_a_second_ipv4_is_not_guessed(snapshot):
+    r = jaraghe(download="0", upload="0", ipv4=True)
+    r.ipv4_count = D(2)
+    p = price_resource(r, snapshot)
+    assert any(u.component == "ipv4.extra" for u in p.unavailable)
 
 
 def test_vat_is_a_separate_line(snapshot):

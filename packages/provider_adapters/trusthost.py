@@ -4,12 +4,16 @@
 
 TrustHost asked to be listed and published this feed. It is read straight from TrustHost's billing system (WHMCS), so
 the prices are the ones it invoices; https://trusthost.co/server/ shows the same table. It holds the 21 plans of the
-Tehran (Fanap) datacenter in four families: general purpose, compute, memory and storage.
+Tehran datacenters in four families: general purpose, compute, memory and storage.
 
 Traffic: each plan includes a monthly quota of traffic entering the server (Sarfeh's "upload"); traffic leaving the
 server is free. Beyond the quota, traffic is bought from the customer's wallet at a per-GB rate the feed states, and
 the engine prices it at that rate. Larger purchases get volume rates, kept as an attribute and not applied, so an
 overage is never priced below what a customer pays. Prices exclude VAT (10%, a separate invoice line).
+
+Each plan can be ordered in both of TrustHost's Tehran datacenters (Fanap and Respina), its vCPUs are shared, and one
+public IPv4 comes with it at no extra cost (ipv4_included). An older copy of the feed without these fields reads as
+before: one datacenter, CPU type not stated, IPv4 assumed.
 
 Anything the feed doesn't state stays unset, and a feed whose terms differ from these (VAT, traffic direction) fails
 the read rather than being priced on assumptions that no longer hold.
@@ -26,7 +30,8 @@ from pricing_engine.models import CatalogItem
 from .base import HttpAdapterMixin, ParseError, RawCatalog, base_item
 
 FAMILIES = {"general_purpose", "compute_optimized", "memory_optimized", "storage_optimized"}
-DATACENTERS = {"فناپ تهران": "Fanap Tehran"}
+DATACENTERS = {"فناپ تهران": "Fanap Tehran", "رسپینا تهران": "Respina Tehran"}
+CPU_TYPES = {"shared": True, "dedicated": False}
 VAT_PERCENT = "10"
 
 
@@ -74,22 +79,32 @@ class TrustHostAdapter(HttpAdapterMixin):
             if not name or family not in FAMILIES or monthly is None:
                 raise ParseError(f"TrustHost plan without a name, a known family or a monthly price: {p.get('id')}")
             quota = p.get("inbound_traffic_gb")
-            dc_fa = p.get("datacenter")
+            dcs_fa = p.get("datacenters") or ([p["datacenter"]] if p.get("datacenter") else [])
+            dc_fa = "، ".join(dcs_fa) or None
+            cpu_type = p.get("cpu_type")
+            if cpu_type is not None and cpu_type not in CPU_TYPES:
+                raise ParseError(f"TrustHost plan {name}: unknown CPU type {cpu_type!r}")
+            ipv4 = p.get("ipv4_included")
+            if ipv4 is not None and (not isinstance(ipv4, int) or isinstance(ipv4, bool) or ipv4 < 0):
+                raise ParseError(f"TrustHost plan {name}: included IPv4 count is not a whole number ({ipv4!r})")
             attrs: dict[str, Any] = {
                 "whmcs_pid": p.get("id"),
                 "catalog_updated_at": data.get("catalog_updated_at"),
                 "family_fa": p.get("family_name"),
                 "datacenter_fa": dc_fa,
+                "datacenters_fa": dcs_fa,
                 "port_gbps": p.get("port_gbps"),
                 "order_url": p.get("order_url"),
                 "term_prices_toman": {k: v for k, v in (p.get("price_toman") or {}).items() if v is not None},
             }
             if quota is not None:
                 attrs.update(overage)
+            if ipv4 is not None:
+                attrs["ipv4_included"] = ipv4
             items.append(base_item(
                 self.provider_id, raw, service_type="compute_vm", pricing_model="fixed_sku", product_family=family,
-                sku=name, name=name, datacenter=DATACENTERS.get(dc_fa, dc_fa),
-                cpu_cores=_dec(p.get("vcpu"), f"{name} vCPU"), cpu_unit="vCPU",
+                sku=name, name=name, datacenter=", ".join(DATACENTERS.get(d, d) for d in dcs_fa) or None,
+                cpu_cores=_dec(p.get("vcpu"), f"{name} vCPU"), cpu_unit="vCPU", cpu_shared=CPU_TYPES.get(cpu_type),
                 ram_gb=_dec(p.get("ram_gb"), f"{name} RAM"), storage_gb=_dec(p.get("disk_gb"), f"{name} disk"),
                 storage_type=p.get("disk_type"),
                 included_traffic_gb=_dec(quota, f"{name} traffic quota") if quota is not None else None,

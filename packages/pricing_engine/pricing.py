@@ -381,11 +381,27 @@ def _price_fixed_sku(b: _Builder, ctx: BillingContext, pol: dict[str, Any]) -> N
         b.missing("storage.extra", "price_toman", f"{r.storage_gb} GB requested > {row.storage_gb} GB in plan; "
                   "extra-disk price is not in the seed")
     _fixed_traffic(b, row, pol, ctx)
-    if r.effective_ipv4_count > 1:
+    _fixed_ipv4(b, row)
+
+
+def _fixed_ipv4(b: _Builder, row: CatalogItem) -> None:
+    """A plan's public IPv4: included at no cost where the provider's catalog says how many come with it (the
+    ipv4_included attribute), otherwise one assumed included, since most plan pages don't say."""
+    q, ips = b.r.quantity, b.r.effective_ipv4_count
+    stated = row.attributes.get("ipv4_included")
+    if ips == 0:
+        return
+    if isinstance(stated, int) and not isinstance(stated, bool) and stated > 0:
+        included = Decimal(stated)
+        b.priced("ipv4", "Public IPv4 (included with the plan)", row, min(ips, included) * q, ZERO, "ip_month",
+                 note=f"{row.provider_id} states {stated} public IPv4 included with each plan")
+        if ips > included:
+            b.missing("ipv4.extra", "price_toman", f"additional IPv4 price for {row.provider_id} is not in the seed")
+        return
+    if ips > 1:
         b.missing("ipv4.extra", "price_toman", f"additional IPv4 price for {row.provider_id} is not in the seed")
-    if r.effective_ipv4_count > 0:
-        b.assumed_included("ipv4", "Public IPv4", f"{row.provider_id}: one public IPv4 assumed included with the VPS plan "
-                           "(the seed catalog does not state it).")
+    b.assumed_included("ipv4", "Public IPv4", f"{row.provider_id}: one public IPv4 assumed included with the VPS plan "
+                       "(the seed catalog does not state it).")
 
 
 def _fixed_traffic(b: _Builder, row: CatalogItem, pol: dict[str, Any], ctx: BillingContext | None = None) -> None:

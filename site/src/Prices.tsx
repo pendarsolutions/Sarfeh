@@ -29,6 +29,10 @@ interface Offer {
   disk_type: string | null;
   traffic: string;
   included_traffic_gb: string | null;
+  /** which way an included quota counts: "upload" is traffic entering the server; older tables have none */
+  included_traffic_direction?: string | null;
+  /** traffic the other way is free, where the provider says so */
+  outbound_traffic_free?: boolean | null;
   datacenter: string | null;
   /** the provider's own name for the cluster (its service level) the plan is on, in its own words; older tables have none */
   cluster?: string | null;
@@ -129,6 +133,7 @@ const DISK_TYPE_WORDS: Partial<Record<string, Key>> = { hybrid: "prDiskHybrid" }
 /** A condition in the reader's language, or nothing for an id this page doesn't know yet. */
 function conditionText(c: Condition, t: (k: Key) => string, lang: Lang): string | null {
   if (c.id === "ipv4_assumed") return t("prCondIpv4Assumed");
+  if (c.id === "ipv4_included") return t("prCondIpv4Included");
   if (c.id === "traffic_not_stated") return t("prCondTrafficNotStated");
   if (c.id === "ipv4_priced" && c.toman) return fill(t("prCondIpv4Priced"), { amount: formatWhole(c.toman, lang) });
   if (c.id === "thirty_day_plan") return t("prCondThirtyDay");
@@ -213,7 +218,13 @@ function OfferRow({ offer, rank, size, table }: { offer: Offer; rank: number; si
   // a type this page doesn't know yet leaves just the word "disk"
   const diskWords = offer.disk_type ? DISK_TYPE_WORDS[offer.disk_type] : undefined;
   const diskType = offer.disk_type ? (DISK_TYPE[offer.disk_type] ?? (diskWords && t(diskWords))) : undefined;
-  const trafficKey = TRAFFIC[offer.traffic] ?? "prTrafficUnknown";
+  // a quota of incoming traffic with free outgoing traffic says both, so it doesn't read like a cap on everything
+  const inboundQuota = offer.traffic === "included_quota" && offer.included_traffic_direction === "upload";
+  const trafficKey: Key = inboundQuota
+    ? offer.outbound_traffic_free
+      ? "prTrafficQuotaInOutFree"
+      : "prTrafficQuotaIn"
+    : (TRAFFIC[offer.traffic] ?? "prTrafficUnknown");
   const times = n(offer.times_cheapest).replace(".", lang === "fa" ? "٫" : ".");
   const conditions = (offer.conditions ?? []).map((c) => conditionText(c, t, lang)).filter((text): text is string => text !== null);
   return (

@@ -1,4 +1,4 @@
-"""TrustHost's price feed, read from a copy saved on 2026-11-26 (tests never reach live sites)."""
+"""TrustHost's price feed, read from a copy saved on 2026-11-28 (tests never reach live sites)."""
 
 import gzip
 import json
@@ -11,11 +11,11 @@ import pytest
 from provider_adapters import ParseError, RawCatalog, TrustHostAdapter, plan_sync
 
 FIXTURES = Path(__file__).parents[1] / "fixtures" / "providers"
-AT = datetime(2026, 11, 26, 18, 0, tzinfo=UTC)
+AT = datetime(2026, 11, 28, 12, 30, tzinfo=UTC)
 
 
 def feed() -> dict:
-    return json.loads(gzip.open(FIXTURES / "trusthost-2026-11-26.json.gz", "rt", encoding="utf-8").read())
+    return json.loads(gzip.open(FIXTURES / "trusthost-2026-11-28.json.gz", "rt", encoding="utf-8").read())
 
 
 def raw(data: dict | str) -> RawCatalog:
@@ -23,7 +23,7 @@ def raw(data: dict | str) -> RawCatalog:
     return RawCatalog("trusthost", TrustHostAdapter.source_url, AT, content, content_type="application/json")
 
 
-def test_the_21_plans_of_the_tehran_datacenter():
+def test_the_21_plans_of_the_tehran_datacenters():
     items = TrustHostAdapter().normalize_catalog(raw(feed()))
     by = {i.sku: i for i in items}
     assert len(items) == 21
@@ -34,7 +34,25 @@ def test_the_21_plans_of_the_tehran_datacenter():
         1, 2, 50, "SSD", 100, D(495360))
     assert by["انبار ۴"].storage_gb == 2048 and by["فراخ ۶"].ram_gb == 128
     assert {(i.datacenter, i.billing_period, i.tax_included, i.source_price_date) for i in items} == {
-        ("Fanap Tehran", "month", False, "2026-11-26")}
+        ("Fanap Tehran, Respina Tehran", "month", False, "2026-11-28")}
+
+
+def test_shared_vcpus_and_one_ipv4_included():
+    items = TrustHostAdapter().normalize_catalog(raw(feed()))
+    assert {i.cpu_shared for i in items} == {True}
+    assert {i.attributes["ipv4_included"] for i in items} == {1}
+    assert items[0].attributes["datacenters_fa"] == ["فناپ تهران", "رسپینا تهران"]
+
+
+def test_an_older_feed_without_these_terms_reads_as_before():
+    data = feed()
+    for p in data["plans"]:
+        for k in ("datacenters", "cpu_type", "ipv4_included"):
+            del p[k]
+        p["datacenter"] = "فناپ تهران"
+    items = TrustHostAdapter().normalize_catalog(raw(data))
+    assert {(i.datacenter, i.cpu_shared) for i in items} == {("Fanap Tehran", None)}
+    assert all("ipv4_included" not in i.attributes for i in items)
 
 
 def test_traffic_is_a_quota_with_a_published_overage_rate():
@@ -60,6 +78,9 @@ def test_the_catalog_holds_what_the_feed_says(snapshot):
     (lambda d: d["plans"][0].update(vcpu=None), "vCPU is not a number"),
     (lambda d: d.update(plans=[]), "lists no plans"),
     (lambda d: d.update(schema=2), "unknown schema"),
+    (lambda d: d["plans"][0].update(cpu_type="burstable"), "unknown CPU type"),
+    (lambda d: d["plans"][0].update(ipv4_included="1"), "IPv4 count is not a whole number"),
+    (lambda d: d["plans"][0].update(ipv4_included=-1), "IPv4 count is not a whole number"),
 ])
 def test_a_changed_feed_fails_rather_than_guesses(change, message):
     data = feed()
