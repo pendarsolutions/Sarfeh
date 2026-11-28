@@ -35,6 +35,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import refresh_prices  # noqa: E402
 
 WIDTHS = (320, 360)
+#: how long a page that measured too wide gets to settle before it's measured again (and failed if still too wide)
+SETTLE_S = 2.0
 PAGES = ("/", "/?lang=en", "/prices/?cpu=2&ram=4&disk=50", "/prices/?cpu=2&ram=4&disk=50&lang=en",
          "/prices/?cpu=16&ram=64&disk=400", "/prices/?cpu=16&ram=64&disk=400&lang=en", "/prices/?view=changes",
          "/prices/?view=changes&lang=en")
@@ -49,7 +51,8 @@ MEASURE = """(() => {
   for (const el of document.querySelectorAll('body *')) {
     const r = el.getBoundingClientRect();
     if (r.width && (r.right > w + 1 || r.left < -1) && !el.children.length)
-      out.push(el.tagName.toLowerCase() + '.' + String(el.className).slice(0, 30) + ': ' + (el.innerText || '').slice(0, 50));
+      out.push(el.tagName.toLowerCase() + '.' + (el.getAttribute('class') || '').slice(0, 30) + ': ' +
+               (el.innerText || el.textContent || '').slice(0, 50));
   }
   return {screen: w, page: document.documentElement.scrollWidth, culprits: out.slice(0, 5)};
 })()"""
@@ -86,7 +89,15 @@ def _serve(directory: Path) -> int:
     return server.server_address[1]
 
 
-async def _check(site: int, debug: int) -> list[str]:
+def _annotate(level: str, title: str, message: str) -> None:
+    """On GitHub Actions, a line the run shows as an annotation: readable from the run's page and its public API,
+    where the log itself needs a login."""
+    if os.environ.get("GITHUB_ACTIONS") == "true":
+        text = message.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+        print(f"::{level} title={title}::{text}")
+
+
+async def _check(site: int, debug: int) -> tuple[list[str], list[str]]:
     for _ in range(100):
         try:
             targets = httpx.get(f"http://127.0.0.1:{debug}/json", trust_env=False).json()
@@ -96,7 +107,7 @@ async def _check(site: int, debug: int) -> list[str]:
             await asyncio.sleep(0.2)
     else:
         raise SystemExit("the browser didn't start")
-    failures = []
+    failures, passing = [], []  # pages too wide once loaded; pages too wide only while loading
     async with websockets.connect(page["webSocketDebuggerUrl"], max_size=2**26) as ws:
         sent = 0
 
@@ -112,7 +123,8 @@ async def _check(site: int, debug: int) -> list[str]:
                     return msg.get("result", {})
 
         async def value(expression: str):
-            return (await cdp("Runtime.evaluate", returnByValue=True, expression=expression))["result"].get("value")
+            return (await cdp("Runtime.evaluate", returnByValue=True, awaitPromise=True,
+                              expression=expression))["result"].get("value")
 
         await cdp("Page.enable")
         for width in WIDTHS:
@@ -130,12 +142,23 @@ async def _check(site: int, debug: int) -> list[str]:
                     failures.append(f"{path} at {width}px: the page never rendered")
                     continue
                 await asyncio.sleep(0.5)
+                # the text is drawn in a fallback font until the web font arrives (font-display: swap), and a slow
+                # runner can still be in that moment: measure the page as people see it once it has loaded
+                await value("document.fonts.ready.then(() => true)")
                 seen = await value(MEASURE)
+                if seen["page"] > seen["screen"]:
+                    # a moment of loading can stick out where the loaded page doesn't; a real overflow stays
+                    first = seen
+                    await asyncio.sleep(SETTLE_S)
+                    seen = await value(MEASURE)
+                    if seen["page"] <= seen["screen"]:
+                        passing.append(f"{path} at {width}px was {first['page']}px wide while loading, then fit: "
+                                       + " | ".join(first["culprits"]))
                 ok = seen["page"] <= seen["screen"]
                 print(f"{'ok  ' if ok else 'WIDE'} {width}px {path}: page {seen['page']}px")
                 if not ok:
                     failures.append(f"{path} at {width}px is {seen['page']}px wide: " + " | ".join(seen["culprits"]))
-    return failures
+    return failures, passing
 
 
 def _sample_changes(now: datetime) -> str:
@@ -176,15 +199,19 @@ def main() -> int:
         browser = subprocess.Popen([_browser(), *flags, "about:blank"], stdout=subprocess.DEVNULL,
                                    stderr=subprocess.DEVNULL)
         try:
-            failures = asyncio.run(_check(_serve(site_dir), debug))
+            failures, passing = asyncio.run(_check(_serve(site_dir), debug))
         finally:
             browser.terminate()
             try:
                 browser.wait(10)  # before the profile folder is removed under it
             except subprocess.TimeoutExpired:
                 browser.kill()
+    for p in passing:
+        print("note", p.encode("ascii", "backslashreplace").decode())
+        _annotate("warning", "Wider than a phone while loading", p)
     for f in failures:
         print("FAIL", f.encode("ascii", "backslashreplace").decode())
+        _annotate("error", "Wider than a phone", f)
     return 1 if failures else 0
 
 
