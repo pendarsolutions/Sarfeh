@@ -1,0 +1,47 @@
+name: Notify
+
+on:
+    issues:
+        types: [opened]
+    pull_request_target:
+        types: [opened, reopened]
+    workflow_run:
+        workflows: ["CI", "Release", "Site"]
+        types: [completed]
+
+
+permissions: {}                 # this workflow needs no access to the repo
+
+jobs:
+  telegram:
+    runs-on: ubuntu-latest
+    if: >-
+      github.event_name != 'workflow_run' ||
+      github.event.workflow_run.conclusion == 'failure' ||
+      github.event.workflow_run.conclusion == 'timed_out'
+    steps:
+      - name: Send
+        env:
+          EVENT: ${{ github.event_name }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_USER: ${{ github.event.issue.user.login }}
+          ISSUE_URL: ${{ github.event.issue.html_url }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_USER: ${{ github.event.pull_request.user.login }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          RUN_NAME: ${{ github.event.workflow_run.name }}
+          RUN_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          RUN_RESULT: ${{ github.event.workflow_run.conclusion }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+          TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          case "$EVENT" in
+            issues)              TEXT=$(printf '🐞 New issue by %s\n%s\n%s' "$ISSUE_USER" "$ISSUE_TITLE" "$ISSUE_URL") ;;
+            pull_request_target) TEXT=$(printf '🔀 New pull request by %s\n%s\n%s' "$PR_USER" "$PR_TITLE" "$PR_URL") ;;
+            workflow_run)        TEXT=$(printf '❌ %s %s on %s\n%s' "$RUN_NAME" "$RUN_RESULT" "$RUN_BRANCH" "$RUN_URL") ;;
+          esac
+          curl -sS --fail -X POST "https://api.telegram.org/bot${TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${CHAT}" \
+            --data-urlencode "text=${TEXT}" \
+            -d disable_web_page_preview=true
